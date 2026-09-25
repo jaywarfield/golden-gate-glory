@@ -2,9 +2,11 @@
 
 ## [Problem and Solution](docs/problem_and_solution.md)
 
+<!--
 ## [Video and Output](docs/video_and_output.md)
 
 ## [Feedback and Evaluation](docs/feedback_and_evaluation.md)
+-->
 
 ---
 
