@@ -6,15 +6,19 @@ An AI-supported tool to help veterans and transitioning service members translat
 
 ### Solution Description
 
+TBD
+
 ### Solution Diagram
 
 ![Solution Diagram](images/golden-gate-glory.drawio.png)
 
 ### Technology Used
 
+TBD
+
 ### References
 
-- [Diagram Source](source/synthmed.py)
+- [Diagram Source](source/golden-gate-glory.py)
 - [Diagram Standard](https://www.ibm.com/design/language/infographics/technical-diagrams/design/)
 
 ---
