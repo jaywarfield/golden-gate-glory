@@ -1,8 +1,8 @@
-# **Golden Gate Glory: IBM AI Lab Challenge with IBM Bob**
+# **Golden Gate Glory - IBM AI Lab Challenge**
 
 ### Problem Description
 
-Medical researchers face a growing challenge: the volume of new clinical studies, 
+An AI-supported tool to help veterans and transitioning service members translate military experience into civilian career language, identify transferable skills, prepare resume and interview materials, and connect training goals to employment pathways.
 
 ### Solution Description
 

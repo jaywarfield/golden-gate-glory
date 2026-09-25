@@ -1,4 +1,4 @@
-# **SynthMed Agent - IBM AI Lab Challenge: AI Medical Research Synthesis Agent**
+# **Golden Gate Glory - IBM AI Lab Challenge**
 
 ## [Problem and Solution](docs/problem_and_solution.md)
 
