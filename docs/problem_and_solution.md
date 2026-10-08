@@ -10,7 +10,7 @@ TBD
 
 ### Solution Diagram
 
-![Solution Diagram](images/golden-gate-glory.drawio.png)
+TBD
 
 ### Technology Used
 
@@ -18,8 +18,7 @@ TBD
 
 ### References
 
-- [Diagram Source](source/golden-gate-glory.py)
-- [Diagram Standard](https://www.ibm.com/design/language/infographics/technical-diagrams/design/)
+TBD
 
 ---
 
