@@ -1,4 +1,4 @@
-# **SynthMed Agent - IBM AI Lab Challenge: AI Medical Research Synthesis Agent**
+# **Golden Gate Glory - Help veterans transition into civilian careers.**
 
 ### Obtain API Key (refer to lab guide)
 - Go to watsonx.ai home page (https://dataplatform.cloud.ibm.com/wx/home?context=wx).
@@ -15,13 +15,13 @@
 ### Setup Orchestrate
 - pip install pymupdf
 - pip install ibm-watsonx-orchestrate
-- orchestrate env add -n synthmed -u https://api.ca-tor.watson-orchestrate.cloud.ibm.com/instances/d5d11d07-ece4-4eb3-aaf8-6f91dc58181f --type ibm_iam --activate
-- orchestrate env activate synthmed
+- TBD
+- TBD
 - Please enter WXO API key:  (cut-and-paste your API Key here) 
 - Note: Token will need to be reactivated when it expires.
 
-### Setup SynthMed
-- Browse to https://github.com/jaywarfield/synthmed
+### Setup Golden Gate Glory
+- Browse to https://github.com/jaywarfield/golden-gate-glory
 - Select Code and Open with GitHub Desktop.
 - Execute locally: import-all.sh
 - Test in UI
