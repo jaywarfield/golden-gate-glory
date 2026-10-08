@@ -1,6 +1,7 @@
 # -------------------------------------------------------------------
 # Environment Variables & Secrets (NEVER commit sensitive data)
 # -------------------------------------------------------------------
+.bob
 .env
 .env.local
 .env.development.local
