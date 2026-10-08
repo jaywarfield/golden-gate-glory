@@ -1,0 +1,81 @@
+# -------------------------------------------------------------------
+# Environment Variables & Secrets (NEVER commit sensitive data)
+# -------------------------------------------------------------------
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.secret
+*.pem
+
+# -------------------------------------------------------------------
+# Operating System Files
+# -------------------------------------------------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+
+# -------------------------------------------------------------------
+# Common Code Editors and IDEs
+# -------------------------------------------------------------------
+# VS Code
+.vscode/
+!.vscode/extensions.json
+*.code-workspace
+
+# IntelliJ / WebStorm / PyCharm
+.idea/
+*.iml
+
+# -------------------------------------------------------------------
+# Dependencies and Package Managers (Language Specific)
+# -------------------------------------------------------------------
+# JavaScript / Node
+node_modules/
+jspm_packages/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# Ruby / Bundler
+/vendor/bundle/
+
+# -------------------------------------------------------------------
+# Build Outputs, Caches, and Logs
+# -------------------------------------------------------------------
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Diagnostic reports
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Build and Distribution folders
+dist/
+build/
+out/
+bin/
+obj/
