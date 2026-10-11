@@ -1,6 +1,559 @@
-<html>
-<head></head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veteran Career Navigator – Phase 1</title>
+  <style>
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      color: #1f2328;
+      background: #f7f8fa;
+      min-height: 100vh;
+    }
+
+    /* ── Layout ── */
+    .shell {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 0 16px 48px;
+    }
+
+    /* ── Top bar ── */
+    .topbar {
+      background: #1e3a8a;
+      color: #fff;
+      padding: 0 16px;
+    }
+    .topbar-inner {
+      max-width: 680px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 48px;
+    }
+    .topbar-title {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+    .topbar-nav {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+    }
+    .topbar-nav button {
+      background: none;
+      border: none;
+      color: #bfdbfe;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 0;
+    }
+    .topbar-nav button:hover { color: #fff; }
+
+    /* ── Step indicator ── */
+    .step-header {
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 14px 0 12px;
+      margin-bottom: 20px;
+    }
+    .step-meta {
+      font-size: 12px;
+      color: #57606a;
+      margin-bottom: 4px;
+    }
+    .step-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1f2328;
+    }
+    .draft-badge {
+      display: inline-block;
+      margin-top: 4px;
+      background: #fef9c3;
+      color: #854d0e;
+      border: 1px solid #fde047;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 1px 8px;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .card-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #57606a;
+      margin-bottom: 12px;
+    }
+
+    /* ── Notice boxes ── */
+    .notice {
+      border-left: 4px solid #3b82d4;
+      background: #eff6ff;
+      border-radius: 0 6px 6px 0;
+      padding: 10px 14px;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+    .notice.warn {
+      border-color: #f59e0b;
+      background: #fffbeb;
+    }
+    .notice.pii {
+      border-color: #ef4444;
+      background: #fef2f2;
+    }
+    .notice.success {
+      border-color: #10b981;
+      background: #f0fdf4;
+    }
+
+    /* ── Form elements ── */
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 5px;
+    }
+    label .req { color: #ef4444; margin-left: 2px; }
+    label .opt { color: #9ca3af; font-weight: 400; font-size: 12px; }
+    textarea, input[type="text"] {
+      width: 100%;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      padding: 9px 12px;
+      font-family: inherit;
+      font-size: 14px;
+      color: #1f2328;
+      background: #fff;
+      resize: vertical;
+      transition: border-color 0.15s;
+    }
+    textarea:focus, input[type="text"]:focus {
+      outline: none;
+      border-color: #3b82d4;
+      box-shadow: 0 0 0 3px rgba(59,130,212,0.12);
+    }
+    .field { margin-bottom: 16px; }
+    .field-hint {
+      font-size: 12px;
+      color: #57606a;
+      margin-top: 4px;
+    }
+
+    /* ── Button row ── */
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .btn {
+      padding: 9px 20px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: background 0.15s, opacity 0.15s;
+    }
+    .btn-primary {
+      background: #1e3a8a;
+      color: #fff;
+    }
+    .btn-primary:hover { background: #1e40af; }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+      border: 1px solid #d0d7de;
+    }
+    .btn-secondary:hover { background: #e5e7eb; }
+
+    /* ── Output area ── */
+    #output-section { display: none; }
+    .output-bullet {
+      font-size: 14px;
+      line-height: 1.7;
+      color: #1f2328;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .output-bullet .disclaimer {
+      display: block;
+      margin-top: 10px;
+      font-size: 12px;
+      color: #57606a;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 8px;
+    }
+    .model-tag {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 8px;
+    }
+
+    /* ── Loading spinner ── */
+    .spinner {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #57606a;
+      margin-top: 12px;
+    }
+    .spinner.active { display: flex; }
+    .spinner-ring {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #e5e7eb;
+      border-top-color: #3b82d4;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Footer ── */
+    .page-footer {
+      font-size: 12px;
+      color: #9ca3af;
+      text-align: center;
+      margin-top: 32px;
+      padding-top: 16px;
+      border-top: 1px solid #e5e7eb;
+    }
+  </style>
+</head>
 <body>
-    <title>Golden Gate Glory</title>
+
+<!-- ── Top bar ── -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <span class="topbar-title">Golden Gate Glory · Veteran Career Navigator</span>
+    <nav class="topbar-nav">
+      <button onclick="alert('Menu coming in Phase 3')">Menu</button>
+      <button onclick="alert('Help: Paste a PII-free military bullet and click Translate.')">Help</button>
+    </nav>
+  </div>
+</div>
+
+<!-- ── Main ── -->
+<div class="shell">
+
+  <!-- Step header -->
+  <div class="step-header">
+    <div class="step-meta">Step 2 of 7 &nbsp;·&nbsp; Draft in progress &nbsp;·&nbsp; Phase 1 MVP</div>
+    <div class="step-title">Guided Career Intake</div>
+    <span class="draft-badge">Draft: not shared</span>
+  </div>
+
+  <!-- Scope notice -->
+  <div class="notice">
+    <strong>What this tool does:</strong> Translates one PII-free military accomplishment
+    bullet into a civilian ATS-ready resume bullet using IBM Granite via watsonx Orchestrate.
+    It does <strong>not</strong> make hiring, eligibility, benefits, legal, medical,
+    or financial decisions.
+  </div>
+
+  <!-- PII reminder -->
+  <div class="notice warn" id="pii-reminder">
+    <strong>PII Reminder:</strong> Do not include full names, Social Security numbers,
+    DoD ID numbers, phone numbers, email addresses, home addresses, birth dates,
+    medical details, classified information, exact unit identifiers,
+    or exact deployment locations.
+  </div>
+
+  <!-- Input card -->
+  <div class="card">
+    <div class="card-title">Accomplishment Input</div>
+
+    <div class="field">
+      <label for="bullet">Military accomplishment bullet <span class="req">*</span></label>
+      <textarea
+        id="bullet"
+        rows="4"
+        maxlength="1000"
+        placeholder="Example: Led a 12-person logistics team supporting time-sensitive operations across multiple sites."
+        aria-required="true"
+      ></textarea>
+      <div class="field-hint">PII-free only. One bullet at a time.</div>
+    </div>
+
+    <div class="field">
+      <label for="metrics">
+        Quantifiable metrics
+        <span class="opt">(optional)</span>
+      </label>
+      <input
+        type="text"
+        id="metrics"
+        maxlength="300"
+        placeholder="Example: Improved on-time delivery from 82% to 96%; managed $4.2M in equipment."
+      >
+      <div class="field-hint">Numbers, percentages, and dollar amounts from the original record.</div>
+    </div>
+
+    <div class="field">
+      <label for="role">
+        Target civilian role or career path
+        <span class="opt">(optional)</span>
+      </label>
+      <input
+        type="text"
+        id="role"
+        maxlength="200"
+        placeholder="Example: Supply Chain Manager or Logistics Operations"
+      >
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="translate-btn" onclick="runTranslation()">
+        Translate bullet
+      </button>
+      <button class="btn btn-secondary" onclick="clearForm()">
+        Clear
+      </button>
+    </div>
+
+    <!-- Spinner -->
+    <div class="spinner" id="spinner">
+      <div class="spinner-ring"></div>
+      <span>Calling IBM Granite via watsonx Orchestrate…</span>
+    </div>
+  </div>
+
+  <!-- PII warning banner (hidden until triggered) -->
+  <div class="notice pii" id="pii-warning-banner" style="display:none">
+    <strong>⚠ PII pattern detected:</strong> <span id="pii-warning-text"></span>
+    Remove sensitive information before submitting to an employer.
+  </div>
+
+  <!-- Error banner (hidden until triggered) -->
+  <div class="notice pii" id="error-banner" style="display:none">
+    <strong>Error:</strong> <span id="error-text"></span>
+  </div>
+
+  <!-- Output card -->
+  <div id="output-section">
+    <div class="card">
+      <div class="card-title">Civilian Resume Bullet — Draft</div>
+      <div class="output-bullet" id="output-text"></div>
+      <div class="model-tag" id="model-tag"></div>
+    </div>
+
+    <div class="notice success">
+      <strong>Review before use.</strong> Confirm every claim. Remove any remaining
+      jargon or sensitive detail before submitting to an employer.
+      This is a draft, not a final document.
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="translateAnother()">
+        Translate another bullet
+      </button>
+      <button class="btn btn-secondary" onclick="window.print()">
+        Save / print draft
+      </button>
+    </div>
+  </div>
+
+</div><!-- /shell -->
+
+<div class="page-footer">
+  Golden Gate Glory · IBM SkillsBuild AI Lab 2026 · Phase 1 MVP
+</div>
+
+<script>
+  // ──────────────────────────────────────────────────────────────────
+  // Configuration – move to Flask app.py + environment variables.
+  // See web/app.py and web/templates/index.html for the live version.
+  // ──────────────────────────────────────────────────────────────────
+  const ORCHESTRATE_ENDPOINT = "";   // set via ORCHESTRATE_ENDPOINT env var
+  const ORCHESTRATE_API_KEY  = "";   // set via ORCHESTRATE_API_KEY env var
+  const USE_MOCK = true;
+
+  // ──────────────────────────────────────────────────────────────────
+  // Lightweight client-side PII guard (mirrors tools/tool.py patterns)
+  // ──────────────────────────────────────────────────────────────────
+
+  const PII_PATTERNS = [
+    { re: /\b\d{3}-\d{2}-\d{4}\b/,           label: "SSN pattern" },
+    { re: /\b\d{10}\b/,                        label: "Possible DoD ID" },
+    { re: /\b[\w.%+-]+@[\w.-]+\.[a-z]{2,}\b/i, label: "Email address" },
+    { re: /\b\d{3}[\s.-]\d{3}[\s.-]\d{4}\b/,   label: "Phone number" },
+  ];
+
+  function detectPII(text) {
+    for (const { re, label } of PII_PATTERNS) {
+      if (re.test(text)) return label;
+    }
+    return null;
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+  // Mock response (used when USE_MOCK = true)
+  // ──────────────────────────────────────────────────────────────────
+
+  function mockTranslate(bullet, metrics, role) {
+    // Simulate a Granite response using the EX-001 expected output
+    const disclaimer = (
+      "\n---\n" +
+      "DRAFT – Review before use. Confirm every claim. Remove any remaining " +
+      "jargon or sensitive detail before submitting to an employer."
+    );
+    if (!bullet.trim()) {
+      return { error: "bullet is required and cannot be empty.", translated_bullet: "", model_id: "ibm/granite-3-8b-instruct", pii_warning: "" };
+    }
+    const metricsNote = metrics
+      ? `, achieving ${metrics}`
+      : ", achieving [MISSING: quantifiable outcome]";
+    const roleNote = role ? ` for a ${role} role` : "";
+    const output = (
+      `• Directed a 12-member operations team${roleNote}, ` +
+      `improving cross-site delivery performance from 82% to 96%` +
+      ` and overseeing $4.2M in assets through optimized logistics coordination.` +
+      disclaimer
+    );
+    return { translated_bullet: output, model_id: "ibm/granite-3-8b-instruct (mock)", pii_warning: "", error: "" };
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+  // Main translation handler
+  // ──────────────────────────────────────────────────────────────────
+
+  async function runTranslation() {
+    const bullet  = document.getElementById("bullet").value.trim();
+    const metrics = document.getElementById("metrics").value.trim();
+    const role    = document.getElementById("role").value.trim();
+
+    // Reset UI
+    hideBanners();
+    hideOutput();
+
+    // Client-side PII check
+    const piiHit = detectPII(`${bullet} ${metrics}`);
+    if (piiHit) {
+      document.getElementById("pii-warning-text").textContent = `${piiHit} detected.`;
+      document.getElementById("pii-warning-banner").style.display = "block";
+    }
+
+    // Required field check
+    if (!bullet) {
+      document.getElementById("error-text").textContent =
+        "Please enter a military accomplishment bullet before translating.";
+      document.getElementById("error-banner").style.display = "block";
+      document.getElementById("bullet").focus();
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      let result;
+
+      if (USE_MOCK || ORCHESTRATE_ENDPOINT === "YOUR_ORCHESTRATE_ENDPOINT_HERE") {
+        // Mock path: used for notebook testing before Orchestrate is wired
+        await new Promise(r => setTimeout(r, 1200)); // simulate latency
+        result = mockTranslate(bullet, metrics, role);
+      } else {
+        // Live path: call watsonx Orchestrate agent endpoint
+        const payload = {
+          input: {
+            bullet:      bullet,
+            metrics:     metrics,
+            target_role: role,
+          }
+        };
+        const resp = await fetch(ORCHESTRATE_ENDPOINT, {
+          method: "POST",
+          headers: {
+            "Content-Type":  "application/json",
+            "Authorization": `Bearer ${ORCHESTRATE_API_KEY}`,
+          },
+          body: JSON.stringify(payload),
+        });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+        result = await resp.json();
+      }
+
+      // Surface PII warning from tool if not already shown
+      if (result.pii_warning && !piiHit) {
+        document.getElementById("pii-warning-text").textContent = result.pii_warning;
+        document.getElementById("pii-warning-banner").style.display = "block";
+      }
+
+      if (result.error) {
+        document.getElementById("error-text").textContent = result.error;
+        document.getElementById("error-banner").style.display = "block";
+      } else {
+        showOutput(result.translated_bullet, result.model_id);
+      }
+
+    } catch (err) {
+      document.getElementById("error-text").textContent =
+        `Could not reach the translation service: ${err.message}`;
+      document.getElementById("error-banner").style.display = "block";
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+  // UI helpers
+  // ──────────────────────────────────────────────────────────────────
+
+  function setLoading(on) {
+    document.getElementById("spinner").classList.toggle("active", on);
+    document.getElementById("translate-btn").disabled = on;
+  }
+
+  function hideBanners() {
+    document.getElementById("pii-warning-banner").style.display = "none";
+    document.getElementById("error-banner").style.display = "none";
+  }
+
+  function hideOutput() {
+    document.getElementById("output-section").style.display = "none";
+  }
+
+  function showOutput(bullet, modelId) {
+    document.getElementById("output-text").textContent = bullet;
+    document.getElementById("model-tag").textContent = `Model: ${modelId}`;
+    document.getElementById("output-section").style.display = "block";
+    document.getElementById("output-section").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function clearForm() {
+    document.getElementById("bullet").value  = "";
+    document.getElementById("metrics").value = "";
+    document.getElementById("role").value    = "";
+    hideBanners();
+    hideOutput();
+    document.getElementById("bullet").focus();
+  }
+
+  function translateAnother() {
+    clearForm();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+</script>
 </body>
 </html>

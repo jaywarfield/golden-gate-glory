@@ -1,0 +1,33 @@
+# .dockerignore
+# Keep the build context small — only the web/ sub-package is needed.
+
+.git/
+.github/
+.vscode/
+.bob/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.DS_Store
+
+# Notebooks and data not needed in the container
+notebooks/
+data/
+docs/
+tests/
+src/
+
+# Agent / tool source files (not served by Flask)
+agents/
+tools/
+toolkits/
+connections/
+knowledge-bases/
+models/
+
+# Root-level Python files are not used inside the container
+# (the Dockerfile copies only web/app.py and web/templates/)
+requirements.txt
+workspace_config.yaml

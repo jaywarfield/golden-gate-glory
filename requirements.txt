@@ -1,0 +1,28 @@
+# Golden Gate Glory – Veteran Career Navigator Agent
+# Phase 1 Python dependencies
+#
+# Install with:
+#   pip install -r requirements.txt
+#
+# The watsonx.ai notebook environment has ibm-watsonx-ai pre-installed.
+# Running pip install here is safe; it installs only if missing.
+
+# IBM watsonx.ai SDK – foundation model inference and API client
+ibm-watsonx-ai>=1.1.0
+
+# Environment variable management – load .env file locally
+python-dotenv>=1.0.0
+
+# Phase 2 (add when starting notebooks/02_knowledge_base.ipynb)
+# openpyxl>=3.1.0          # read FoundationG3Project.xlsx
+# pandas>=2.0.0            # tabular data manipulation
+# chromadb>=0.5.0          # in-memory vector store for RAG
+# langchain-ibm>=0.1.0     # LangChain IBM integration
+# langchain>=0.2.0         # RAG chain utilities
+
+# Phase 3 (add when starting notebooks/04_jd_analysis.ipynb)
+# pymupdf>=1.24.0          # PDF/document ingestion (already in GETTING_STARTED.md)
+
+# Phase 4 (add when starting notebooks/06_action_plan.ipynb)
+# requests>=2.32.0         # public source URL fetch
+# pytest>=8.0.0            # end-to-end test runner

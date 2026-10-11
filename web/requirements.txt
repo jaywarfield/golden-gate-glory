@@ -1,0 +1,10 @@
+# web/requirements.txt
+# Dependencies for the Flask front-end container.
+# Keep in sync with the root requirements.txt for shared packages.
+
+# Web server
+flask>=3.0.0
+gunicorn>=22.0.0
+
+# Environment variable management
+python-dotenv>=1.0.0
