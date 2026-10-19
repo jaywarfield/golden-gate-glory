@@ -1,0 +1,20 @@
+# toolkits/skill_mapper/toolkit.yaml
+# Mission Veteran AI — Skill Mapper toolkit
+
+spec_version: v1
+kind: python
+name: skill_mapper
+description: >
+  Mission Veteran AI — Skill Mapper toolkit.
+  Maps a veteran's military occupational specialty and service summary
+  to a structured civilian skill inventory using IBM Granite via watsonx.ai.
+
+runtime:
+  language: python
+  version: "3.11"
+
+entry_file: map_military_skills.py
+
+dependencies:
+  - ibm-watsonx-ai>=1.0.0
+  - ibm-watsonx-orchestrate

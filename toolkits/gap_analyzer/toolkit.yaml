@@ -1,0 +1,20 @@
+# toolkits/gap_analyzer/toolkit.yaml
+# Mission Veteran AI — Gap Analyzer toolkit
+
+spec_version: v1
+kind: python
+name: gap_analyzer
+description: >
+  Mission Veteran AI — Gap Analyzer toolkit.
+  Compares a veteran's skill inventory against a target job description,
+  identifies gaps, and recommends free IBM SkillsBuild courses.
+
+runtime:
+  language: python
+  version: "3.11"
+
+entry_file: analyze_skills_gap.py
+
+dependencies:
+  - ibm-watsonx-ai>=1.0.0
+  - ibm-watsonx-orchestrate

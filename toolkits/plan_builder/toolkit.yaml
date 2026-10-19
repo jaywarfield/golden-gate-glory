@@ -1,0 +1,21 @@
+# toolkits/plan_builder/toolkit.yaml
+# Mission Veteran AI — Plan Builder toolkit
+
+spec_version: v1
+kind: python
+name: plan_builder
+description: >
+  Mission Veteran AI — Plan Builder toolkit.
+  Three-tool pipeline: analyze a job description, build an evidence-tagged
+  resume draft, and evaluate the export gate. Export is blocked until all
+  INFERRED and MISSING tags are resolved by the veteran.
+
+runtime:
+  language: python
+  version: "3.11"
+
+entry_file: build_plan.py
+
+dependencies:
+  - ibm-watsonx-ai>=1.0.0
+  - ibm-watsonx-orchestrate

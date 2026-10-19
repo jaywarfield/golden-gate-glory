@@ -1,0 +1,20 @@
+# toolkits/bullet_translator/toolkit.yaml
+# Mission Veteran AI — Bullet Translator toolkit
+
+spec_version: v1
+kind: python
+name: bullet_translator
+description: >
+  Mission Veteran AI — Bullet Translator toolkit.
+  Translates PII-free military accomplishment bullets into ATS-ready
+  civilian resume bullets using IBM Granite via watsonx.ai.
+
+runtime:
+  language: python
+  version: "3.11"
+
+entry_file: translate_bullet.py
+
+dependencies:
+  - ibm-watsonx-ai>=1.0.0
+  - ibm-watsonx-orchestrate
