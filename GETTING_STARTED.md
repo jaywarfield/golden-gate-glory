@@ -1,4 +1,4 @@
-# **Golden Gate Glory - Help veterans transition into civilian careers.**
+# **Mission Veteran AI – Help veterans transition into civilian careers.**
 
 ### Obtain API Key (refer to lab guide)
 - Go to watsonx.ai home page (https://dataplatform.cloud.ibm.com/wx/home?context=wx).
@@ -20,7 +20,7 @@
 - Please enter WXO API key:  (cut-and-paste your API Key here) 
 - Note: Token will need to be reactivated when it expires.
 
-### Setup Golden Gate Glory
+### Setup Mission Veteran AI
 - Browse to https://github.com/jaywarfield/golden-gate-glory
 - Select Code and Open with GitHub Desktop.
 - Execute locally: import-all.sh

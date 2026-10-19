@@ -3,556 +3,1190 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Veteran Career Navigator – Phase 1</title>
+  <title>Veteran Career Navigator</title>
   <style>
-    /* ── Reset & base ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
-      font-size: 15px;
-      line-height: 1.6;
-      color: #1f2328;
-      background: #f7f8fa;
-      min-height: 100vh;
+      font-size: 15px; line-height: 1.6;
+      color: #1f2328; background: #f7f8fa; min-height: 100vh;
     }
+    .shell { max-width: 760px; margin: 0 auto; padding: 0 16px 64px; }
 
-    /* ── Layout ── */
-    .shell {
-      max-width: 680px;
-      margin: 0 auto;
-      padding: 0 16px 48px;
-    }
-
-    /* ── Top bar ── */
-    .topbar {
-      background: #1e3a8a;
-      color: #fff;
-      padding: 0 16px;
-    }
+    /* ── Top bar ─────────────────────────────────────────────────── */
+    .topbar { background: #1e3a8a; color: #fff; padding: 0 16px; }
     .topbar-inner {
-      max-width: 680px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 48px;
+      max-width: 760px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between; height: 48px;
     }
-    .topbar-title {
-      font-size: 13px;
-      font-weight: 600;
-      letter-spacing: 0.03em;
-    }
-    .topbar-nav {
-      display: flex;
-      gap: 16px;
-      font-size: 12px;
-    }
-    .topbar-nav button {
-      background: none;
-      border: none;
-      color: #bfdbfe;
-      cursor: pointer;
-      font-size: 12px;
-      padding: 0;
-    }
-    .topbar-nav button:hover { color: #fff; }
+    .topbar-title { font-size: 13px; font-weight: 600; letter-spacing: 0.03em; }
+    .topbar-sub   { font-size: 11px; color: #bfdbfe; }
 
-    /* ── Step indicator ── */
+    /* ── Step progress rail ──────────────────────────────────────── */
+    .step-rail {
+      display: flex; gap: 0; overflow-x: auto;
+      background: #fff; border-bottom: 1px solid #e5e7eb;
+      padding: 0 16px; scrollbar-width: none;
+    }
+    .step-rail::-webkit-scrollbar { display: none; }
+    .step-pip {
+      flex-shrink: 0;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 10px 14px 8px; font-size: 11px; color: #9ca3af;
+      border-bottom: 2px solid transparent; cursor: default;
+      transition: color .15s, border-color .15s;
+    }
+    .step-pip .num {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: #e5e7eb; color: #9ca3af;
+      font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 3px;
+    }
+    .step-pip.done   { color: #166534; }
+    .step-pip.done .num   { background: #d1fae5; color: #166534; }
+    .step-pip.active { color: #1e3a8a; border-color: #1e3a8a; }
+    .step-pip.active .num { background: #1e3a8a; color: #fff; }
+
+    /* ── Section visibility ──────────────────────────────────────── */
+    .section { display: none; }
+    .section.visible { display: block; }
+
+    /* ── Step header ─────────────────────────────────────────────── */
     .step-header {
-      background: #fff;
-      border-bottom: 1px solid #e5e7eb;
-      padding: 14px 0 12px;
-      margin-bottom: 20px;
+      background: #fff; border-bottom: 1px solid #e5e7eb;
+      padding: 14px 0 12px; margin-bottom: 20px;
     }
-    .step-meta {
-      font-size: 12px;
-      color: #57606a;
-      margin-bottom: 4px;
-    }
-    .step-title {
-      font-size: 18px;
-      font-weight: 700;
-      color: #1f2328;
-    }
+    .step-meta  { font-size: 12px; color: #57606a; margin-bottom: 4px; }
+    .step-title { font-size: 18px; font-weight: 700; }
     .draft-badge {
-      display: inline-block;
-      margin-top: 4px;
-      background: #fef9c3;
-      color: #854d0e;
-      border: 1px solid #fde047;
-      border-radius: 10px;
-      font-size: 11px;
-      font-weight: 600;
-      padding: 1px 8px;
+      display: inline-block; margin-top: 4px;
+      background: #fef9c3; color: #854d0e;
+      border: 1px solid #fde047; border-radius: 10px;
+      font-size: 11px; font-weight: 600; padding: 1px 8px;
     }
 
-    /* ── Cards ── */
+    /* ── Notices ─────────────────────────────────────────────────── */
+    .notice {
+      border-left: 4px solid #3b82d4; background: #eff6ff;
+      border-radius: 0 6px 6px 0; padding: 10px 14px;
+      font-size: 13px; margin-bottom: 16px;
+    }
+    .notice.warn    { border-color: #f59e0b; background: #fffbeb; }
+    .notice.pii     { border-color: #ef4444; background: #fef2f2; }
+    .notice.success { border-color: #10b981; background: #f0fdf4; }
+    .notice.blocked { border-color: #ef4444; background: #fef2f2; }
+    .notice.open    { border-color: #10b981; background: #f0fdf4; }
+
+    /* ── Cards ───────────────────────────────────────────────────── */
     .card {
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 16px;
+      background: #fff; border: 1px solid #e5e7eb;
+      border-radius: 8px; padding: 20px; margin-bottom: 16px;
     }
     .card-title {
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: #57606a;
-      margin-bottom: 12px;
+      font-size: 13px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.05em; color: #57606a; margin-bottom: 14px;
     }
 
-    /* ── Notice boxes ── */
-    .notice {
-      border-left: 4px solid #3b82d4;
-      background: #eff6ff;
-      border-radius: 0 6px 6px 0;
-      padding: 10px 14px;
-      font-size: 13px;
-      margin-bottom: 16px;
-    }
-    .notice.warn {
-      border-color: #f59e0b;
-      background: #fffbeb;
-    }
-    .notice.pii {
-      border-color: #ef4444;
-      background: #fef2f2;
-    }
-    .notice.success {
-      border-color: #10b981;
-      background: #f0fdf4;
-    }
-
-    /* ── Form elements ── */
-    label {
-      display: block;
-      font-size: 13px;
-      font-weight: 600;
-      color: #374151;
-      margin-bottom: 5px;
-    }
+    /* ── Form fields ─────────────────────────────────────────────── */
+    label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 5px; }
     label .req { color: #ef4444; margin-left: 2px; }
     label .opt { color: #9ca3af; font-weight: 400; font-size: 12px; }
-    textarea, input[type="text"] {
-      width: 100%;
-      border: 1px solid #d0d7de;
-      border-radius: 6px;
-      padding: 9px 12px;
-      font-family: inherit;
-      font-size: 14px;
-      color: #1f2328;
-      background: #fff;
-      resize: vertical;
-      transition: border-color 0.15s;
+    textarea, input[type="text"], select {
+      width: 100%; padding: 8px 10px; border: 1px solid #d0d7de;
+      border-radius: 6px; font-size: 14px; color: #1f2328;
+      background: #fff; resize: vertical; outline: none;
     }
-    textarea:focus, input[type="text"]:focus {
-      outline: none;
-      border-color: #3b82d4;
-      box-shadow: 0 0 0 3px rgba(59,130,212,0.12);
-    }
+    textarea:focus, input[type="text"]:focus, select:focus { border-color: #3b82d4; }
     .field { margin-bottom: 16px; }
-    .field-hint {
-      font-size: 12px;
-      color: #57606a;
-      margin-top: 4px;
-    }
+    .field-hint { font-size: 12px; color: #57606a; margin-top: 4px; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
 
-    /* ── Button row ── */
-    .btn-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 20px;
-    }
-    .btn {
-      padding: 9px 20px;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      transition: background 0.15s, opacity 0.15s;
-    }
-    .btn-primary {
-      background: #1e3a8a;
-      color: #fff;
-    }
+    /* ── Buttons ─────────────────────────────────────────────────── */
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+    .btn { padding: 9px 20px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; }
+    .btn-primary   { background: #1e3a8a; color: #fff; }
     .btn-primary:hover { background: #1e40af; }
     .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-secondary {
-      background: #f3f4f6;
-      color: #374151;
-      border: 1px solid #d0d7de;
-    }
+    .btn-secondary { background: #f3f4f6; color: #374151; border: 1px solid #d0d7de; }
     .btn-secondary:hover { background: #e5e7eb; }
+    .btn-danger    { background: #fef2f2; color: #b91c1c; border: 1px solid #fca5a5; }
+    .btn-success   { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; font-weight: 700; }
 
-    /* ── Output area ── */
-    #output-section { display: none; }
-    .output-bullet {
-      font-size: 14px;
-      line-height: 1.7;
-      color: #1f2328;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-    .output-bullet .disclaimer {
-      display: block;
-      margin-top: 10px;
-      font-size: 12px;
-      color: #57606a;
-      border-top: 1px solid #e5e7eb;
-      padding-top: 8px;
-    }
-    .model-tag {
-      font-size: 11px;
-      color: #9ca3af;
-      margin-top: 8px;
-    }
-
-    /* ── Loading spinner ── */
-    .spinner {
-      display: none;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      color: #57606a;
-      margin-top: 12px;
-    }
+    /* ── Spinner ─────────────────────────────────────────────────── */
+    .spinner { display: none; align-items: center; gap: 8px; font-size: 13px; color: #57606a; margin-top: 12px; }
     .spinner.active { display: flex; }
     .spinner-ring {
-      width: 18px;
-      height: 18px;
-      border: 2px solid #e5e7eb;
-      border-top-color: #3b82d4;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+      width: 18px; height: 18px; border: 2px solid #e5e7eb;
+      border-top-color: #1e3a8a; border-radius: 50%;
+      animation: spin .7s linear infinite; flex-shrink: 0;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── Footer ── */
-    .page-footer {
-      font-size: 12px;
-      color: #9ca3af;
-      text-align: center;
-      margin-top: 32px;
-      padding-top: 16px;
-      border-top: 1px solid #e5e7eb;
+    /* ── Tag badges ──────────────────────────────────────────────── */
+    .tag {
+      display: inline-block; font-size: 10px; font-weight: 700;
+      padding: 1px 6px; border-radius: 4px; margin-left: 6px;
+      vertical-align: middle; letter-spacing: 0.04em;
     }
+    .tag-ev { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+    .tag-in { background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; }
+    .tag-mi { background: #fef2f2; color: #b91c1c; border: 1px solid #fca5a5; }
+
+    /* ── Skill grid ──────────────────────────────────────────────── */
+    .coverage-row { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+    .coverage-pct { font-size: 28px; font-weight: 700; color: #1e3a8a; white-space: nowrap; }
+    .bar-track { flex: 1; height: 10px; background: #e5e7eb; border-radius: 5px; overflow: hidden; }
+    .bar-fill   { height: 100%; background: #1e3a8a; border-radius: 5px; transition: width 0.4s; }
+    .skill-section-title {
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.05em; color: #57606a;
+      border-bottom: 1px solid #f3f4f6; padding-bottom: 6px; margin: 14px 0 8px;
+    }
+    .skill-row {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 8px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px;
+    }
+    .skill-row:last-child { border-bottom: none; }
+    .skill-name { font-size: 14px; font-weight: 600; }
+    .skill-meta { font-size: 12px; color: #57606a; margin-top: 1px; }
+
+    /* ── Resume draft ────────────────────────────────────────────── */
+    .bullet-row {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 9px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; line-height: 1.55;
+    }
+    .bullet-row:last-child { border-bottom: none; }
+    .bullet-text { flex: 1; }
+
+    /* ── Gate status ─────────────────────────────────────────────── */
+    .gate-hold {
+      border: 1px solid #fca5a5; border-radius: 6px;
+      padding: 10px 14px; margin-bottom: 10px; background: #fef2f2;
+    }
+    .gate-hold.inferred { border-color: #fcd34d; background: #fffbeb; }
+    .gate-hold-sentence { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+    .gate-hold-reason   { font-size: 12px; color: #57606a; }
+    .gate-hold-action   { font-size: 12px; font-weight: 600; color: #374151; margin-top: 4px; }
+
+    /* ── Interview prep ──────────────────────────────────────────── */
+    .q-card { border: 1px solid #e5e7eb; border-radius: 6px; padding: 14px; margin-bottom: 12px; }
+    .q-num  { font-size: 11px; font-weight: 700; color: #57606a; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+    .q-text { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+    .star-grid { display: grid; grid-template-columns: 72px 1fr; gap: 4px 10px; font-size: 13px; }
+    .star-label { font-weight: 700; color: #57606a; padding-top: 2px; }
+    .star-val   { color: #1f2328; }
+    .star-val.missing { color: #b91c1c; font-style: italic; }
+
+    /* ── Final package ───────────────────────────────────────────── */
+    .export-block {
+      background: #fff; border: 1px solid #e5e7eb;
+      border-radius: 8px; padding: 20px; margin-bottom: 16px;
+    }
+    .export-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .export-sub   { font-size: 12px; color: #57606a; margin-bottom: 12px; }
+    .export-body  { font-size: 14px; line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
+
+    /* ── Misc ────────────────────────────────────────────────────── */
+    .model-tag { font-size: 11px; color: #9ca3af; margin-top: 8px; }
+    .page-footer {
+      text-align: center; font-size: 11px; color: #9ca3af;
+      border-top: 1px solid #e5e7eb; padding-top: 16px; margin-top: 32px;
+    }
+    .summary-text { font-size: 14px; line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
+    .badge {
+      display: inline-block; font-size: 11px; font-weight: 600;
+      padding: 1px 7px; border-radius: 10px;
+    }
+    .badge-high    { background: #fef2f2; color: #b91c1c; border: 1px solid #fca5a5; }
+    .badge-medium  { background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; }
+    .badge-covered { background: #f0fdf4; color: #166534; border: 1px solid #86efac; }
+    .course-card { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px 12px; margin-top: 6px; }
+    .course-title { font-size: 13px; font-weight: 600; color: #1e3a8a; }
+    .course-meta  { font-size: 12px; color: #57606a; margin-top: 2px; }
+    .inv-grid { display: grid; grid-template-columns: 2fr 1.5fr 80px; }
+    .inv-header { font-size: 12px; font-weight: 700; color: #57606a; padding: 6px 8px; background: #f7f8fa; border-bottom: 2px solid #e5e7eb; }
+    .inv-cell { font-size: 13px; padding: 8px; border-bottom: 1px solid #f3f4f6; color: #1f2328; }
+    .inv-cell.muted { color: #57606a; font-size: 12px; }
+    .conf-high   { color: #166534; font-weight: 600; }
+    .conf-medium { color: #92400e; font-weight: 600; }
+    .conf-low    { color: #57606a; }
   </style>
 </head>
 <body>
 
-<!-- ── Top bar ── -->
+<!-- ── Top bar ──────────────────────────────────────────────────── -->
 <div class="topbar">
   <div class="topbar-inner">
-    <span class="topbar-title">Golden Gate Glory · Veteran Career Navigator</span>
-    <nav class="topbar-nav">
-      <button onclick="alert('Menu coming in Phase 3')">Menu</button>
-      <button onclick="alert('Help: Paste a PII-free military bullet and click Translate.')">Help</button>
-    </nav>
+    <div>
+      <div class="topbar-title">Golden Gate Glory · Veteran Career Navigator</div>
+      <div class="topbar-sub" id="topbar-phase">Veteran Career Navigator</div>
+    </div>
   </div>
 </div>
 
-<!-- ── Main ── -->
+<!-- ── Step progress rail ────────────────────────────────────────── -->
+<div class="step-rail" id="step-rail">
+  <div class="step-pip active" id="pip-1"><div class="num">1</div>Profile</div>
+  <div class="step-pip"        id="pip-2"><div class="num">2</div>Bullets</div>
+  <div class="step-pip"        id="pip-3"><div class="num">3</div>Job</div>
+  <div class="step-pip"        id="pip-4"><div class="num">4</div>Skills</div>
+  <div class="step-pip"        id="pip-5"><div class="num">5</div>Resume</div>
+  <div class="step-pip"        id="pip-6"><div class="num">6</div>Interview</div>
+  <div class="step-pip"        id="pip-7"><div class="num">7</div>Export</div>
+</div>
+
 <div class="shell">
 
-  <!-- Step header -->
+<!-- ════════════════════════════════════════════════════════════════
+     STEP 1 — VETERAN PROFILE SETUP
+     ════════════════════════════════════════════════════════════════ -->
+<div class="section visible" id="section-1">
   <div class="step-header">
-    <div class="step-meta">Step 2 of 7 &nbsp;·&nbsp; Draft in progress &nbsp;·&nbsp; Phase 1 MVP</div>
-    <div class="step-title">Guided Career Intake</div>
+    <div class="step-meta">Step 1 of 7 &nbsp;·&nbsp; Setup</div>
+    <div class="step-title">Veteran Profile</div>
+    <span class="draft-badge">Not shared</span>
+  </div>
+
+  <div class="notice">
+    <strong>What this step does:</strong> Collects your service profile — branch,
+    specialty code, a PII-free service summary, and your target role. No personal
+    identifiers are stored.
+  </div>
+  <div class="notice warn">
+    <strong>PII Reminder:</strong> Do not include full names, Social Security numbers,
+    DoD ID numbers, phone numbers, email addresses, home addresses, birth dates,
+    medical details, classified information, exact unit designations, or deployment locations.
+  </div>
+
+  <div class="card">
+    <div class="card-title">Service Profile</div>
+    <div class="field-row">
+      <div class="field">
+        <label for="s1-branch">Service branch <span class="req">*</span></label>
+        <select id="s1-branch">
+          <option value="">Select branch…</option>
+          <option>Army</option><option>Navy</option><option>Marine Corps</option>
+          <option>Air Force</option><option>Space Force</option><option>Coast Guard</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="s1-specialty">Specialty code <span class="req">*</span></label>
+        <input type="text" id="s1-specialty" maxlength="20" placeholder="e.g. 92A, 6F0X1, BM">
+        <div class="field-hint">MOS, AFSC, rating, SFSC, or NEC</div>
+      </div>
+    </div>
+    <div class="field">
+      <label for="s1-summary">PII-free service summary <span class="req">*</span></label>
+      <textarea id="s1-summary" rows="4" maxlength="1500"
+        placeholder="2–5 sentences. Duties, team size, resources managed, key accomplishments. No names or unit designations."></textarea>
+    </div>
+    <div class="field">
+      <label for="s1-target-role">Target civilian role <span class="req">*</span></label>
+      <input type="text" id="s1-target-role" maxlength="100" placeholder="e.g. Supply Chain Operations Manager">
+    </div>
+    <div class="field">
+      <label for="s1-career-path">Target career path <span class="req">*</span></label>
+      <select id="s1-career-path">
+        <option value="">Select career path…</option>
+        <option>Project Management</option><option>Operations</option>
+        <option>IT/Cybersecurity</option><option>Logistics</option>
+      </select>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="step1Next()">Continue to Bullet Translation →</button>
+    </div>
+    <div class="notice pii" id="s1-error" style="display:none">
+      <strong>Error:</strong> <span id="s1-error-text"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     STEP 2 — BULLET TRANSLATION
+     ════════════════════════════════════════════════════════════════ -->
+<div class="section" id="section-2">
+  <div class="step-header">
+    <div class="step-meta">Step 2 of 7 &nbsp;·&nbsp; Bullet Translation &nbsp;·&nbsp; Draft in progress</div>
+    <div class="step-title">Military Bullet Translation</div>
     <span class="draft-badge">Draft: not shared</span>
   </div>
 
-  <!-- Scope notice -->
   <div class="notice">
-    <strong>What this tool does:</strong> Translates one PII-free military accomplishment
-    bullet into a civilian ATS-ready resume bullet using IBM Granite via watsonx Orchestrate.
-    It does <strong>not</strong> make hiring, eligibility, benefits, legal, medical,
-    or financial decisions.
+    <strong>What this step does:</strong> Translates up to 3 PII-free military
+    accomplishment bullets into ATS-ready civilian resume bullets using IBM Granite.
   </div>
 
-  <!-- PII reminder -->
-  <div class="notice warn" id="pii-reminder">
-    <strong>PII Reminder:</strong> Do not include full names, Social Security numbers,
-    DoD ID numbers, phone numbers, email addresses, home addresses, birth dates,
-    medical details, classified information, exact unit identifiers,
-    or exact deployment locations.
-  </div>
-
-  <!-- Input card -->
   <div class="card">
-    <div class="card-title">Accomplishment Input</div>
-
+    <div class="card-title">Accomplishment Bullets</div>
     <div class="field">
-      <label for="bullet">Military accomplishment bullet <span class="req">*</span></label>
-      <textarea
-        id="bullet"
-        rows="4"
-        maxlength="1000"
-        placeholder="Example: Led a 12-person logistics team supporting time-sensitive operations across multiple sites."
-        aria-required="true"
-      ></textarea>
-      <div class="field-hint">PII-free only. One bullet at a time.</div>
+      <label for="s2-b1">Bullet 1 <span class="req">*</span></label>
+      <textarea id="s2-b1" rows="2" maxlength="500"
+        placeholder="e.g. Supervised supply accountability for 3,200 line items valued at $2.1M with 98.7% accuracy."></textarea>
     </div>
-
     <div class="field">
-      <label for="metrics">
-        Quantifiable metrics
-        <span class="opt">(optional)</span>
-      </label>
-      <input
-        type="text"
-        id="metrics"
-        maxlength="300"
-        placeholder="Example: Improved on-time delivery from 82% to 96%; managed $4.2M in equipment."
-      >
-      <div class="field-hint">Numbers, percentages, and dollar amounts from the original record.</div>
+      <label for="s2-b2">Bullet 2 <span class="opt">(optional)</span></label>
+      <textarea id="s2-b2" rows="2" maxlength="500" placeholder="Second accomplishment bullet…"></textarea>
     </div>
-
     <div class="field">
-      <label for="role">
-        Target civilian role or career path
-        <span class="opt">(optional)</span>
-      </label>
-      <input
-        type="text"
-        id="role"
-        maxlength="200"
-        placeholder="Example: Supply Chain Manager or Logistics Operations"
-      >
+      <label for="s2-b3">Bullet 3 <span class="opt">(optional)</span></label>
+      <textarea id="s2-b3" rows="2" maxlength="500" placeholder="Third accomplishment bullet…"></textarea>
     </div>
-
     <div class="btn-row">
-      <button class="btn btn-primary" id="translate-btn" onclick="runTranslation()">
-        Translate bullet
-      </button>
-      <button class="btn btn-secondary" onclick="clearForm()">
-        Clear
-      </button>
+      <button class="btn btn-primary" id="s2-btn" onclick="step2Translate()">Translate Bullets</button>
+      <button class="btn btn-secondary" onclick="goStep(1)">← Back</button>
     </div>
-
-    <!-- Spinner -->
-    <div class="spinner" id="spinner">
-      <div class="spinner-ring"></div>
-      <span>Calling IBM Granite via watsonx Orchestrate…</span>
-    </div>
+    <div class="spinner" id="s2-spinner"><div class="spinner-ring"></div><span>Translating bullets with IBM Granite…</span></div>
+    <div class="notice pii" id="s2-error" style="display:none"><strong>Error:</strong> <span id="s2-error-text"></span></div>
   </div>
 
-  <!-- PII warning banner (hidden until triggered) -->
-  <div class="notice pii" id="pii-warning-banner" style="display:none">
-    <strong>⚠ PII pattern detected:</strong> <span id="pii-warning-text"></span>
-    Remove sensitive information before submitting to an employer.
-  </div>
-
-  <!-- Error banner (hidden until triggered) -->
-  <div class="notice pii" id="error-banner" style="display:none">
-    <strong>Error:</strong> <span id="error-text"></span>
-  </div>
-
-  <!-- Output card -->
-  <div id="output-section">
+  <div id="s2-output" style="display:none">
     <div class="card">
-      <div class="card-title">Civilian Resume Bullet — Draft</div>
-      <div class="output-bullet" id="output-text"></div>
-      <div class="model-tag" id="model-tag"></div>
+      <div class="card-title">Translated Bullets</div>
+      <div id="s2-bullets-list"></div>
     </div>
-
-    <div class="notice success">
-      <strong>Review before use.</strong> Confirm every claim. Remove any remaining
-      jargon or sensitive detail before submitting to an employer.
-      This is a draft, not a final document.
-    </div>
-
     <div class="btn-row">
-      <button class="btn btn-secondary" onclick="translateAnother()">
-        Translate another bullet
-      </button>
-      <button class="btn btn-secondary" onclick="window.print()">
-        Save / print draft
-      </button>
+      <button class="btn btn-primary" onclick="goStep(3)">Continue to Job Description →</button>
     </div>
   </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     STEP 3 — JOB DESCRIPTION INPUT + ANALYSIS
+     ════════════════════════════════════════════════════════════════ -->
+<div class="section" id="section-3">
+  <div class="step-header">
+    <div class="step-meta">Step 3 of 7 &nbsp;·&nbsp; Job Analysis &nbsp;·&nbsp; Draft in progress</div>
+    <div class="step-title">Job Description Analysis</div>
+    <span class="draft-badge">Draft: not shared</span>
+  </div>
+
+  <div class="notice">
+    <strong>What this step does:</strong> Parses the job description to extract
+    required skills, ATS keywords, seniority level, and an alignment score against
+    your skill inventory.
+  </div>
+
+  <div class="card">
+    <div class="card-title">Target Job Description</div>
+    <div class="field">
+      <label for="s3-jd">Job description text <span class="req">*</span></label>
+      <textarea id="s3-jd" rows="8" maxlength="2000"
+        placeholder="Paste the full job posting here. PII-free — remove recruiter names, company contacts, etc."></textarea>
+      <div class="field-hint">Maximum 2000 characters.</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="s3-btn" onclick="step3Analyze()">Analyze Job Description</button>
+      <button class="btn btn-secondary" onclick="goStep(2)">← Back</button>
+    </div>
+    <div class="spinner" id="s3-spinner"><div class="spinner-ring"></div><span>Analyzing with IBM Granite…</span></div>
+    <div class="notice pii" id="s3-error" style="display:none"><strong>Error:</strong> <span id="s3-error-text"></span></div>
+  </div>
+
+  <div id="s3-output" style="display:none">
+    <div class="card">
+      <div class="card-title">Job Analysis</div>
+      <div id="s3-analysis-body"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="goStep(4)">Continue to Skill Mapping →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     STEP 4 — SKILL MAPPING + GAP ANALYSIS
+     ════════════════════════════════════════════════════════════════ -->
+<div class="section" id="section-4">
+  <div class="step-header">
+    <div class="step-meta">Step 4 of 7 &nbsp;·&nbsp; Skill Mapping &nbsp;·&nbsp; Draft in progress</div>
+    <div class="step-title">Civilian Skill Profile &amp; Gap Analysis</div>
+    <span class="draft-badge">Draft: not shared</span>
+  </div>
+
+  <div class="notice">
+    <strong>What this step does:</strong> Maps your military specialty and service
+    summary to a civilian skill inventory, identifies gaps for your target career
+    path, and recommends free IBM SkillsBuild courses to close each gap.
+  </div>
+
+  <div class="card">
+    <div class="card-title">Run Skill Analysis</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="s4-btn" onclick="step4Analyze()">Map Skills &amp; Analyze Gaps</button>
+      <button class="btn btn-secondary" onclick="goStep(3)">← Back</button>
+    </div>
+    <div class="spinner" id="s4-spinner"><div class="spinner-ring"></div><span>Calling IBM Granite via watsonx Orchestrate…</span></div>
+    <div class="notice pii" id="s4-error" style="display:none"><strong>Error:</strong> <span id="s4-error-text"></span></div>
+  </div>
+
+  <div id="s4-output" style="display:none">
+    <div class="card">
+      <div class="card-title">Career Path Coverage</div>
+      <div class="coverage-row">
+        <div class="coverage-pct" id="s4-pct">–</div>
+        <div style="flex:1">
+          <div class="bar-track"><div class="bar-fill" id="s4-bar" style="width:0%"></div></div>
+          <div style="font-size:12px;color:#57606a;margin-top:3px" id="s4-sub"></div>
+        </div>
+      </div>
+      <div class="skill-section-title">✓ Covered Skills</div>
+      <div id="s4-covered"></div>
+      <div class="skill-section-title">✗ Skill Gaps — with SkillsBuild Recommendations</div>
+      <div id="s4-gaps"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Civilian Skill Inventory</div>
+      <div class="inv-grid">
+        <div class="inv-header">Skill</div>
+        <div class="inv-header">Category</div>
+        <div class="inv-header">Confidence</div>
+      </div>
+      <div id="s4-inventory"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="goStep(5)">Continue to Resume Draft →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     STEP 5 — RESUME DRAFT WITH CLAIM TAGS
+     ════════════════════════════════════════════════════════════════ -->
+<div class="section" id="section-5">
+  <div class="step-header">
+    <div class="step-meta">Step 5 of 7 &nbsp;·&nbsp; Resume Builder &nbsp;·&nbsp; Draft in progress</div>
+    <div class="step-title">Tagged Resume Draft</div>
+    <span class="draft-badge">Draft: not shared</span>
+  </div>
+
+  <div class="notice">
+    <strong>What this step does:</strong> Generates a resume draft with every sentence
+    tagged <strong>EVIDENCED</strong> (supported by your record),
+    <strong>INFERRED</strong> (reasonable inference — needs your confirmation), or
+    <strong>MISSING</strong> (job requires it but no evidence exists). Export is blocked
+    until all tags are EVIDENCED.
+  </div>
+
+  <div class="card">
+    <div class="card-title">Generate Resume Draft</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="s5-btn" onclick="step5Build()">Build Tagged Resume Draft</button>
+      <button class="btn btn-secondary" onclick="goStep(4)">← Back</button>
+    </div>
+    <div class="spinner" id="s5-spinner"><div class="spinner-ring"></div><span>Building resume draft with IBM Granite…</span></div>
+    <div class="notice pii" id="s5-error" style="display:none"><strong>Error:</strong> <span id="s5-error-text"></span></div>
+  </div>
+
+  <div id="s5-output" style="display:none">
+    <div class="card">
+      <div class="card-title">Professional Summary</div>
+      <div id="s5-summary"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Experience Bullets</div>
+      <div id="s5-bullets"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Skills Section</div>
+      <div id="s5-skills"></div>
+    </div>
+    <div id="s5-tag-counts-card" class="card">
+      <div class="card-title">Tag Summary</div>
+      <div id="s5-tag-counts"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="goStep(6)">Continue to Interview Prep →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     STEP 6 — INTERVIEW PREP
+     ════════════════════════════════════════════════════════════════ -->
+<div class="section" id="section-6">
+  <div class="step-header">
+    <div class="step-meta">Step 6 of 7 &nbsp;·&nbsp; Interview Prep &nbsp;·&nbsp; Draft in progress</div>
+    <div class="step-title">Interview Preparation</div>
+    <span class="draft-badge">Draft: not shared</span>
+  </div>
+
+  <div class="notice">
+    <strong>What this step does:</strong> Generates 5 behavioral interview questions
+    tailored to the job description, with STAR-framework answer scaffolds grounded in
+    your service evidence. Any scaffold element that lacks evidence is flagged [MISSING].
+  </div>
+
+  <div class="card">
+    <div class="card-title">Generate Interview Questions</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="s6-btn" onclick="step6Prep()">Generate Interview Prep</button>
+      <button class="btn btn-secondary" onclick="goStep(5)">← Back</button>
+    </div>
+    <div class="spinner" id="s6-spinner"><div class="spinner-ring"></div><span>Generating interview questions with IBM Granite…</span></div>
+    <div class="notice pii" id="s6-error" style="display:none"><strong>Error:</strong> <span id="s6-error-text"></span></div>
+  </div>
+
+  <div id="s6-output" style="display:none">
+    <div id="s6-questions"></div>
+    <div class="notice warn" style="margin-top:4px">
+      <strong>DRAFT — Review before use.</strong> Confirm every STAR element against
+      your service record before using in a real interview.
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="goStep(7)">Continue to Export Gate →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     STEP 7 — EXPORT GATE
+     ════════════════════════════════════════════════════════════════ -->
+<div class="section" id="section-7">
+  <div class="step-header">
+    <div class="step-meta">Step 7 of 7 &nbsp;·&nbsp; Gate &nbsp;·&nbsp; Final check</div>
+    <div class="step-title">Export Gate &amp; Final Package</div>
+  </div>
+
+  <div class="notice">
+    <strong>Gate rule:</strong> Your document cannot be exported until every
+    sentence in the resume draft is tagged EVIDENCED — zero INFERRED and zero MISSING.
+    Resolve each gate hold below, then re-evaluate.
+  </div>
+
+  <div class="card">
+    <div class="card-title">Evaluate Export Gate</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="s7-btn" onclick="step7Gate()">Evaluate Gate</button>
+      <button class="btn btn-secondary" onclick="goStep(6)">← Back</button>
+    </div>
+    <div class="spinner" id="s7-spinner"><div class="spinner-ring"></div><span>Evaluating export gate…</span></div>
+    <div class="notice pii" id="s7-error" style="display:none"><strong>Error:</strong> <span id="s7-error-text"></span></div>
+  </div>
+
+  <div id="s7-output" style="display:none">
+    <div id="s7-gate-status-banner"></div>
+    <div id="s7-gate-holds"></div>
+    <div id="s7-final-package" style="display:none">
+      <div class="card">
+        <div class="card-title">Final Resume Package</div>
+        <div class="notice success">
+          All sentences are evidenced. This package is ready to review and export.
+          <strong>Confirm every claim against your service record before submitting
+          to an employer.</strong>
+        </div>
+        <div id="s7-final-body"></div>
+        <div class="btn-row" style="margin-top:16px">
+          <button class="btn btn-secondary" onclick="window.print()">Save / Print</button>
+          <button class="btn btn-secondary" onclick="copyFinal()">Copy to Clipboard</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 </div><!-- /shell -->
 
 <div class="page-footer">
-  Golden Gate Glory · IBM SkillsBuild AI Lab 2026 · Phase 1 MVP
+  Golden Gate Glory · IBM SkillsBuild AI Lab 2026<br>
+  DRAFT — Not for distribution. Confirm all claims before use.
 </div>
 
 <script>
-  // ──────────────────────────────────────────────────────────────────
-  // Configuration – move to Flask app.py + environment variables.
-  // See web/app.py and web/templates/index.html for the live version.
-  // ──────────────────────────────────────────────────────────────────
-  const ORCHESTRATE_ENDPOINT = "";   // set via ORCHESTRATE_ENDPOINT env var
-  const ORCHESTRATE_API_KEY  = "";   // set via ORCHESTRATE_API_KEY env var
-  const USE_MOCK = true;
+  const USE_MOCK = true; // mock mode — no backend required
 
-  // ──────────────────────────────────────────────────────────────────
-  // Lightweight client-side PII guard (mirrors tools/tool.py patterns)
-  // ──────────────────────────────────────────────────────────────────
-
+  // ── PII guard ──────────────────────────────────────────────────────
   const PII_PATTERNS = [
-    { re: /\b\d{3}-\d{2}-\d{4}\b/,           label: "SSN pattern" },
-    { re: /\b\d{10}\b/,                        label: "Possible DoD ID" },
+    { re: /\b\d{3}-\d{2}-\d{4}\b/,            label: "SSN pattern" },
+    { re: /\b\d{10}\b/,                         label: "Possible DoD ID" },
     { re: /\b[\w.%+-]+@[\w.-]+\.[a-z]{2,}\b/i, label: "Email address" },
     { re: /\b\d{3}[\s.-]\d{3}[\s.-]\d{4}\b/,   label: "Phone number" },
   ];
-
   function detectPII(text) {
-    for (const { re, label } of PII_PATTERNS) {
-      if (re.test(text)) return label;
-    }
+    for (const { re, label } of PII_PATTERNS) { if (re.test(text)) return label; }
     return null;
   }
 
-  // ──────────────────────────────────────────────────────────────────
-  // Mock response (used when USE_MOCK = true)
-  // ──────────────────────────────────────────────────────────────────
+  // ── Pipeline state ─────────────────────────────────────────────────
+  const STATE = {
+    branch: '', specialty: '', summary: '', targetRole: '', careerPath: '',
+    translatedBullets: [],   // array of strings
+    jobDescription: '',
+    jobAnalysis: null,       // from analyze_job_description
+    skills: [],              // from map_military_skills
+    gapResult: null,         // from analyze_skills_gap
+    resumeDraft: null,       // from build_resume_draft
+    interviewPrep: null,     // from generate_interview_prep
+    gateResult: null,        // from evaluate_export_gate
+  };
 
-  function mockTranslate(bullet, metrics, role) {
-    // Simulate a Granite response using the EX-001 expected output
-    const disclaimer = (
-      "\n---\n" +
-      "DRAFT – Review before use. Confirm every claim. Remove any remaining " +
-      "jargon or sensitive detail before submitting to an employer."
-    );
-    if (!bullet.trim()) {
-      return { error: "bullet is required and cannot be empty.", translated_bullet: "", model_id: "ibm/granite-3-8b-instruct", pii_warning: "" };
+  // ── Step navigation ────────────────────────────────────────────────
+  let currentStep = 1;
+
+  function goStep(n) {
+    document.getElementById(`section-${currentStep}`).classList.remove('visible');
+    document.getElementById(`pip-${currentStep}`).classList.remove('active');
+    document.getElementById(`pip-${currentStep}`).classList.add('done');
+    currentStep = n;
+    document.getElementById(`section-${n}`).classList.add('visible');
+    // mark active pip and any previous as done
+    for (let i = 1; i <= 7; i++) {
+      const pip = document.getElementById(`pip-${i}`);
+      pip.classList.remove('active', 'done');
+      if (i < n)      pip.classList.add('done');
+      else if (i === n) pip.classList.add('active');
     }
-    const metricsNote = metrics
-      ? `, achieving ${metrics}`
-      : ", achieving [MISSING: quantifiable outcome]";
-    const roleNote = role ? ` for a ${role} role` : "";
-    const output = (
-      `• Directed a 12-member operations team${roleNote}, ` +
-      `improving cross-site delivery performance from 82% to 96%` +
-      ` and overseeing $4.2M in assets through optimized logistics coordination.` +
-      disclaimer
-    );
-    return { translated_bullet: output, model_id: "ibm/granite-3-8b-instruct (mock)", pii_warning: "", error: "" };
+    window.scrollTo(0, 0);
   }
 
-  // ──────────────────────────────────────────────────────────────────
-  // Main translation handler
-  // ──────────────────────────────────────────────────────────────────
-
-  async function runTranslation() {
-    const bullet  = document.getElementById("bullet").value.trim();
-    const metrics = document.getElementById("metrics").value.trim();
-    const role    = document.getElementById("role").value.trim();
-
-    // Reset UI
-    hideBanners();
-    hideOutput();
-
-    // Client-side PII check
-    const piiHit = detectPII(`${bullet} ${metrics}`);
-    if (piiHit) {
-      document.getElementById("pii-warning-text").textContent = `${piiHit} detected.`;
-      document.getElementById("pii-warning-banner").style.display = "block";
+  // ═══════════════════════════════════════════════════════════════════
+  // STEP 1 — Profile
+  // ═══════════════════════════════════════════════════════════════════
+  function step1Next() {
+    const branch     = document.getElementById('s1-branch').value.trim();
+    const specialty  = document.getElementById('s1-specialty').value.trim();
+    const summary    = document.getElementById('s1-summary').value.trim();
+    const targetRole = document.getElementById('s1-target-role').value.trim();
+    const careerPath = document.getElementById('s1-career-path').value.trim();
+    const err = document.getElementById('s1-error');
+    const errT = document.getElementById('s1-error-text');
+    err.style.display = 'none';
+    if (!branch || !specialty || !summary || !targetRole || !careerPath) {
+      errT.textContent = 'All fields are required.';
+      err.style.display = 'block'; return;
     }
+    const pii = detectPII(summary);
+    if (pii) { errT.textContent = `${pii} detected in summary. Please remove it.`; err.style.display = 'block'; return; }
+    STATE.branch = branch; STATE.specialty = specialty; STATE.summary = summary;
+    STATE.targetRole = targetRole; STATE.careerPath = careerPath;
+    goStep(2);
+  }
 
-    // Required field check
-    if (!bullet) {
-      document.getElementById("error-text").textContent =
-        "Please enter a military accomplishment bullet before translating.";
-      document.getElementById("error-banner").style.display = "block";
-      document.getElementById("bullet").focus();
-      return;
-    }
+  // ═══════════════════════════════════════════════════════════════════
+  // STEP 2 — Bullet Translation
+  // ═══════════════════════════════════════════════════════════════════
+  async function step2Translate() {
+    const b1 = document.getElementById('s2-b1').value.trim();
+    const b2 = document.getElementById('s2-b2').value.trim();
+    const b3 = document.getElementById('s2-b3').value.trim();
+    const err = document.getElementById('s2-error');
+    err.style.display = 'none';
+    if (!b1) { showStepError('s2', 'At least one bullet is required.'); return; }
+    const rawBullets = [b1, b2, b3].filter(Boolean);
+    const pii = rawBullets.map(detectPII).find(Boolean);
+    if (pii) { showStepError('s2', `${pii} detected. Please remove it.`); return; }
+    setStepLoading('s2', true);
+    await delay(USE_MOCK ? 1200 : 0);
+    try {
+      if (USE_MOCK) {
+        STATE.translatedBullets = rawBullets.map(b => mockTranslateBullet(b, STATE.targetRole));
+      } else {
+        // Live: call /api/translate for each bullet
+        STATE.translatedBullets = [];
+        for (const bullet of rawBullets) {
+          const r = await apiCall({ phase: 1, input: { military_bullet: bullet, target_role: STATE.targetRole } });
+          STATE.translatedBullets.push(r.translated_bullet || bullet);
+        }
+      }
+      renderStep2();
+    } catch (e) { showStepError('s2', `Could not translate bullets: ${e.message}`); }
+    finally { setStepLoading('s2', false); }
+  }
 
-    setLoading(true);
+  function renderStep2() {
+    const list = document.getElementById('s2-bullets-list');
+    list.innerHTML = STATE.translatedBullets.map((b, i) => `
+      <div class="bullet-row">
+        <span style="color:#57606a;font-size:12px;min-width:20px">${i+1}.</span>
+        <span class="bullet-text">${esc(b)}</span>
+        <span class="tag tag-ev">EVIDENCED</span>
+      </div>`).join('');
+    document.getElementById('s2-output').style.display = 'block';
+  }
 
+  // ═══════════════════════════════════════════════════════════════════
+  // STEP 3 — Job Description Analysis
+  // ═══════════════════════════════════════════════════════════════════
+  async function step3Analyze() {
+    const jd = document.getElementById('s3-jd').value.trim();
+    if (!jd) { showStepError('s3', 'Job description is required.'); return; }
+    if (jd.length < 50) { showStepError('s3', 'Please paste the full job description (at least 50 characters).'); return; }
+    document.getElementById('s3-error').style.display = 'none';
+    STATE.jobDescription = jd;
+    setStepLoading('s3', true);
+    await delay(USE_MOCK ? 1400 : 0);
+    try {
+      if (USE_MOCK) {
+        STATE.jobAnalysis = mockJobAnalysis(jd, STATE.skills);
+      } else {
+        STATE.jobAnalysis = await apiCall({ phase: 3, step: 'analyze_job', input: { job_description: jd, veteran_skills_json: JSON.stringify(STATE.skills) } });
+      }
+      renderStep3();
+    } catch (e) { showStepError('s3', `Could not analyze job description: ${e.message}`); }
+    finally { setStepLoading('s3', false); }
+  }
+
+  function renderStep3() {
+    const ja = STATE.jobAnalysis;
+    const body = document.getElementById('s3-analysis-body');
+    const al = ja.alignment || {};
+    body.innerHTML = `
+      <div class="field-row" style="margin-bottom:12px">
+        <div><div class="field-hint">Role</div><strong>${esc(ja.role_title||'—')}</strong></div>
+        <div><div class="field-hint">Seniority</div><strong>${esc(ja.seniority_level||'—')}</strong></div>
+      </div>
+      <div class="field-hint" style="margin-bottom:4px">Industry: ${esc(ja.industry||'—')}</div>
+      ${al.alignment_pct !== undefined ? `<div class="field-hint" style="margin-bottom:10px">Skill alignment: <strong>${al.alignment_pct}%</strong></div>` : ''}
+      <div class="skill-section-title">Required Skills</div>
+      ${(ja.required_skills||[]).map(s=>`<div class="bullet-row"><span style="color:#57606a">▸</span><span class="bullet-text">${esc(s)}</span></div>`).join('')}
+      <div class="skill-section-title">ATS Keywords</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">${(ja.ats_keywords||[]).map(k=>`<span class="badge badge-medium">${esc(k)}</span>`).join('')}</div>
+    `;
+    document.getElementById('s3-output').style.display = 'block';
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // STEP 4 — Skill Mapping + Gap Analysis
+  // ═══════════════════════════════════════════════════════════════════
+  async function step4Analyze() {
+    document.getElementById('s4-error').style.display = 'none';
+    setStepLoading('s4', true);
+    await delay(USE_MOCK ? 1600 : 0);
+    try {
+      let skillResult, gapResult;
+      if (USE_MOCK) {
+        skillResult = mockSkillMap(STATE.branch, STATE.specialty, STATE.summary, STATE.careerPath);
+        gapResult   = mockGapAnalysis(skillResult.skills, STATE.careerPath);
+      } else {
+        skillResult = await apiCall({ phase: 2, step: 'map_skills', input: { service_branch: STATE.branch, specialty_code: STATE.specialty, service_summary: STATE.summary, target_career_path: STATE.careerPath, job_description: STATE.jobDescription } });
+        gapResult   = await apiCall({ phase: 2, step: 'gap_analysis', input: { veteran_skills_json: JSON.stringify(skillResult.skills), target_career_path: STATE.careerPath, job_description: STATE.jobDescription } });
+      }
+      STATE.skills = skillResult.skills || [];
+      STATE.gapResult = gapResult;
+      renderStep4();
+    } catch (e) { showStepError('s4', `Skill analysis failed: ${e.message}`); }
+    finally { setStepLoading('s4', false); }
+  }
+
+  function renderStep4() {
+    const gr = STATE.gapResult;
+    const pct = gr.coverage_pct || 0;
+    document.getElementById('s4-pct').textContent = `${pct}%`;
+    document.getElementById('s4-bar').style.width  = `${pct}%`;
+    document.getElementById('s4-sub').textContent  = `${(gr.covered_skills||[]).length} of ${(gr.covered_skills||[]).length + (gr.gap_skills||[]).length} required skills covered`;
+
+    document.getElementById('s4-covered').innerHTML = (gr.covered_skills||[]).map(s=>`
+      <div class="skill-row">
+        <span style="color:#166534;font-size:14px">✓</span>
+        <div><div class="skill-name">${esc(s.skill_name||s)}</div></div>
+        <span class="badge badge-covered" style="margin-left:auto">Covered</span>
+      </div>`).join('');
+
+    document.getElementById('s4-gaps').innerHTML = (gr.gap_skills||[]).map(g=>`
+      <div class="skill-row" style="flex-direction:column;align-items:flex-start">
+        <div style="display:flex;align-items:center;gap:8px;width:100%">
+          <span style="color:#b91c1c">✗</span>
+          <div class="skill-name" style="flex:1">${esc(g.skill_name||g.gap_skill||g)}</div>
+          <span class="badge ${g.priority==='High'?'badge-high':'badge-medium'}">${esc(g.priority||'Gap')}</span>
+        </div>
+        ${(g.courses||[]).map(c=>`
+          <div class="course-card">
+            <div class="course-title">${esc(c.title||c.course_title||c)}</div>
+            <div class="course-meta">${esc(c.credential_type||'')} · ${esc(c.hours_estimate ? c.hours_estimate+' hrs' : '')} · <a href="${esc(c.url||'https://skillsbuild.org')}" target="_blank">skillsbuild.org</a></div>
+          </div>`).join('')}
+      </div>`).join('');
+
+    document.getElementById('s4-inventory').innerHTML = STATE.skills.map(s=>{
+      const conf = (s.confidence||'').toLowerCase();
+      const cls  = conf==='high'?'conf-high':conf==='medium'?'conf-medium':'conf-low';
+      return `<div class="inv-cell">${esc(s.skill_name||'')}</div><div class="inv-cell muted">${esc(s.category||'')}</div><div class="inv-cell ${cls}">${esc(s.confidence||'')}</div>`;
+    }).join('');
+
+    document.getElementById('s4-output').style.display = 'block';
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // STEP 5 — Resume Draft
+  // ═══════════════════════════════════════════════════════════════════
+  async function step5Build() {
+    document.getElementById('s5-error').style.display = 'none';
+    setStepLoading('s5', true);
+    await delay(USE_MOCK ? 1800 : 0);
     try {
       let result;
-
-      if (USE_MOCK || ORCHESTRATE_ENDPOINT === "YOUR_ORCHESTRATE_ENDPOINT_HERE") {
-        // Mock path: used for notebook testing before Orchestrate is wired
-        await new Promise(r => setTimeout(r, 1200)); // simulate latency
-        result = mockTranslate(bullet, metrics, role);
+      if (USE_MOCK) {
+        result = mockResumeDraft(STATE);
       } else {
-        // Live path: call watsonx Orchestrate agent endpoint
-        const payload = {
-          input: {
-            bullet:      bullet,
-            metrics:     metrics,
-            target_role: role,
-          }
-        };
-        const resp = await fetch(ORCHESTRATE_ENDPOINT, {
-          method: "POST",
-          headers: {
-            "Content-Type":  "application/json",
-            "Authorization": `Bearer ${ORCHESTRATE_API_KEY}`,
-          },
-          body: JSON.stringify(payload),
-        });
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
-        result = await resp.json();
+        result = await apiCall({ phase: 3, step: 'build_resume', input: {
+          service_branch: STATE.branch, specialty_code: STATE.specialty,
+          service_summary: STATE.summary, translated_bullets_json: JSON.stringify(STATE.translatedBullets),
+          skill_inventory_json: JSON.stringify(STATE.skills),
+          job_analysis_json: JSON.stringify(STATE.jobAnalysis),
+          target_role: STATE.targetRole,
+        }});
       }
+      STATE.resumeDraft = result;
+      renderStep5();
+    } catch (e) { showStepError('s5', `Could not build resume draft: ${e.message}`); }
+    finally { setStepLoading('s5', false); }
+  }
 
-      // Surface PII warning from tool if not already shown
-      if (result.pii_warning && !piiHit) {
-        document.getElementById("pii-warning-text").textContent = result.pii_warning;
-        document.getElementById("pii-warning-banner").style.display = "block";
-      }
+  function renderStep5() {
+    const rd = STATE.resumeDraft;
+    const tagBadge = tag => {
+      if (!tag) return '';
+      const t = tag.toUpperCase();
+      if (t==='EVIDENCED') return '<span class="tag tag-ev">EVIDENCED</span>';
+      if (t==='INFERRED')  return '<span class="tag tag-in">INFERRED</span>';
+      return '<span class="tag tag-mi">MISSING</span>';
+    };
+    const summary = typeof rd.summary === 'string' ? {text:rd.summary,tag:'INFERRED'} : rd.summary;
+    document.getElementById('s5-summary').innerHTML = `
+      <div class="bullet-row">
+        <span class="bullet-text">${esc((summary||{}).text||'')}</span>
+        ${tagBadge((summary||{}).tag)}
+      </div>`;
+    document.getElementById('s5-bullets').innerHTML = (rd.bullets||[]).map(b=>`
+      <div class="bullet-row">
+        <span class="bullet-text">${esc(b.text||'')}</span>
+        ${tagBadge(b.tag)}
+      </div>`).join('');
+    document.getElementById('s5-skills').innerHTML = (rd.skills_section||[]).map(s=>`
+      <div class="bullet-row"><span class="bullet-text">• ${esc(s)}</span></div>`).join('');
+    const tc = rd.tag_counts||{};
+    document.getElementById('s5-tag-counts').innerHTML = `
+      <div style="display:flex;gap:16px;font-size:14px">
+        <span><span class="tag tag-ev">EVIDENCED</span> ${tc.EVIDENCED||0}</span>
+        <span><span class="tag tag-in">INFERRED</span> ${tc.INFERRED||0}</span>
+        <span><span class="tag tag-mi">MISSING</span> ${tc.MISSING||0}</span>
+      </div>
+      <div style="margin-top:8px;font-size:13px;color:#57606a">
+        Gate: <strong>${rd.gate_status||'?'}</strong>
+        ${rd.gate_status==='BLOCKED' ? ' — resolve INFERRED and MISSING sentences before exporting.' : ' — all sentences evidenced.'}
+      </div>`;
+    document.getElementById('s5-output').style.display = 'block';
+  }
 
-      if (result.error) {
-        document.getElementById("error-text").textContent = result.error;
-        document.getElementById("error-banner").style.display = "block";
+  // ═══════════════════════════════════════════════════════════════════
+  // STEP 6 — Interview Prep
+  // ═══════════════════════════════════════════════════════════════════
+  async function step6Prep() {
+    document.getElementById('s6-error').style.display = 'none';
+    setStepLoading('s6', true);
+    await delay(USE_MOCK ? 1600 : 0);
+    try {
+      let result;
+      if (USE_MOCK) {
+        result = mockInterviewPrep(STATE);
       } else {
-        showOutput(result.translated_bullet, result.model_id);
+        result = await apiCall({ phase: 3, step: 'interview_prep', input: {
+          target_role: STATE.targetRole, service_summary: STATE.summary,
+          translated_bullets_json: JSON.stringify(STATE.translatedBullets),
+          skill_inventory_json: JSON.stringify(STATE.skills),
+          job_analysis_json: JSON.stringify(STATE.jobAnalysis),
+        }});
       }
+      STATE.interviewPrep = result;
+      renderStep6();
+    } catch (e) { showStepError('s6', `Could not generate interview prep: ${e.message}`); }
+    finally { setStepLoading('s6', false); }
+  }
 
-    } catch (err) {
-      document.getElementById("error-text").textContent =
-        `Could not reach the translation service: ${err.message}`;
-      document.getElementById("error-banner").style.display = "block";
-    } finally {
-      setLoading(false);
+  function renderStep6() {
+    const qs = (STATE.interviewPrep||{}).questions || [];
+    document.getElementById('s6-questions').innerHTML = qs.map((q, i) => {
+      const star = q.star_scaffold || {};
+      const isMissing = v => typeof v === 'string' && v.toUpperCase().includes('[MISSING');
+      return `
+        <div class="q-card">
+          <div class="q-num">Question ${i+1} · ${esc(q.skill_mapped||'')}</div>
+          <div class="q-text">${esc(q.question||'')}</div>
+          <div class="star-grid">
+            ${['Situation','Task','Action','Result'].map(k=>{
+              const val = star[k.toLowerCase()] || star[k] || '';
+              const miss = isMissing(val);
+              return `<div class="star-label">${k}</div><div class="star-val${miss?' missing':''}">
+                ${miss ? `⚠ ${esc(val)}` : esc(val)}</div>`;
+            }).join('')}
+          </div>
+        </div>`;
+    }).join('');
+    document.getElementById('s6-output').style.display = 'block';
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // STEP 7 — Export Gate
+  // ═══════════════════════════════════════════════════════════════════
+  async function step7Gate() {
+    document.getElementById('s7-error').style.display = 'none';
+    document.getElementById('s7-output').style.display = 'none';
+    setStepLoading('s7', true);
+    await delay(USE_MOCK ? 1200 : 0);
+    try {
+      let result;
+      if (USE_MOCK) {
+        result = mockGate(STATE.resumeDraft);
+      } else {
+        result = await apiCall({ phase: 3, step: 'gate', input: { resume_draft_json: JSON.stringify(STATE.resumeDraft) }});
+      }
+      STATE.gateResult = result;
+      renderStep7();
+    } catch (e) { showStepError('s7', `Gate evaluation failed: ${e.message}`); }
+    finally { setStepLoading('s7', false); }
+  }
+
+  function renderStep7() {
+    const gr = STATE.gateResult;
+    const banner = document.getElementById('s7-gate-status-banner');
+    const holds  = document.getElementById('s7-gate-holds');
+    const pkg    = document.getElementById('s7-final-package');
+
+    if (gr.gate_status === 'OPEN') {
+      banner.innerHTML = `<div class="notice open"><strong>✓ Gate OPEN</strong> — ${esc(gr.summary_message||'All sentences evidenced. Ready to export.')}</div>`;
+      holds.innerHTML  = '';
+      pkg.style.display = 'block';
+      renderFinalPackage();
+    } else {
+      banner.innerHTML = `<div class="notice blocked"><strong>✗ Gate BLOCKED</strong> — ${esc(gr.summary_message||'Resolve all holds before exporting.')}</div>`;
+      holds.innerHTML = (gr.gate_holds||[]).map(h => {
+        const isInf = (h.tag||'').toUpperCase() === 'INFERRED';
+        return `
+          <div class="gate-hold ${isInf?'inferred':''}">
+            <div class="gate-hold-sentence">${isInf?'⚠':'✗'} [${esc(h.tag||'?')}] ${esc(h.sentence||'')}</div>
+            <div class="gate-hold-reason">${esc(h.explanation||'')}</div>
+            <div class="gate-hold-action">Action required: ${esc(h.action_required||'')}</div>
+          </div>`;
+      }).join('');
+      pkg.style.display = 'none';
     }
+    document.getElementById('s7-output').style.display = 'block';
   }
 
-  // ──────────────────────────────────────────────────────────────────
-  // UI helpers
-  // ──────────────────────────────────────────────────────────────────
-
-  function setLoading(on) {
-    document.getElementById("spinner").classList.toggle("active", on);
-    document.getElementById("translate-btn").disabled = on;
+  function renderFinalPackage() {
+    const rd = STATE.resumeDraft || {};
+    const summary = typeof rd.summary === 'string' ? {text:rd.summary} : (rd.summary||{});
+    const bullets  = rd.bullets||[];
+    const skills   = rd.skills_section||[];
+    const target   = STATE.targetRole;
+    const lines = [
+      `${target ? target.toUpperCase() : 'RESUME DRAFT'}`,
+      '',
+      '── PROFESSIONAL SUMMARY ──',
+      summary.text || '',
+      '',
+      '── EXPERIENCE HIGHLIGHTS ──',
+      ...bullets.map(b=>`• ${b.text||b}`),
+      '',
+      '── SKILLS ──',
+      ...skills.map(s=>`• ${s}`),
+      '',
+      '── INTERVIEW PREP ──',
+      ...((STATE.interviewPrep||{}).questions||[]).map((q,i)=>`Q${i+1}: ${q.question||''}`),
+    ];
+    document.getElementById('s7-final-body').innerHTML = `<div class="export-body">${esc(lines.join('\n'))}</div>`;
   }
 
-  function hideBanners() {
-    document.getElementById("pii-warning-banner").style.display = "none";
-    document.getElementById("error-banner").style.display = "none";
+  function copyFinal() {
+    const el = document.getElementById('s7-final-body');
+    navigator.clipboard.writeText(el.innerText||el.textContent).then(()=>alert('Copied to clipboard.'));
   }
 
-  function hideOutput() {
-    document.getElementById("output-section").style.display = "none";
+  // ═══════════════════════════════════════════════════════════════════
+  // API helper (live mode)
+  // ═══════════════════════════════════════════════════════════════════
+  async function apiCall(body) {
+    const resp = await fetch('/api/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    return data;
   }
 
-  function showOutput(bullet, modelId) {
-    document.getElementById("output-text").textContent = bullet;
-    document.getElementById("model-tag").textContent = `Model: ${modelId}`;
-    document.getElementById("output-section").style.display = "block";
-    document.getElementById("output-section").scrollIntoView({ behavior: "smooth", block: "start" });
+  // ═══════════════════════════════════════════════════════════════════
+  // Mock data generators
+  // ═══════════════════════════════════════════════════════════════════
+  function mockTranslateBullet(bullet, role) {
+    const verbs = ['Directed','Managed','Oversaw','Coordinated','Led'];
+    const v = verbs[Math.floor(Math.random()*verbs.length)];
+    return `${v} ${bullet.replace(/\b(supervised|managed|led|coordinated|oversaw)\b/gi,'').trim().toLowerCase()}, contributing to ${role||'organizational'} objectives.`;
   }
 
-  function clearForm() {
-    document.getElementById("bullet").value  = "";
-    document.getElementById("metrics").value = "";
-    document.getElementById("role").value    = "";
-    hideBanners();
-    hideOutput();
-    document.getElementById("bullet").focus();
+  function mockJobAnalysis(jd) {
+    return {
+      role_title: 'Supply Chain Operations Manager',
+      seniority_level: 'Mid-level (3-5 years)',
+      industry: 'Logistics / Distribution',
+      required_skills: ['supply chain coordination','inventory management','vendor management','budget oversight','ERP/WMS proficiency','cross-functional team leadership'],
+      preferred_skills: ['APICS CSCP','Six Sigma','SAP'],
+      ats_keywords: ['supply chain','logistics','inventory','KPI','cross-functional','procurement'],
+      alignment: { alignment_pct: 67, matched_skills: ['inventory management','budget oversight','cross-functional team leadership'], unmatched_skills: ['vendor management','ERP/WMS proficiency','supply chain coordination'] },
+    };
   }
 
-  function translateAnother() {
-    clearForm();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  function mockSkillMap(branch, specialty, summary) {
+    return { skills: [
+      { skill_name: 'Logistics Coordination',        category: 'Operations',    confidence: 'High'   },
+      { skill_name: 'Team Leadership',               category: 'Leadership',    confidence: 'High'   },
+      { skill_name: 'Inventory Management',          category: 'Supply Chain',  confidence: 'High'   },
+      { skill_name: 'Budget Oversight',              category: 'Finance',       confidence: 'Medium' },
+      { skill_name: 'Cross-functional Coordination', category: 'Collaboration', confidence: 'High'   },
+      { skill_name: 'Process Improvement',           category: 'Operations',    confidence: 'Medium' },
+    ]};
+  }
+
+  function mockGapAnalysis(skills) {
+    return {
+      coverage_pct: 67,
+      covered_skills: [
+        { skill_name: 'Inventory Management' },
+        { skill_name: 'Budget Oversight' },
+        { skill_name: 'Cross-functional Team Leadership' },
+        { skill_name: 'Logistics Coordination' },
+      ],
+      gap_skills: [
+        { skill_name: 'Vendor Management',    priority: 'High',   courses: [{ title: 'Supply Chain Excellence', credential_type: 'Badge', hours_estimate: 8, url: 'https://skillsbuild.org' }] },
+        { skill_name: 'ERP/WMS Proficiency',  priority: 'Medium', courses: [{ title: 'Enterprise Technology Fundamentals', credential_type: 'Badge', hours_estimate: 6, url: 'https://skillsbuild.org' }] },
+      ],
+      summary: `Your ${skills.length} mapped skills provide 67% coverage of the target role. Two skill gaps were identified with free IBM SkillsBuild courses to close them.`,
+    };
+  }
+
+  function mockResumeDraft(state) {
+    const bullets = state.translatedBullets.length ? state.translatedBullets : [
+      'Directed a 12-member logistics team improving on-time delivery from 82% to 96%.',
+      'Managed a $2.1M annual inventory with 98.7% accountability.',
+    ];
+    return {
+      summary: { text: `Results-driven supply chain professional with ${state.branch||'military'} logistics expertise, proven team leadership, and a track record of measurable operational improvements.`, tag: 'EVIDENCED' },
+      bullets: [
+        { text: bullets[0], tag: 'EVIDENCED' },
+        { text: bullets[1] || 'Implemented process improvements reducing shrinkage by 18%.', tag: 'EVIDENCED' },
+        { text: 'Applied lean process improvement methodologies to reduce supply chain waste by 12%.', tag: 'INFERRED' },
+        { text: 'Managed ERP system configuration and vendor portal administration across three sites.', tag: 'MISSING' },
+      ],
+      skills_section: ['Logistics Coordination','Inventory Management','Team Leadership','Budget Oversight','Cross-functional Collaboration'],
+      tag_counts: { EVIDENCED: 3, INFERRED: 1, MISSING: 1 },
+      gate_status: 'BLOCKED',
+    };
+  }
+
+  function mockInterviewPrep(state) {
+    return { questions: [
+      {
+        question: 'Tell me about a time when you managed a complex logistics operation under time pressure.',
+        skill_mapped: 'Logistics Coordination',
+        star_scaffold: {
+          situation: `In your role as ${state.specialty||'a logistics specialist'} in the ${state.branch||'military'}, you were responsible for coordinating supply operations for a large unit.`,
+          task: 'You needed to ensure mission-critical supplies reached multiple locations within a tight window.',
+          action: `You coordinated with ${state.skills.length||'multiple'} cross-functional team members, prioritized shipments, and implemented a real-time tracking process.`,
+          result: 'On-time delivery improved from 82% to 96%, and no mission-critical shortfalls occurred.',
+        },
+        disclaimer: 'DRAFT – Review before use.',
+      },
+      {
+        question: 'Describe a situation where you identified and resolved an inventory discrepancy.',
+        skill_mapped: 'Inventory Management',
+        star_scaffold: {
+          situation: 'You were conducting a routine inventory audit and discovered a significant discrepancy.',
+          task: 'Your task was to identify the root cause and restore full accountability for a $2.1M inventory.',
+          action: 'You implemented a cycle-count reconciliation program and trained team members on new procedures.',
+          result: 'Inventory accuracy rose to 98.7% and shrinkage was reduced by 18%.',
+        },
+        disclaimer: 'DRAFT – Review before use.',
+      },
+      {
+        question: 'Tell me about a time when you led a cross-functional team to achieve a difficult goal.',
+        skill_mapped: 'Cross-functional Team Leadership',
+        star_scaffold: {
+          situation: 'You were assigned to lead a 12-member team spanning multiple functional areas.',
+          task: 'The team needed to achieve a readiness rating improvement within a single evaluation cycle.',
+          action: 'You established clear roles, ran weekly coordination meetings, and aligned priorities across functions.',
+          result: 'The unit achieved its top readiness rating for three consecutive evaluation cycles.',
+        },
+        disclaimer: 'DRAFT – Review before use.',
+      },
+      {
+        question: 'Describe a situation where you had to manage a budget and find cost savings.',
+        skill_mapped: 'Budget Oversight',
+        star_scaffold: {
+          situation: 'You were responsible for oversight of a $2.1M annual supply budget.',
+          task: 'You were asked to identify areas for cost reduction without degrading operational capability.',
+          action: '[MISSING: Describe specific cost-reduction actions you took]',
+          result: '[MISSING: Describe the measurable cost savings achieved]',
+        },
+        disclaimer: 'DRAFT – Review before use.',
+      },
+      {
+        question: 'Tell me about a time when you improved a process to achieve better results.',
+        skill_mapped: 'Process Improvement',
+        star_scaffold: {
+          situation: 'You identified that the existing inventory cycle-count process was producing high error rates.',
+          task: 'You needed to redesign the process to improve accuracy and reduce shrinkage.',
+          action: 'You implemented a structured cycle-count program with new SOPs and staff training.',
+          result: 'Inventory shrinkage was reduced by 18% within the first 90 days.',
+        },
+        disclaimer: 'DRAFT – Review before use.',
+      },
+    ]};
+  }
+
+  function mockGate(resumeDraft) {
+    if (!resumeDraft) return { gate_status: 'BLOCKED', blocked_count: 0, inferred_count: 0, missing_count: 0, gate_holds: [], summary_message: 'No resume draft available.' };
+    const bullets = resumeDraft.bullets || [];
+    const summary = typeof resumeDraft.summary === 'string' ? {text:resumeDraft.summary,tag:'EVIDENCED'} : (resumeDraft.summary||{});
+    const all = [...bullets, summary];
+    const holds = all
+      .filter(b => b.tag && ['INFERRED','MISSING'].includes(b.tag.toUpperCase()))
+      .map(b => ({
+        sentence: b.text || '',
+        tag: b.tag.toUpperCase(),
+        explanation: b.tag.toUpperCase() === 'INFERRED'
+          ? 'This claim was inferred from your specialty code and was not directly stated in your service record. Confirm it is accurate before exporting.'
+          : 'The job description requires this skill or experience, but no evidence exists in your provided service record. Add supporting evidence or remove this sentence.',
+        action_required: b.tag.toUpperCase() === 'INFERRED' ? 'Confirm or remove' : 'Add evidence or remove',
+      }));
+    const inferred = holds.filter(h=>h.tag==='INFERRED').length;
+    const missing  = holds.filter(h=>h.tag==='MISSING').length;
+    const blocked  = holds.length > 0;
+    const parts = [];
+    if (inferred) parts.push(`${inferred} INFERRED sentence${inferred!==1?'s':''}`);
+    if (missing)  parts.push(`${missing} MISSING sentence${missing!==1?'s':''}`);
+    return {
+      gate_status: blocked ? 'BLOCKED' : 'OPEN',
+      blocked_count: holds.length,
+      inferred_count: inferred,
+      missing_count: missing,
+      gate_holds: holds,
+      summary_message: blocked
+        ? `Export blocked. ${parts.join(' and ')} must be resolved before exporting.`
+        : 'All sentences are evidenced. Your document is ready to export.',
+    };
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // Utilities
+  // ═══════════════════════════════════════════════════════════════════
+  function showStepError(step, msg) {
+    const el = document.getElementById(`${step}-error`);
+    document.getElementById(`${step}-error-text`).textContent = msg;
+    el.style.display = 'block';
+  }
+
+  function setStepLoading(step, on) {
+    const btn     = document.getElementById(`${step}-btn`);
+    const spinner = document.getElementById(`${step}-spinner`);
+    if (btn)     btn.disabled = on;
+    if (spinner) spinner.classList.toggle('active', on);
+  }
+
+  function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  function esc(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 </script>
 </body>

@@ -1,0 +1,167 @@
+[
+  {
+    "course_id": "SB-001",
+    "title": "Project Management Fundamentals",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/learn/course-details/project-management-fundamentals",
+    "skill_tags": ["project planning", "stakeholder management", "risk management", "budget management", "team leadership"],
+    "career_paths": ["Project Management"],
+    "credential": "Badge",
+    "estimated_hours": 6,
+    "description": "Covers project lifecycle, scope definition, schedule management, stakeholder communication, and risk identification using industry-standard frameworks."
+  },
+  {
+    "course_id": "SB-002",
+    "title": "Agile Explorer",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/learn/course-details/agile-explorer",
+    "skill_tags": ["process improvement", "project planning", "continuous improvement", "stakeholder management"],
+    "career_paths": ["Project Management", "Operations"],
+    "credential": "Badge",
+    "estimated_hours": 3,
+    "description": "Introduces Agile values, principles, and practices including Scrum, Kanban, and iterative delivery for cross-functional teams."
+  },
+  {
+    "course_id": "SB-003",
+    "title": "Enterprise Design Thinking Practitioner",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/learn/course-details/enterprise-design-thinking",
+    "skill_tags": ["stakeholder management", "process improvement", "team leadership", "continuous improvement"],
+    "career_paths": ["Project Management", "Operations"],
+    "credential": "Badge",
+    "estimated_hours": 4,
+    "description": "Teaches human-centered design methods for aligning teams, defining user outcomes, and solving complex organizational problems."
+  },
+  {
+    "course_id": "SB-004",
+    "title": "Introduction to Cybersecurity Tools and Cyber Attacks",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/learn/course-details/cybersecurity-tools-cyber-attacks",
+    "skill_tags": ["cybersecurity operations", "risk and compliance", "threat analysis", "network administration"],
+    "career_paths": ["IT/Cybersecurity"],
+    "credential": "Badge",
+    "estimated_hours": 20,
+    "description": "Covers fundamental cybersecurity concepts, common attack vectors, defensive tools, and the security operations lifecycle."
+  },
+  {
+    "course_id": "SB-005",
+    "title": "Cybersecurity Compliance Framework and System Administration",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/learn/course-details/cybersecurity-compliance-framework",
+    "skill_tags": ["risk and compliance", "cybersecurity operations", "network administration"],
+    "career_paths": ["IT/Cybersecurity"],
+    "credential": "Badge",
+    "estimated_hours": 20,
+    "description": "Explores security frameworks (NIST, RMF), compliance processes, system hardening, and access controls used in enterprise IT environments."
+  },
+  {
+    "course_id": "SB-006",
+    "title": "Network Security and Database Vulnerabilities",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/learn/course-details/network-security-database-vulnerabilities",
+    "skill_tags": ["network administration", "cybersecurity operations", "risk and compliance"],
+    "career_paths": ["IT/Cybersecurity"],
+    "credential": "Badge",
+    "estimated_hours": 20,
+    "description": "Addresses network infrastructure security, common database vulnerabilities, and defensive countermeasures for IT operations roles."
+  },
+  {
+    "course_id": "SB-007",
+    "title": "Supply Chain and Logistics Fundamentals",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/learn/course-details/supply-chain-logistics",
+    "skill_tags": ["supply chain coordination", "asset accountability", "operations management", "resource allocation"],
+    "career_paths": ["Logistics"],
+    "credential": "Badge",
+    "estimated_hours": 8,
+    "description": "Covers supply chain design, inventory management, logistics coordination, and asset tracking aligned to civilian operations roles."
+  },
+  {
+    "course_id": "SB-008",
+    "title": "Data Analysis and Visualization with Excel",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/learn/course-details/data-analysis-visualization-excel",
+    "skill_tags": ["data analysis", "performance management", "budget management", "resource allocation"],
+    "career_paths": ["Project Management", "Operations", "Logistics"],
+    "credential": "Badge",
+    "estimated_hours": 10,
+    "description": "Teaches practical data analysis, pivot tables, charts, and dashboard techniques applicable to operations and project reporting roles."
+  },
+  {
+    "course_id": "SB-009",
+    "title": "Introduction to Artificial Intelligence",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/learn/course-details/introduction-to-artificial-intelligence",
+    "skill_tags": ["data analysis", "technology integration", "continuous improvement"],
+    "career_paths": ["IT/Cybersecurity", "Project Management"],
+    "credential": "Badge",
+    "estimated_hours": 6,
+    "description": "Explains core AI and machine learning concepts, use cases, ethical considerations, and practical applications for non-technical roles."
+  },
+  {
+    "course_id": "SB-010",
+    "title": "Leadership and Management",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/learn/course-details/leadership-and-management",
+    "skill_tags": ["team leadership", "workforce leadership", "stakeholder management", "performance management"],
+    "career_paths": ["Project Management", "Operations", "Logistics"],
+    "credential": "Badge",
+    "estimated_hours": 5,
+    "description": "Covers situational leadership, coaching, delegation, conflict resolution, and performance management for civilian team leaders."
+  },
+  {
+    "course_id": "SB-011",
+    "title": "Getting Started with IBM Cloud",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/learn/course-details/getting-started-with-ibm-cloud",
+    "skill_tags": ["cloud administration", "network administration", "technology integration"],
+    "career_paths": ["IT/Cybersecurity"],
+    "credential": "Badge",
+    "estimated_hours": 4,
+    "description": "Introduces IBM Cloud services, infrastructure concepts, and deployment fundamentals relevant to IT administration and cloud operations."
+  },
+  {
+    "course_id": "SB-012",
+    "title": "Communication and Interpersonal Skills",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/learn/course-details/communication-interpersonal-skills",
+    "skill_tags": ["stakeholder management", "team leadership", "plain-language explanation", "workforce leadership"],
+    "career_paths": ["Project Management", "Operations", "Logistics", "IT/Cybersecurity"],
+    "credential": "Badge",
+    "estimated_hours": 4,
+    "description": "Develops written and verbal communication, active listening, and professional presentation skills for civilian workplace settings."
+  },
+  {
+    "course_id": "SB-013",
+    "title": "Introduction to Cloud Computing",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/learn/course-details/introduction-to-cloud-computing",
+    "skill_tags": ["cloud administration", "network administration", "technology integration", "cybersecurity operations"],
+    "career_paths": ["IT/Cybersecurity"],
+    "credential": "Badge",
+    "estimated_hours": 6,
+    "description": "Explains cloud deployment models, service types (IaaS/PaaS/SaaS), virtualization, and cloud security fundamentals."
+  },
+  {
+    "course_id": "SB-014",
+    "title": "Data Science Foundations",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/learn/course-details/data-science-foundations",
+    "skill_tags": ["data analysis", "performance management", "continuous improvement"],
+    "career_paths": ["IT/Cybersecurity", "Operations"],
+    "credential": "Badge",
+    "estimated_hours": 8,
+    "description": "Introduces data science methodology, Python basics, statistical analysis, and data visualization for decision-support roles."
+  },
+  {
+    "course_id": "SB-015",
+    "title": "Workplace Readiness",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/learn/course-details/workplace-readiness",
+    "skill_tags": ["team leadership", "stakeholder management", "career assessment", "goal setting"],
+    "career_paths": ["Project Management", "Operations", "Logistics", "IT/Cybersecurity"],
+    "credential": "Badge",
+    "estimated_hours": 3,
+    "description": "Prepares transitioning professionals for civilian workplace culture, professional networking, and career goal planning."
+  }
+]

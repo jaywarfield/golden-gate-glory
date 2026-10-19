@@ -1,4 +1,4 @@
-# **Golden Gate Glory - IBM AI Lab Challenge**
+# **Mission Veteran AI – IBM AI Lab Challenge**
 
 ### Problem Description
 
