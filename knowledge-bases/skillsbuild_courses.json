@@ -1,0 +1,392 @@
+[
+  {
+    "course_id": "SB-IBM-001",
+    "title": "Cybersecurity Fundamentals",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/adult-learners/explore-learning/cybersecurity",
+    "skill_tags": [
+      "cybersecurity",
+      "network security",
+      "threat analysis",
+      "security operations"
+    ],
+    "career_paths": [
+      "IT/Cybersecurity"
+    ],
+    "credential": "Badge",
+    "estimated_hours": 20,
+    "description": "Foundational cybersecurity concepts including threats, vulnerabilities, and security controls."
+  },
+  {
+    "course_id": "SB-IBM-002",
+    "title": "Cloud Computing Fundamentals",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/adult-learners/explore-learning/cloud-computing",
+    "skill_tags": [
+      "cloud computing",
+      "AWS",
+      "Azure",
+      "IBM Cloud",
+      "infrastructure"
+    ],
+    "career_paths": [
+      "IT/Cybersecurity",
+      "Operations"
+    ],
+    "credential": "Badge",
+    "estimated_hours": 20,
+    "description": "Introduction to cloud concepts, deployment models, and major cloud service providers."
+  },
+  {
+    "course_id": "SB-IBM-003",
+    "title": "Data Science Foundations",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/adult-learners/explore-learning/data-science",
+    "skill_tags": [
+      "data science",
+      "Python",
+      "data analysis",
+      "machine learning"
+    ],
+    "career_paths": [
+      "IT/Cybersecurity",
+      "Project Management"
+    ],
+    "credential": "Badge",
+    "estimated_hours": 30,
+    "description": "Introduction to data science methodology, tools, and Python for data analysis."
+  },
+  {
+    "course_id": "SB-IBM-004",
+    "title": "Artificial Intelligence Fundamentals",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/adult-learners/explore-learning/artificial-intelligence",
+    "skill_tags": [
+      "AI",
+      "machine learning",
+      "deep learning",
+      "neural networks"
+    ],
+    "career_paths": [
+      "IT/Cybersecurity",
+      "Project Management"
+    ],
+    "credential": "Badge",
+    "estimated_hours": 20,
+    "description": "Core AI and machine learning concepts with practical applications."
+  },
+  {
+    "course_id": "SB-IBM-005",
+    "title": "Project Management Fundamentals",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/adult-learners/explore-learning/project-management",
+    "skill_tags": [
+      "project management",
+      "Agile",
+      "Scrum",
+      "planning",
+      "risk management"
+    ],
+    "career_paths": [
+      "Project Management"
+    ],
+    "credential": "Badge",
+    "estimated_hours": 15,
+    "description": "Project lifecycle, Agile methodologies, and fundamental PM skills."
+  },
+  {
+    "course_id": "SB-IBM-006",
+    "title": "Supply Chain Management Basics",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/adult-learners/explore-learning/supply-chain-management",
+    "skill_tags": [
+      "supply chain",
+      "logistics",
+      "inventory management",
+      "procurement"
+    ],
+    "career_paths": [
+      "Logistics",
+      "Operations"
+    ],
+    "credential": "Badge",
+    "estimated_hours": 15,
+    "description": "Core supply chain concepts, logistics operations, and inventory management."
+  },
+  {
+    "course_id": "SB-IBM-007",
+    "title": "Enterprise Design Thinking Practitioner",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/adult-learners/explore-learning/enterprise-design-thinking",
+    "skill_tags": [
+      "design thinking",
+      "problem solving",
+      "user research",
+      "ideation"
+    ],
+    "career_paths": [
+      "Project Management",
+      "Operations"
+    ],
+    "credential": "Badge",
+    "estimated_hours": 10,
+    "description": "IBM Design Thinking methodology for collaborative problem solving."
+  },
+  {
+    "course_id": "SB-IBM-008",
+    "title": "Linux Fundamentals",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/adult-learners/explore-learning/linux",
+    "skill_tags": [
+      "Linux",
+      "command line",
+      "system administration",
+      "shell scripting"
+    ],
+    "career_paths": [
+      "IT/Cybersecurity"
+    ],
+    "credential": "Badge",
+    "estimated_hours": 25,
+    "description": "Linux operating system fundamentals, command line, and system administration."
+  },
+  {
+    "course_id": "SB-IBM-009",
+    "title": "Network Security",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/adult-learners/explore-learning/network-security",
+    "skill_tags": [
+      "network security",
+      "firewall",
+      "VPN",
+      "intrusion detection",
+      "network protocols"
+    ],
+    "career_paths": [
+      "IT/Cybersecurity"
+    ],
+    "credential": "Badge",
+    "estimated_hours": 20,
+    "description": "Network security principles, protocols, and defense strategies."
+  },
+  {
+    "course_id": "SB-IBM-010",
+    "title": "Agile Explorer",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/adult-learners/explore-learning/agile",
+    "skill_tags": [
+      "Agile",
+      "Scrum",
+      "Kanban",
+      "sprint planning",
+      "retrospectives"
+    ],
+    "career_paths": [
+      "Project Management",
+      "IT/Cybersecurity"
+    ],
+    "credential": "Badge",
+    "estimated_hours": 8,
+    "description": "Introduction to Agile principles and how they apply to team-based work."
+  },
+  {
+    "course_id": "SB-IBM-011",
+    "title": "Getting Started with DevOps",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/adult-learners/explore-learning/devops",
+    "skill_tags": [
+      "DevOps",
+      "CI/CD",
+      "automation",
+      "Git",
+      "containers"
+    ],
+    "career_paths": [
+      "IT/Cybersecurity"
+    ],
+    "credential": "Badge",
+    "estimated_hours": 20,
+    "description": "DevOps principles, tools, and practices for continuous delivery."
+  },
+  {
+    "course_id": "SB-IBM-012",
+    "title": "Data Analysis Using Python",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/adult-learners/explore-learning/data-analysis-python",
+    "skill_tags": [
+      "Python",
+      "pandas",
+      "data analysis",
+      "visualization",
+      "NumPy"
+    ],
+    "career_paths": [
+      "IT/Cybersecurity",
+      "Project Management"
+    ],
+    "credential": "Badge",
+    "estimated_hours": 25,
+    "description": "Python-based data analysis including data wrangling, visualization, and interpretation."
+  },
+  {
+    "course_id": "SB-IBM-013",
+    "title": "Professional Communication",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/adult-learners/explore-learning/professional-communication",
+    "skill_tags": [
+      "communication",
+      "business writing",
+      "presentations",
+      "active listening"
+    ],
+    "career_paths": [
+      "Project Management",
+      "Operations",
+      "Logistics"
+    ],
+    "credential": "Badge",
+    "estimated_hours": 10,
+    "description": "Effective communication skills for professional environments."
+  },
+  {
+    "course_id": "SB-IBM-014",
+    "title": "Leadership and Influence",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/adult-learners/explore-learning/leadership",
+    "skill_tags": [
+      "leadership",
+      "team management",
+      "influence",
+      "decision making",
+      "coaching"
+    ],
+    "career_paths": [
+      "Project Management",
+      "Operations"
+    ],
+    "credential": "Badge",
+    "estimated_hours": 12,
+    "description": "Leadership principles, styles, and practical skills for team leadership."
+  },
+  {
+    "course_id": "SB-IBM-015",
+    "title": "Blockchain Essentials",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/adult-learners/explore-learning/blockchain",
+    "skill_tags": [
+      "blockchain",
+      "distributed ledger",
+      "smart contracts",
+      "supply chain transparency"
+    ],
+    "career_paths": [
+      "Logistics",
+      "IT/Cybersecurity"
+    ],
+    "credential": "Badge",
+    "estimated_hours": 15,
+    "description": "Blockchain fundamentals and practical applications in supply chain and finance."
+  },
+  {
+    "course_id": "SB-IBM-016",
+    "title": "Watson AI Basics",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/adult-learners/explore-learning/watson",
+    "skill_tags": [
+      "Watson",
+      "AI",
+      "natural language processing",
+      "chatbots",
+      "automation"
+    ],
+    "career_paths": [
+      "IT/Cybersecurity",
+      "Project Management"
+    ],
+    "credential": "Badge",
+    "estimated_hours": 12,
+    "description": "IBM Watson capabilities including NLP, automation, and business AI applications."
+  },
+  {
+    "course_id": "SB-IBM-017",
+    "title": "Risk Management",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/adult-learners/explore-learning/risk-management",
+    "skill_tags": [
+      "risk management",
+      "risk assessment",
+      "mitigation",
+      "compliance",
+      "governance"
+    ],
+    "career_paths": [
+      "Project Management",
+      "Operations",
+      "IT/Cybersecurity"
+    ],
+    "credential": "Badge",
+    "estimated_hours": 15,
+    "description": "Risk identification, assessment, and mitigation frameworks for projects and operations."
+  },
+  {
+    "course_id": "SB-IBM-018",
+    "title": "Digital Transformation",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/adult-learners/explore-learning/digital-transformation",
+    "skill_tags": [
+      "digital transformation",
+      "change management",
+      "innovation",
+      "process improvement"
+    ],
+    "career_paths": [
+      "Project Management",
+      "Operations"
+    ],
+    "credential": "Badge",
+    "estimated_hours": 12,
+    "description": "How organisations use digital technology to transform operations and create value."
+  },
+  {
+    "course_id": "SB-IBM-019",
+    "title": "Introduction to Databases",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/adult-learners/explore-learning/databases",
+    "skill_tags": [
+      "SQL",
+      "databases",
+      "data management",
+      "PostgreSQL",
+      "relational databases"
+    ],
+    "career_paths": [
+      "IT/Cybersecurity",
+      "Project Management"
+    ],
+    "credential": "Badge",
+    "estimated_hours": 20,
+    "description": "Relational database concepts, SQL, and data management fundamentals."
+  },
+  {
+    "course_id": "SB-IBM-020",
+    "title": "Workplace Foundations",
+    "provider": "IBM SkillsBuild",
+    "url": "https://skillsbuild.org/adult-learners/explore-learning/workplace-foundations",
+    "skill_tags": [
+      "workplace skills",
+      "professionalism",
+      "teamwork",
+      "problem solving",
+      "adaptability"
+    ],
+    "career_paths": [
+      "Project Management",
+      "Operations",
+      "Logistics",
+      "IT/Cybersecurity"
+    ],
+    "credential": "Badge",
+    "estimated_hours": 8,
+    "description": "Core professional skills including teamwork, problem-solving, and workplace adaptability."
+  }
+]

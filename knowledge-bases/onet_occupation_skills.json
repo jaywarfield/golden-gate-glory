@@ -1,0 +1,140 @@
+[
+  {
+    "onet_soc": "11-3071.00",
+    "occupation": "Transportation, Storage, and Distribution Managers",
+    "career_path": "Logistics",
+    "required_skills": [
+      "Coordination",
+      "Critical Thinking",
+      "Management of Material Resources",
+      "Operations Analysis",
+      "Systems Evaluation",
+      "Time Management",
+      "Active Listening",
+      "Judgment and Decision Making"
+    ],
+    "work_activities": [
+      "Coordinating the Work and Activities of Others",
+      "Making Decisions and Solving Problems",
+      "Organizing, Planning, and Prioritizing Work",
+      "Communicating with Supervisors, Peers, or Subordinates"
+    ],
+    "median_annual_wage": 98100,
+    "job_outlook_pct": 7,
+    "bls_url": "https://www.bls.gov/ooh/management/transportation-inspectors.htm"
+  },
+  {
+    "onet_soc": "11-9199.07",
+    "occupation": "Security Managers",
+    "career_path": "Operations",
+    "required_skills": [
+      "Coordination",
+      "Critical Thinking",
+      "Judgment and Decision Making",
+      "Management of Personnel Resources",
+      "Monitoring",
+      "Speaking",
+      "Active Listening"
+    ],
+    "work_activities": [
+      "Making Decisions and Solving Problems",
+      "Communicating with Supervisors",
+      "Coordinating the Work and Activities of Others",
+      "Developing and Building Teams"
+    ],
+    "median_annual_wage": 99500,
+    "job_outlook_pct": 5,
+    "bls_url": "https://www.bls.gov/ooh/management/emergency-management-directors.htm"
+  },
+  {
+    "onet_soc": "11-3021.00",
+    "occupation": "Computer and Information Systems Managers",
+    "career_path": "IT/Cybersecurity",
+    "required_skills": [
+      "Systems Analysis",
+      "Critical Thinking",
+      "Coordination",
+      "Management of Personnel Resources",
+      "Active Listening",
+      "Complex Problem Solving",
+      "Judgment and Decision Making"
+    ],
+    "work_activities": [
+      "Making Decisions and Solving Problems",
+      "Getting Information",
+      "Communicating with Supervisors, Peers, or Subordinates",
+      "Analyzing Data or Information"
+    ],
+    "median_annual_wage": 169510,
+    "job_outlook_pct": 17,
+    "bls_url": "https://www.bls.gov/ooh/management/computer-and-information-systems-managers.htm"
+  },
+  {
+    "onet_soc": "15-1212.00",
+    "occupation": "Information Security Analysts",
+    "career_path": "IT/Cybersecurity",
+    "required_skills": [
+      "Systems Analysis",
+      "Critical Thinking",
+      "Complex Problem Solving",
+      "Active Listening",
+      "Monitoring",
+      "Judgment and Decision Making",
+      "Technology Design"
+    ],
+    "work_activities": [
+      "Getting Information",
+      "Analyzing Data or Information",
+      "Making Decisions and Solving Problems",
+      "Identifying Objects, Actions, and Events"
+    ],
+    "median_annual_wage": 120360,
+    "job_outlook_pct": 33,
+    "bls_url": "https://www.bls.gov/ooh/computer-and-information-technology/information-security-analysts.htm"
+  },
+  {
+    "onet_soc": "13-1082.00",
+    "occupation": "Project Management Specialists",
+    "career_path": "Project Management",
+    "required_skills": [
+      "Coordination",
+      "Time Management",
+      "Critical Thinking",
+      "Active Listening",
+      "Management of Personnel Resources",
+      "Judgment and Decision Making",
+      "Complex Problem Solving"
+    ],
+    "work_activities": [
+      "Organizing, Planning, and Prioritizing Work",
+      "Communicating with Supervisors, Peers, or Subordinates",
+      "Making Decisions and Solving Problems",
+      "Coordinating the Work and Activities of Others"
+    ],
+    "median_annual_wage": 98580,
+    "job_outlook_pct": 7,
+    "bls_url": "https://www.bls.gov/ooh/business-and-financial/project-management-specialists.htm"
+  },
+  {
+    "onet_soc": "13-1071.00",
+    "occupation": "Human Resources Specialists",
+    "career_path": "Operations",
+    "required_skills": [
+      "Active Listening",
+      "Speaking",
+      "Reading Comprehension",
+      "Critical Thinking",
+      "Coordination",
+      "Judgment and Decision Making"
+    ],
+    "work_activities": [
+      "Communicating with Supervisors, Peers, or Subordinates",
+      "Getting Information",
+      "Establishing and Maintaining Interpersonal Relationships",
+      "Organizing, Planning, and Prioritizing Work"
+    ],
+    "median_annual_wage": 67650,
+    "job_outlook_pct": 8,
+    "bls_url": "https://www.bls.gov/ooh/business-and-financial/human-resources-specialists.htm"
+  }
+]

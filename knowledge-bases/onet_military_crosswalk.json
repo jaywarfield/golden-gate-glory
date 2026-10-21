@@ -1,0 +1,325 @@
+[
+  {
+    "mos": "11B",
+    "branch": "Army",
+    "title": "Infantryman",
+    "onet_soc": "33-9099.02",
+    "civilian_title": "Security Management Specialist",
+    "career_paths": [
+      "Operations",
+      "Project Management"
+    ]
+  },
+  {
+    "mos": "11Z",
+    "branch": "Army",
+    "title": "Infantry Senior Sergeant",
+    "onet_soc": "11-9199.07",
+    "civilian_title": "Security Managers",
+    "career_paths": [
+      "Operations",
+      "Project Management"
+    ]
+  },
+  {
+    "mos": "12B",
+    "branch": "Army",
+    "title": "Combat Engineer",
+    "onet_soc": "47-2061.00",
+    "civilian_title": "Construction Laborers",
+    "career_paths": [
+      "Operations",
+      "Logistics"
+    ]
+  },
+  {
+    "mos": "13F",
+    "branch": "Army",
+    "title": "Fire Support Specialist",
+    "onet_soc": "15-1299.09",
+    "civilian_title": "Data Scientists",
+    "career_paths": [
+      "IT/Cybersecurity",
+      "Operations"
+    ]
+  },
+  {
+    "mos": "25B",
+    "branch": "Army",
+    "title": "IT Specialist",
+    "onet_soc": "15-1212.00",
+    "civilian_title": "Information Security Analysts",
+    "career_paths": [
+      "IT/Cybersecurity"
+    ]
+  },
+  {
+    "mos": "25U",
+    "branch": "Army",
+    "title": "Signal Support Systems Specialist",
+    "onet_soc": "15-1231.00",
+    "civilian_title": "Computer Network Support Specialists",
+    "career_paths": [
+      "IT/Cybersecurity"
+    ]
+  },
+  {
+    "mos": "35F",
+    "branch": "Army",
+    "title": "Intelligence Analyst",
+    "onet_soc": "33-3021.06",
+    "civilian_title": "Intelligence Analysts",
+    "career_paths": [
+      "IT/Cybersecurity",
+      "Operations"
+    ]
+  },
+  {
+    "mos": "42A",
+    "branch": "Army",
+    "title": "Human Resources Specialist",
+    "onet_soc": "13-1071.00",
+    "civilian_title": "Human Resources Specialists",
+    "career_paths": [
+      "Project Management",
+      "Operations"
+    ]
+  },
+  {
+    "mos": "68W",
+    "branch": "Army",
+    "title": "Combat Medic Specialist",
+    "onet_soc": "29-2042.00",
+    "civilian_title": "Emergency Medical Technicians",
+    "career_paths": [
+      "Operations"
+    ]
+  },
+  {
+    "mos": "88M",
+    "branch": "Army",
+    "title": "Motor Transport Operator",
+    "onet_soc": "53-3032.00",
+    "civilian_title": "Heavy and Tractor-Trailer Truck Drivers",
+    "career_paths": [
+      "Logistics",
+      "Operations"
+    ]
+  },
+  {
+    "mos": "88N",
+    "branch": "Army",
+    "title": "Transportation Management Coordinator",
+    "onet_soc": "11-3071.00",
+    "civilian_title": "Transportation, Storage, and Distribution Managers",
+    "career_paths": [
+      "Logistics",
+      "Project Management"
+    ]
+  },
+  {
+    "mos": "89D",
+    "branch": "Army",
+    "title": "Explosive Ordnance Disposal Specialist",
+    "onet_soc": "19-4099.01",
+    "civilian_title": "Hazardous Materials Removal Workers",
+    "career_paths": [
+      "Operations"
+    ]
+  },
+  {
+    "mos": "91A",
+    "branch": "Army",
+    "title": "M1 Abrams Tank System Maintainer",
+    "onet_soc": "49-3023.02",
+    "civilian_title": "Automotive Specialty Technicians",
+    "career_paths": [
+      "Operations",
+      "Logistics"
+    ]
+  },
+  {
+    "mos": "92A",
+    "branch": "Army",
+    "title": "Automated Logistical Specialist",
+    "onet_soc": "11-3071.00",
+    "civilian_title": "Transportation, Storage, and Distribution Managers",
+    "career_paths": [
+      "Logistics",
+      "Project Management",
+      "Operations"
+    ]
+  },
+  {
+    "mos": "92Y",
+    "branch": "Army",
+    "title": "Unit Supply Specialist",
+    "onet_soc": "43-5071.00",
+    "civilian_title": "Shipping, Receiving, and Inventory Clerks",
+    "career_paths": [
+      "Logistics",
+      "Operations"
+    ]
+  },
+  {
+    "mos": "79S",
+    "branch": "Army",
+    "title": "Career Counselor",
+    "onet_soc": "21-1012.00",
+    "civilian_title": "Educational, Guidance, and Career Counselors",
+    "career_paths": [
+      "Project Management",
+      "Operations"
+    ]
+  },
+  {
+    "mos": "BM",
+    "branch": "Navy",
+    "title": "Boatswain's Mate",
+    "onet_soc": "53-5021.00",
+    "civilian_title": "Sailors and Marine Oilers",
+    "career_paths": [
+      "Operations",
+      "Logistics"
+    ]
+  },
+  {
+    "mos": "IT",
+    "branch": "Navy",
+    "title": "Information Systems Technician",
+    "onet_soc": "15-1212.00",
+    "civilian_title": "Information Security Analysts",
+    "career_paths": [
+      "IT/Cybersecurity"
+    ]
+  },
+  {
+    "mos": "LS",
+    "branch": "Navy",
+    "title": "Logistics Specialist",
+    "onet_soc": "11-3071.00",
+    "civilian_title": "Transportation, Storage, and Distribution Managers",
+    "career_paths": [
+      "Logistics",
+      "Project Management"
+    ]
+  },
+  {
+    "mos": "PS",
+    "branch": "Navy",
+    "title": "Personnel Specialist",
+    "onet_soc": "13-1071.00",
+    "civilian_title": "Human Resources Specialists",
+    "career_paths": [
+      "Project Management",
+      "Operations"
+    ]
+  },
+  {
+    "mos": "0311",
+    "branch": "Marine Corps",
+    "title": "Rifleman",
+    "onet_soc": "33-9099.02",
+    "civilian_title": "Security Management Specialist",
+    "career_paths": [
+      "Operations",
+      "Project Management"
+    ]
+  },
+  {
+    "mos": "0621",
+    "branch": "Marine Corps",
+    "title": "Field Radio Operator",
+    "onet_soc": "15-1241.00",
+    "civilian_title": "Computer Network Architects",
+    "career_paths": [
+      "IT/Cybersecurity",
+      "Operations"
+    ]
+  },
+  {
+    "mos": "3043",
+    "branch": "Marine Corps",
+    "title": "Supply Chain and Material Management Specialist",
+    "onet_soc": "11-3071.00",
+    "civilian_title": "Transportation, Storage, and Distribution Managers",
+    "career_paths": [
+      "Logistics",
+      "Project Management"
+    ]
+  },
+  {
+    "mos": "1A0X1",
+    "branch": "Air Force",
+    "title": "In-flight Refueling",
+    "onet_soc": "53-6099.00",
+    "civilian_title": "Transportation Workers",
+    "career_paths": [
+      "Operations",
+      "Logistics"
+    ]
+  },
+  {
+    "mos": "1B4X1",
+    "branch": "Air Force",
+    "title": "Cyber Warfare Operations",
+    "onet_soc": "15-1212.00",
+    "civilian_title": "Information Security Analysts",
+    "career_paths": [
+      "IT/Cybersecurity"
+    ]
+  },
+  {
+    "mos": "3D1X2",
+    "branch": "Air Force",
+    "title": "Cyber Transport Systems",
+    "onet_soc": "15-1231.00",
+    "civilian_title": "Computer Network Support Specialists",
+    "career_paths": [
+      "IT/Cybersecurity"
+    ]
+  },
+  {
+    "mos": "2S0X1",
+    "branch": "Air Force",
+    "title": "Materiel Management",
+    "onet_soc": "11-3071.00",
+    "civilian_title": "Transportation, Storage, and Distribution Managers",
+    "career_paths": [
+      "Logistics",
+      "Project Management"
+    ]
+  },
+  {
+    "mos": "3F0X1",
+    "branch": "Air Force",
+    "title": "Personnel",
+    "onet_soc": "13-1071.00",
+    "civilian_title": "Human Resources Specialists",
+    "career_paths": [
+      "Project Management",
+      "Operations"
+    ]
+  },
+  {
+    "mos": "SK",
+    "branch": "Coast Guard",
+    "title": "Storekeeper",
+    "onet_soc": "43-5071.00",
+    "civilian_title": "Shipping, Receiving, and Inventory Clerks",
+    "career_paths": [
+      "Logistics",
+      "Operations"
+    ]
+  },
+  {
+    "mos": "IT-CG",
+    "branch": "Coast Guard",
+    "title": "Information Systems Technician",
+    "onet_soc": "15-1212.00",
+    "civilian_title": "Information Security Analysts",
+    "career_paths": [
+      "IT/Cybersecurity"
+    ]
+  }
+]

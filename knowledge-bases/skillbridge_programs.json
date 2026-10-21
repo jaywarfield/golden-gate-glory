@@ -1,0 +1,362 @@
+[
+  {
+    "program_id": "SB-001",
+    "organization": "Amazon",
+    "program_name": "Amazon Pathways Apprenticeship",
+    "opportunity_type": "Apprenticeship",
+    "career_fields": [
+      "Logistics",
+      "Operations",
+      "Project Management"
+    ],
+    "duration_weeks": 16,
+    "location_type": "Hybrid",
+    "states": [
+      "TX",
+      "VA",
+      "WA",
+      "CA",
+      "FL"
+    ],
+    "branches_eligible": [
+      "Army",
+      "Navy",
+      "Marine Corps",
+      "Air Force",
+      "Space Force",
+      "Coast Guard"
+    ],
+    "url": "https://www.amazon.jobs/en/landing_pages/mil-apprenticeship",
+    "description": "Operations, logistics, and program management roles across Amazon fulfillment network."
+  },
+  {
+    "program_id": "SB-002",
+    "organization": "Microsoft",
+    "program_name": "Microsoft Software and Systems Academy (MSSA)",
+    "opportunity_type": "Technical Training",
+    "career_fields": [
+      "IT/Cybersecurity"
+    ],
+    "duration_weeks": 17,
+    "location_type": "Hybrid",
+    "states": [
+      "WA",
+      "TX",
+      "GA",
+      "VA",
+      "AZ"
+    ],
+    "branches_eligible": [
+      "Army",
+      "Navy",
+      "Marine Corps",
+      "Air Force",
+      "Space Force",
+      "Coast Guard"
+    ],
+    "url": "https://military.microsoft.com/programs/mssa/",
+    "description": "Cloud application development and cloud administration technical training leading to Microsoft certification."
+  },
+  {
+    "program_id": "SB-003",
+    "organization": "IBM",
+    "program_name": "IBM Veteran Employment Initiative",
+    "opportunity_type": "Internship",
+    "career_fields": [
+      "IT/Cybersecurity",
+      "Project Management",
+      "Operations"
+    ],
+    "duration_weeks": 12,
+    "location_type": "Remote",
+    "states": [
+      "All"
+    ],
+    "branches_eligible": [
+      "Army",
+      "Navy",
+      "Marine Corps",
+      "Air Force",
+      "Space Force",
+      "Coast Guard"
+    ],
+    "url": "https://www.ibm.com/employment/veterans/",
+    "description": "Technical and professional roles in cloud, AI, cybersecurity, and consulting."
+  },
+  {
+    "program_id": "SB-004",
+    "organization": "Booz Allen Hamilton",
+    "program_name": "Booz Allen SkillBridge Program",
+    "opportunity_type": "Internship",
+    "career_fields": [
+      "IT/Cybersecurity",
+      "Operations",
+      "Project Management"
+    ],
+    "duration_weeks": 16,
+    "location_type": "Hybrid",
+    "states": [
+      "VA",
+      "MD",
+      "DC",
+      "TX",
+      "CO",
+      "FL"
+    ],
+    "branches_eligible": [
+      "Army",
+      "Navy",
+      "Marine Corps",
+      "Air Force",
+      "Space Force",
+      "Coast Guard"
+    ],
+    "url": "https://www.boozallen.com/careers/military-veterans.html",
+    "description": "Cybersecurity, data analytics, and mission-critical consulting roles."
+  },
+  {
+    "program_id": "SB-005",
+    "organization": "Raytheon Technologies",
+    "program_name": "Raytheon SkillBridge",
+    "opportunity_type": "Internship",
+    "career_fields": [
+      "Operations",
+      "IT/Cybersecurity",
+      "Logistics"
+    ],
+    "duration_weeks": 16,
+    "location_type": "On-site",
+    "states": [
+      "AZ",
+      "TX",
+      "FL",
+      "MA",
+      "VA",
+      "CA"
+    ],
+    "branches_eligible": [
+      "Army",
+      "Navy",
+      "Marine Corps",
+      "Air Force",
+      "Space Force"
+    ],
+    "url": "https://careers.rtx.com/global/en/military",
+    "description": "Engineering, operations, supply chain, and program management roles."
+  },
+  {
+    "program_id": "SB-006",
+    "organization": "Walmart",
+    "program_name": "Walmart SkillBridge Internship",
+    "opportunity_type": "Internship",
+    "career_fields": [
+      "Logistics",
+      "Operations"
+    ],
+    "duration_weeks": 12,
+    "location_type": "On-site",
+    "states": [
+      "AR",
+      "TX",
+      "FL",
+      "CA",
+      "PA",
+      "OH",
+      "GA",
+      "NC"
+    ],
+    "branches_eligible": [
+      "Army",
+      "Navy",
+      "Marine Corps",
+      "Air Force",
+      "Space Force",
+      "Coast Guard"
+    ],
+    "url": "https://careers.walmart.com/military",
+    "description": "Retail logistics, supply chain management, and store operations leadership."
+  },
+  {
+    "program_id": "SB-007",
+    "organization": "Leidos",
+    "program_name": "Leidos SkillBridge Program",
+    "opportunity_type": "Internship",
+    "career_fields": [
+      "IT/Cybersecurity",
+      "Operations",
+      "Project Management"
+    ],
+    "duration_weeks": 16,
+    "location_type": "Hybrid",
+    "states": [
+      "VA",
+      "MD",
+      "DC",
+      "TX",
+      "CO",
+      "GA",
+      "FL"
+    ],
+    "branches_eligible": [
+      "Army",
+      "Navy",
+      "Marine Corps",
+      "Air Force",
+      "Space Force",
+      "Coast Guard"
+    ],
+    "url": "https://www.leidos.com/careers/veterans",
+    "description": "Defense IT, cybersecurity, intelligence analysis, and program management."
+  },
+  {
+    "program_id": "SB-008",
+    "organization": "FedEx",
+    "program_name": "FedEx Veterans SkillBridge",
+    "opportunity_type": "Internship",
+    "career_fields": [
+      "Logistics",
+      "Operations"
+    ],
+    "duration_weeks": 12,
+    "location_type": "On-site",
+    "states": [
+      "TN",
+      "TX",
+      "CA",
+      "FL",
+      "GA",
+      "NY",
+      "OH",
+      "IL"
+    ],
+    "branches_eligible": [
+      "Army",
+      "Navy",
+      "Marine Corps",
+      "Air Force",
+      "Space Force",
+      "Coast Guard"
+    ],
+    "url": "https://careers.fedex.com/fedex/military",
+    "description": "Logistics operations, transportation management, and supply chain coordination."
+  },
+  {
+    "program_id": "SB-009",
+    "organization": "USAA",
+    "program_name": "USAA SkillBridge Internship",
+    "opportunity_type": "Internship",
+    "career_fields": [
+      "Operations",
+      "Project Management",
+      "IT/Cybersecurity"
+    ],
+    "duration_weeks": 16,
+    "location_type": "Hybrid",
+    "states": [
+      "TX",
+      "VA",
+      "CO",
+      "FL",
+      "AZ"
+    ],
+    "branches_eligible": [
+      "Army",
+      "Navy",
+      "Marine Corps",
+      "Air Force",
+      "Space Force",
+      "Coast Guard"
+    ],
+    "url": "https://www.usaa.com/inet/wc/careers-military-programs",
+    "description": "Financial services operations, cybersecurity, project management, and data analytics."
+  },
+  {
+    "program_id": "SB-010",
+    "organization": "General Dynamics IT",
+    "program_name": "GDIT SkillBridge Program",
+    "opportunity_type": "Internship",
+    "career_fields": [
+      "IT/Cybersecurity",
+      "Operations",
+      "Project Management"
+    ],
+    "duration_weeks": 16,
+    "location_type": "Hybrid",
+    "states": [
+      "VA",
+      "MD",
+      "DC",
+      "TX",
+      "CO",
+      "GA",
+      "AZ"
+    ],
+    "branches_eligible": [
+      "Army",
+      "Navy",
+      "Marine Corps",
+      "Air Force",
+      "Space Force",
+      "Coast Guard"
+    ],
+    "url": "https://www.gdit.com/careers/military/",
+    "description": "IT support, cloud computing, cybersecurity operations, and systems administration."
+  },
+  {
+    "program_id": "SB-011",
+    "organization": "DHL",
+    "program_name": "DHL Veterans Initiative",
+    "opportunity_type": "Internship",
+    "career_fields": [
+      "Logistics",
+      "Operations"
+    ],
+    "duration_weeks": 12,
+    "location_type": "On-site",
+    "states": [
+      "All"
+    ],
+    "branches_eligible": [
+      "Army",
+      "Navy",
+      "Marine Corps",
+      "Air Force",
+      "Space Force",
+      "Coast Guard"
+    ],
+    "url": "https://www.dhl.com/us-en/home/our-divisions/freight/customer-service/military-veterans.html",
+    "description": "Global freight and logistics operations management."
+  },
+  {
+    "program_id": "SB-012",
+    "organization": "PricewaterhouseCoopers",
+    "program_name": "PwC Veterans Employment Initiative",
+    "opportunity_type": "Internship",
+    "career_fields": [
+      "Project Management",
+      "Operations",
+      "IT/Cybersecurity"
+    ],
+    "duration_weeks": 16,
+    "location_type": "Hybrid",
+    "states": [
+      "NY",
+      "DC",
+      "TX",
+      "IL",
+      "CA",
+      "FL",
+      "VA"
+    ],
+    "branches_eligible": [
+      "Army",
+      "Navy",
+      "Marine Corps",
+      "Air Force",
+      "Space Force",
+      "Coast Guard"
+    ],
+    "url": "https://www.pwc.com/us/en/careers/veterans.html",
+    "description": "Consulting, risk assurance, technology, and financial advisory services."
+  }
+]
