@@ -81,3 +81,18 @@ build/
 out/
 bin/
 obj/
+
+# -------------------------------------------------------------------
+# Terraform
+# -------------------------------------------------------------------
+# Never commit real credentials or generated state
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/terraform.tfvars
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/*.tfplan
+
+# Bob artifacts — keep them tracked
+.bob/*
+!.bob/artifacts/
