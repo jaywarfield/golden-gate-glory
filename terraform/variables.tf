@@ -10,7 +10,7 @@ variable "ibmcloud_api_key" {
 variable "region" {
   description = "IBM Cloud region for the Orchestrate instance (e.g. us-south, eu-de, jp-tok)."
   type        = string
-  default     = "us-south"
+  default     = "jp-tok"
 
   validation {
     condition     = contains(["us-south", "eu-de", "eu-gb", "jp-tok", "au-syd"], var.region)
