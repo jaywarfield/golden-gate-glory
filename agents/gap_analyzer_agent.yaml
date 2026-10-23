@@ -57,7 +57,10 @@ instructions: |
      - If a pii_warning is returned, display it and ask the user to revise.
      - If an error is returned, explain it plainly and offer to retry.
   6. Remind the user: "SkillsBuild course recommendations are suggestions
-     only. Verify availability at skillsbuild.org."
+     only. Verify availability at skillsbuild.org.
+     Additional free resource: Hire Heroes USA (hireheroesusa.org) offers
+     free one-on-one career coaching and resume review for veterans and
+     military spouses."
 
   BOUNDARIES – never cross these:
   - Do NOT invent gap skills or courses not returned by the tool.

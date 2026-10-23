@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-21",
+  "last_updated": "2026-10-22",
   "sources": [
     {
       "source_id": "RAG-001",
@@ -126,6 +126,50 @@
       "api_key_required": false,
       "live_api_available": false,
       "live_api_url": null
+    },
+    {
+      "source_id": "RAG-010",
+      "name": "Hire Heroes USA",
+      "description": "Nonprofit providing free veteran career coaching, resume review, job board, and employer partnerships for transitioning service members and military spouses. Surfaced as a referral resource — no public API.",
+      "url": "https://www.hireheroesusa.org/",
+      "access_method": "Referral only — direct veterans to hireheroesusa.org for free coaching and job board access. No scraping or API.",
+      "update_frequency": "N/A — referral link",
+      "used_by": ["coordinator", "gap_analyzer"],
+      "trust_level": "High - established 501(c)(3) with DoD and VA partnerships",
+      "record_count": null,
+      "api_key_required": false,
+      "live_api_available": false,
+      "live_api_url": null
+    },
+    {
+      "source_id": "RAG-011",
+      "name": "LinkedIn Jobs",
+      "description": "Major professional networking and job posting platform. No freely accessible search API — LinkedIn's Jobs API requires a paid partner agreement. Job description text is obtained via RAG-009 (user-provided paste).",
+      "url": "https://www.linkedin.com/jobs/",
+      "access_method": "User-provided paste (see RAG-009) — direct veterans to linkedin.com/jobs to find and copy job descriptions. Live API integration not feasible without partner agreement.",
+      "update_frequency": "N/A — covered by user-paste workflow",
+      "used_by": [],
+      "trust_level": "Medium - commercial platform; job postings are employer-authored and unverified",
+      "record_count": null,
+      "api_key_required": true,
+      "live_api_available": false,
+      "live_api_url": null,
+      "notes": "API access requires LinkedIn partner agreement. ToS prohibits scraping. Veterans should copy-paste JDs into the tool (RAG-009)."
+    },
+    {
+      "source_id": "RAG-012",
+      "name": "Indeed Job Postings",
+      "description": "High-volume job aggregator. Indeed deprecated its public Publisher API in 2023; no freely accessible search API remains. Job description text is obtained via RAG-009 (user-provided paste).",
+      "url": "https://www.indeed.com/",
+      "access_method": "User-provided paste (see RAG-009) — direct veterans to indeed.com to find and copy job descriptions. Live API integration not feasible without an enterprise agreement.",
+      "update_frequency": "N/A — covered by user-paste workflow",
+      "used_by": [],
+      "trust_level": "Medium - commercial aggregator; job postings are employer-authored and unverified",
+      "record_count": null,
+      "api_key_required": true,
+      "live_api_available": false,
+      "live_api_url": null,
+      "notes": "Publisher API deprecated 2023. ToS prohibits scraping. Veterans should copy-paste JDs into the tool (RAG-009)."
     }
   ]
 }
