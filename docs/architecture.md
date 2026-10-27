@@ -2,7 +2,7 @@
 
 ### Architecture
 
-![Architecture](images/solution_architecture.png)
+![Architecture](images/architecture.png)
 
 ---
 
