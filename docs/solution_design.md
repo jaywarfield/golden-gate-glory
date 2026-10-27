@@ -2,7 +2,7 @@
 
 ### Solution Design
 
-# RAG Sources
+#### RAG Sources
 
 | ID    | Name  | Trust | Access Method | Integration Status | API Key? | Live API? | Used By | Update Cadence |
 | :---: | :---: | :---: | :---:         | :---:              | :---:    | :---:     | :---:   | :---:          |
