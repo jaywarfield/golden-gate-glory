@@ -1,13 +1,15 @@
 # **Mission Veteran AI – IBM AI Lab Challenge**
 #### *by Golden Gate Glory*
 
+<!--
 ## [Problem and Solution](docs/problem_and_solution.md)
 
-<!--
 ## [Video and Output](docs/video_and_output.md)
 
 ## [Feedback and Evaluation](docs/feedback_and_evaluation.md)
 -->
+
+## [Solution Design]/solution_design.md)
 
 ---
 
