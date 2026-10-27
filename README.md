@@ -1,4 +1,4 @@
-# **Mission Veteran AI** *by Golden Gate Glory* – IBM AI Lab Challenge
+# **Mission Veteran AI** *by Golden Gate Glory*
 
 <!--
 ## [Problem and Solution](docs/problem_and_solution.md)
