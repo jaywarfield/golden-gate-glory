@@ -2,8 +2,6 @@
 
 ### Environment
 
-![Environment](images/environment.png)
-
 <a href="environment.png" target="_blank">
   <img src="images/environment.png"
        alt="Mission Veteran AI Environment Architecture"
