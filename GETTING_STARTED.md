@@ -23,8 +23,10 @@
 ### Setup Mission Veteran AI
 - Browse to https://github.com/jaywarfield/golden-gate-glory
 - Select Code and Open with GitHub Desktop.
-- Execute locally: import-all.sh
-- Test in UI
+- Copy `terraform/terraform.tfvars.example` → `terraform/terraform.tfvars` and fill in credentials.
+- Run `make all` to provision IBM Cloud instances and import agents to Draft.
+- Run `make deploy-live` to also promote Draft to the Live (test) environment.
+- Test in UI via the dashboard URL printed by `terraform output dashboard_url`.
 
 ### Setup IBM Bob
 - Go to bob.ibm.com and select Download for your OS.
@@ -66,16 +68,14 @@ The Governance instance is provisioned alongside watsonx Orchestrate.
 If you have not run Terraform yet, add the two new variables to your
 `terraform/terraform.tfvars` (see `terraform.tfvars.example`) and run:
 ```
-cd terraform
-terraform init
-terraform apply
+make provision
 ```
-After apply completes, retrieve the GUID directly from Terraform:
+After provisioning completes, retrieve the GUID:
 ```
-terraform output governance_instance_guid
+cd terraform && terraform output governance_instance_guid
 ```
-If you already ran `terraform apply` before this change, run `terraform apply`
-again — it will add only the new Governance instance without touching Orchestrate.
+If you already ran `make provision` before this change, run it again —
+it will add only the new Governance instance without touching Orchestrate.
 
 **Step 3 – Add Governance secrets to your `.env` file**
 ```
@@ -87,8 +87,7 @@ GOVERNANCE_ENABLED=true                                # set false to disable wi
 
 **Step 4 – Register AI use cases and monitor subscriptions (run once per environment)**
 ```
-source venv/bin/activate
-python governance/register_factsheets.py
+make register-governance
 ```
 The script prints four subscription IDs. Add them to `.env`:
 ```
@@ -116,35 +115,39 @@ environment variables above are set.
   ```
 
 **Re-baselining after updates**
-Run `python governance/register_factsheets.py` again after:
+Run `make register-governance` again after:
 - A planned Granite model version upgrade.
 - A quarterly knowledge base refresh (O\*NET, SkillsBuild, SkillBridge).
 
 ---
 
-Note: The following are additional orchestrate commands if needed.
+### Make command reference
 
-### View orchestrate help:
-- orchestrate –help
-- orchestrate env --help
-- orchestrate agents –help
-- orchestrate agents remove --help
-- etc
+| Command | What it does |
+|---|---|
+| `make all` | Provision IBM Cloud instances (Terraform) + import agents to Draft |
+| `make init` | `terraform init` — download providers and modules |
+| `make plan` | Preview infrastructure changes without applying |
+| `make provision` | `terraform apply` — create or update IBM Cloud instances |
+| `make deploy` | Import toolkits + agents to Draft (safe — does not touch Live) |
+| `make deploy-live` | Import to Draft and immediately promote to Live |
+| `make promote` | Promote current Draft snapshot to Live (skip re-import) |
+| `make destroy` | `terraform destroy` — remove all instances and agents |
+| `make test` | Run unit tests: `pytest tests/ -v --tb=short` (all mocked) |
+| `make lint` | Lint toolkit Python files with flake8 |
+| `make register-governance` | Register AI Factsheets and monitors (run once after provision) |
+| `make help` | List all available targets |
 
-### Remove agent:
- orchestrate agents remove --name my-agent --kind native
+### Additional orchestrate CLI commands (if needed)
 
-### List agents:
-- orchestrate agents list -v
-
-### Import tools:
-- orchestrate tools import -f my-file.py -k python
-
-### Import knowledge bases:
-- orchestrate knowledge-bases import -f my-kb.yaml
-
-### Import agents:
-- orchestrate agents import -f my-agent.yaml
+- `orchestrate --help`
+- `orchestrate env --help`
+- `orchestrate agents --help`
+- `orchestrate agents list -v`
+- `orchestrate agents remove --name my-agent --kind native`
+- `orchestrate tools import -f my-file.py -k python`
+- `orchestrate knowledge-bases import -f my-kb.yaml`
+- `orchestrate agents import -f my-agent.yaml`
 
 ---
 
