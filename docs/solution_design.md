@@ -2,6 +2,10 @@
 
 ### Solution Design
 
+#### Solution Architecture
+
+![Solution Architecture](images/solution_architecture.pdf)
+
 #### RAG Sources
 
 | ID    | Name  | Trust | Access Method | Integration Status | API Key? | Live API? | Used By | Update Cadence |
