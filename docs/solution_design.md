@@ -2,9 +2,7 @@
 
 ### Solution Design
 
-#### Solution Architecture
-
-![Solution Architecture](images/solution_architecture.pdf)
+[Solution Architecture](images/solution_architecture.pdf)
 
 #### RAG Sources
 
