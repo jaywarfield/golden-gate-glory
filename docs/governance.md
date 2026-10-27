@@ -16,9 +16,7 @@ Where Governance adds real value:
 Where Governance would add less value:
 
 - Model selection where all five agents are already pin to ibm/granite-4-h-small, so model governance (version locking, approval workflows) is already partially addressed by the YAML specs.
-
 - Access control where Orchestrate handles the auth boundary; Governance would be redundant there.
-
 - Throughput / cost where this is a low-volume, session-based tool, not a high-scale inference pipeline, so Governance's cost attribution features are lower priority.
 
 Practical integration point:
