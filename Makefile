@@ -16,7 +16,8 @@
 # ── Teardown ────────────────────────────────────────────────────────────────
 #   make destroy      # destroy the Orchestrate instance (removes all agents)
 
-.PHONY: all provision init plan deploy deploy-live promote destroy help
+.PHONY: all provision init plan deploy deploy-live promote destroy \
+        test test-unit lint register-governance help
 
 TERRAFORM_DIR := terraform
 DEPLOY_SCRIPT := ./deploy.sh
@@ -70,6 +71,31 @@ destroy:
 	@read -p "Type 'yes' to confirm: " CONFIRM && [ "$$CONFIRM" = "yes" ] || (echo "Aborted." && exit 1)
 	cd $(TERRAFORM_DIR) && terraform destroy -auto-approve
 	@echo "$(GREEN)✓ Instance destroyed$(NC)"
+
+## test: Run the full unit test suite
+test: test-unit
+
+## test-unit: Run unit tests (no live API calls — mocked)
+test-unit:
+	@echo "$(BLUE)▶ Running unit tests...$(NC)"
+	pytest tests/ -v --tb=short
+	@echo "$(GREEN)✓ Unit tests passed$(NC)"
+
+## lint: Check Python toolkit files with flake8 (E/W errors only, max line 100)
+lint:
+	@echo "$(BLUE)▶ Linting toolkit Python files...$(NC)"
+	flake8 toolkits/ --max-line-length=100 --extend-ignore=E501,W503 --count
+	@echo "$(GREEN)✓ Lint passed$(NC)"
+
+## register-governance: Register AI Factsheets and monitors (run once after terraform apply)
+register-governance:
+	@echo "$(BLUE)▶ Registering AI Factsheets and monitors with watsonx Governance...$(NC)"
+	@if [ -z "$$GOVERNANCE_INSTANCE_GUID" ]; then \
+	  echo "$(YELLOW)⚠ GOVERNANCE_INSTANCE_GUID not set. Run: terraform output governance_instance_guid$(NC)"; \
+	  exit 1; \
+	fi
+	python governance/register_factsheets.py
+	@echo "$(GREEN)✓ Governance registration complete$(NC)"
 
 ## help: Show available targets
 help:

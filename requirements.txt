@@ -29,4 +29,7 @@ pyyaml>=6.0.0                  # governance/register_factsheets.py YAML parsing
 
 # Phase 4 (add when starting notebooks/06_action_plan.ipynb)
 # requests>=2.32.0         # public source URL fetch
-# pytest>=8.0.0            # end-to-end test runner
+
+# Testing
+pytest>=8.0.0            # unit and integration test runner
+pytest-mock>=3.14.0      # convenient mock fixtures (used in toolkit tests)

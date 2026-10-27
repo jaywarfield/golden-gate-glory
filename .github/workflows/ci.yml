@@ -1,0 +1,82 @@
+# .github/workflows/ci.yml
+# Mission Veteran AI — a Golden Gate Glory project
+#
+# CI pipeline: lint + unit tests on every push and pull request.
+# No live API calls — all LLM interactions are mocked in the test suite.
+#
+# Secrets required: none (tests are fully offline/mocked)
+# Terraform and deploy steps are NOT run in CI — they require IBM Cloud
+# credentials and are run manually via `make provision` / `make deploy`.
+
+name: CI
+
+on:
+  push:
+    branches: ["main", "develop"]
+    paths:
+      - "toolkits/**"
+      - "tests/**"
+      - "governance/**"
+      - "requirements.txt"
+      - ".github/workflows/ci.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "toolkits/**"
+      - "tests/**"
+      - "governance/**"
+      - "requirements.txt"
+
+jobs:
+  test:
+    name: Lint + Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── Checkout ──────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── Python ────────────────────────────────────────────────────────────
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      # ── Dependencies ──────────────────────────────────────────────────────
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install flake8
+
+      # ── Lint ──────────────────────────────────────────────────────────────
+      - name: Lint toolkit Python files
+        run: |
+          flake8 toolkits/ \
+            --max-line-length=100 \
+            --extend-ignore=E501,W503 \
+            --count \
+            --statistics
+
+      # ── Unit tests ────────────────────────────────────────────────────────
+      - name: Run unit tests
+        run: |
+          pytest tests/ -v --tb=short --no-header \
+            -p no:cacheprovider
+        env:
+          # Stub env vars so get_credentials() doesn't raise at import time.
+          # Tests mock the client so these values are never used for real calls.
+          WATSONX_API_KEY: "ci-stub-key"
+          WATSONX_URL: "https://us-south.ml.cloud.ibm.com"
+          WATSONX_PROJECT_ID: "ci-stub-project"
+
+      # ── Test summary ──────────────────────────────────────────────────────
+      - name: Upload test results (if pytest-junit plugin present)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-results
+          path: "*.xml"
+          if-no-files-found: ignore
