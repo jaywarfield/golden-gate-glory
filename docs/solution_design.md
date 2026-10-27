@@ -21,6 +21,18 @@
 
 Summary: 12 sources total — 8 actively integrated (5 static JSON, 1 embedded, 1 partial embed, 1 referral), 2 pending integration (RAG-006 and RAG-007 need API keys), 2 documented as referral-only with no feasible live integration path (RAG-011, RAG-012).
 
+#### Notebooks
+
+| Notebook | Web UI step | Toolkit function | What it does |
+| :---:    | :---:       | :---:            | :---:        | 
+| NB 01 | 01_bullet_translation | Step 2 — Military Bullet Translation | translate_bullet | Translates raw military accomplishment bullets into ATS-ready civilian resume bullets |
+| NB 02 | 02_skill_knowledge_base | Step 4 — Skill Mapping (first half) |  map_military_skills + analyze_skills_gap | Maps MOS/AFSC/rating to civilian skill inventory via O*NET crosswalk, then identifies gaps and recommends IBM SkillsBuild courses |
+| NB 03 | 03_job_analyzer | Step 3 — Job Description Analysis | analyze_job_description | Extracts required skills, preferred skills, ATS keywords, seniority, and industry from a pasted job description |
+| NB 04 | 04_resume_builder |  Step 5 — Tagged Resume Draft (first pass) | build_resume_draft (raw prompt path) | Builds the evidence-tagged resume draft; tests the raw Granite prompt directly against prompt_templates.json PT-002 |
+| NB 05 | 05_materials_builder | Step 5 — Tagged Resume Draft + Cover Letter | build_resume_draft + cover letter (PT-005) | Extends NB 04 to also produce a tagged cover letter draft; both go through the grounding check |
+| NB 06 | 06_gate_controller | Step 7 — Export Gate    evaluate_export_gate | Tests the gate logic with a simulated draft; generates plain-English hold explanations via PT-004; simulates hold resolution |
+| NB 07 | 07_career_pipeline | All 7 steps end-to-end  All toolkit functions |  Runs the complete pipeline in sequence — imports and calls all toolkit functions directly, no raw prompt path |
+
 ### Solution Diagram
 
 TBD
