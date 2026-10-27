@@ -14,10 +14,10 @@
 | RAG-006 | USAJobs API | :green_circle: High — U.S. OPM | Live API (data.usajobs.gov/api/search) | ⏳ Not yet integrated — needs API key | Yes | Yes | (none yet) | Real-time |
 | RAG-007 | CareerOneStop Occupation Profile | :green_circle: High — U.S. Dept. of Labor | Live API (api.careeronestop.org/v1/occupation/) | ⏳ Not yet integrated — needs API key | Yes | Yes | (none yet) | Quarterly |
 | RAG-008 | O*NET Work Activities | :green_circle: High — U.S. Dept. of Labor | Partial embed in onet_occupation_skills.json | ✅ Integrated (partial) | No | Yes | skill_mapper | Annual |
-| RAG-009 | Civilian Job Postings (user-provided) | &#x1F7E1> User-provided — unverified | User paste via job_description parameter |  ✅ Integrated | No | No | gap_analyzer, plan_builder | Per session |
+| RAG-009 | Civilian Job Postings (user-provided) | :yellow_circle: User-provided — unverified | User paste via job_description parameter |  ✅ Integrated | No | No | gap_analyzer, plan_builder | Per session |
 | RAG-010 | Hire Heroes USA | :green_circle: High — 501(c)(3) w/ DoD & VA partnerships | Referral only — no API | ✅ Integrated (referral) | No | No | coordinator, gap_analyzer | N/A |
-| RAG-011 | LinkedIn Jobs | &#x1F7E1> Medium — employer-authored, unverified | User paste via RAG-009 (partner API not feasible) | 🚫 No live integration — ToS/API blockedR | Yes (partner) | No | (referral only) N/A |
-| RAG-012 | Indeed Job Postings | &#x1F7E1> Medium — aggregator, unverified | User paste via RAG-009 (API deprecated 2023) | 🚫 No live integration — API deprecated Yes (enterprise) | No | (referral only) N/A 
+| RAG-011 | LinkedIn Jobs | :yellow-circle: Medium — employer-authored, unverified | User paste via RAG-009 (partner API not feasible) | 🚫 No live integration — ToS/API blockedR | Yes (partner) | No | (referral only) N/A |
+| RAG-012 | Indeed Job Postings | :yellow-circle: Medium — aggregator, unverified | User paste via RAG-009 (API deprecated 2023) | 🚫 No live integration — API deprecated Yes (enterprise) | No | (referral only) N/A 
 
 Summary: 12 sources total — 8 actively integrated (5 static JSON, 1 embedded, 1 partial embed, 1 referral), 2 pending integration (RAG-006 and RAG-007 need API keys), 2 documented as referral-only with no feasible live integration path (RAG-011, RAG-012).
 
