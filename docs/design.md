@@ -8,6 +8,8 @@
 
 [Notebooks](notebooks.md)
 
+[Governance](governance.md)
+
 ---
 
 # License
