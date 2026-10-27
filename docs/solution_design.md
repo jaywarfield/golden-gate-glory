@@ -1,6 +1,6 @@
 # **Mission Veteran AI – IBM AI Lab Challenge**
 
-[Architecture](images/solution_architecture.pdf)
+[Architecture](architecture.md)
 
 [RAG Sources](rag_sources.md)
 
