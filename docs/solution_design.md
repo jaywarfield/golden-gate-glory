@@ -2,6 +2,8 @@
 
 [Architecture](architecture.md)
 
+[Environment](environment.md)
+
 [RAG Sources](rag_sources.md)
 
 [Notebooks](notebooks.md)
