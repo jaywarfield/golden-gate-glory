@@ -8,7 +8,7 @@
 ## [Feedback and Evaluation](docs/feedback_and_evaluation.md)
 -->
 
-## [Solution Design](docs/solution_design.md)
+## [Design](docs/design.md)
 
 ---
 
