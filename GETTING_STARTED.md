@@ -26,6 +26,26 @@
 - Execute locally: import-all.sh
 - Test in UI
 
+### Setup IBM Bob
+- Go to bob.ibm.com and select Download for your OS.
+- Open downloaded file, accept license agreement, and follow prompts.
+- Launch IBM Bob application (a standalone IDE integrated with VS Code features).
+- Log into IBM Bob with IBMid or SSO.
+- Activate Trial or Subscription (such as IBM Lab).
+- Configure workspace (clone a Git repository in previous step).
+
+### Reset IBM Bob Workspace
+- Remove user folder: /User/.bob
+- Remove user folder: /User/.bobide folder
+- Remove user library folder: /User/Library/Application Support/IBM Bob
+- Remove system library folder: /Library/Application Support/IBM Bob
+
+### Copy IBM Bob Workspace (e.g. Reuse what a colleague has started)
+- Copy user folder: /User/.bob
+- Copy user folder: /User/.bobide folder
+- Copy user library folder: /User/Library/Application Support/IBM Bob
+- Copy system library folder: /Library/Application Support/IBM Bob
+
 ---
 
 ### Setup watsonx Governance
