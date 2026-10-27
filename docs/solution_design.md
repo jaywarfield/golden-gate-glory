@@ -1,6 +1,6 @@
 # **Mission Veteran AI – IBM AI Lab Challenge**
 
-### Solution Deesign
+### Solution Design
 
 ## RAG Sources
 
