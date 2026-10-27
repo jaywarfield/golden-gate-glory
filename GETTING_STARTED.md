@@ -28,7 +28,7 @@
 
 ---
 
-### Setup watsonx Governance (Phase 5)
+### Setup watsonx Governance
 
 watsonx Governance adds bias monitoring, model drift detection, content safety
 (ML-based PII), explainability, and an immutable inference audit trail to all
