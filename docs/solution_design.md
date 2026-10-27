@@ -19,7 +19,15 @@
 | RAG-011 | LinkedIn Jobs | :yellow_circle: Medium — employer-authored, unverified | User paste via RAG-009 (partner API not feasible) | :no_entry_sign: No live integration — ToS/API blocked | Yes (partner) | No | (referral only) | N/A |
 | RAG-012 | Indeed Job Postings | :yellow_circle: Medium — aggregator, unverified | User paste via RAG-009 (API deprecated 2023) | :no_entry_sign: No live integration — API deprecated | Yes (enterprise) | No | (referral only) | N/A | 
 
-Summary: 12 sources total — 8 actively integrated (5 static JSON, 1 embedded, 1 partial embed, 1 referral), 2 pending integration (RAG-006 and RAG-007 need API keys), 2 documented as referral-only with no feasible live integration path (RAG-011, RAG-012).
+Summary:
+
+- 12 sources total.
+
+- 8 actively integrated (5 static JSON, 1 embedded, 1 partial embed, 1 referral).
+
+- 2 pending integration (RAG-006 and RAG-007 need API keys).
+
+- 2 documented as referral-only with no feasible live integration path (RAG-011, RAG-012).
 
 #### Notebooks
 
