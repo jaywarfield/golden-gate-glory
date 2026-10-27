@@ -1,7 +1,5 @@
 # **Mission Veteran AI – IBM AI Lab Challenge**
 
-### Solution Design
-
 [Solution Architecture](images/solution_architecture.pdf)
 
 #### RAG Sources
