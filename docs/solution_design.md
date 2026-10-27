@@ -5,7 +5,7 @@
 ## RAG Sources
 
 | ID    | Name  | Trust | Access Method | Integration Status | API Key? | Live API? | Used By | Update Cadence |
-| :---: | :---: | :---: | :---:         | :---:              | :---:    | :---:     | :---:   | :---:          :
+| :---: | :---: | :---: | :---:         | :---:              | :---:    | :---:     | :---:   | :---:          |
 | RAG-001 | O*NET Military Occupational Crosswalk | &#x1F7E2 High — U.S. Dept. of Labor | Static JSON (onet_military_crosswalk.json) | ✅ Integrated | No | Yes | skill_mapper | Annual |
 | RAG-002 | O*NET Occupation Skills | &#x1F7E2 High — U.S. Dept. of Labor | Static JSON (onet_occupation_skills.json) |  ✅ Integrated | No | Yes | skill_mapper | Annual |
 | RAG-003 | IBM SkillsBuild Course Catalog | &#x1F7E2 High — IBM | Static JSON (skillsbuild_courses.json) | ✅ Integrated | No | No | gap_analyzer | Quarterly |
