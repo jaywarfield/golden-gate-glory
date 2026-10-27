@@ -33,6 +33,18 @@ Summary: 12 sources total — 8 actively integrated (5 static JSON, 1 embedded, 
 | NB 06 | 06_gate_controller | Step 7 — Export Gate    evaluate_export_gate | Tests the gate logic with a simulated draft; generates plain-English hold explanations via PT-004; simulates hold resolution |
 | NB 07 | 07_career_pipeline | All 7 steps end-to-end  All toolkit functions |  Runs the complete pipeline in sequence — imports and calls all toolkit functions directly, no raw prompt path |
 
+Notes:
+
+1. Step 1 (Veteran Profile) has no notebook — it's pure form input (branch, specialty code, service summary, target role). No LLM call, nothing to test in isolation.
+
+2. Step 6 (Interview Prep) has no notebook — NB 07 marks it explicitly as # toolkit not yet implemented and stubs it with an empty result. The web UI has a Step 6 panel but it also calls a mock. This is the one pipeline step with no corresponding test notebook.
+
+3. NB 03 and NB 04 are ordered opposite to the web UI — the web UI runs job analysis (Step 3) before skill mapping (Step 4), but NB 02 covers skill mapping and NB 03 covers job analysis. The numbering followed the order the notebooks were originally authored, not the final user flow order.
+
+4. NB 04 vs NB 05 — both cover Step 5, but at different levels. NB 04 is a focused unit test of build_resume_draft via the raw prompt path. NB 05 is the integration test that produces both the resume and cover letter and runs the full gate evaluation against both. In practice you run NB 04 first to verify the resume draft in isolation, then NB 05 to verify the full materials package.
+
+5. NB 07 is the authoritative end-to-end test — it imports the real toolkit functions and runs them in the correct web UI order (Steps 1→7), making it the single notebook that validates the whole pipeline works together.
+
 ### Solution Diagram
 
 TBD
