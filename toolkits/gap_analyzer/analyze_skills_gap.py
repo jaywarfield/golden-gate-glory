@@ -1,5 +1,5 @@
 # toolkits/gap_analyzer/analyze_skills_gap.py
-# Mission Veteran AI
+# Mission Veteran AI — a Golden Gate Glory project
 # Toolkit: gap_analyzer
 # Tool: analyze_skills_gap
 #
@@ -12,6 +12,7 @@
 import json
 import sys
 import os
+import time
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -23,8 +24,11 @@ from shared._common import (
     contains_pii, pii_warning_message, get_credentials,
     lookup_skillsbuild, lookup_skillbridge,
 )
+from shared.governance import log_inference, get_subscription_ids
 
 from ibm_watsonx_orchestrate.agent_builder.tools import tool, ToolPermission
+
+_MODEL_ID = "ibm/granite-4-h-small"
 
 
 @tool(permission=ToolPermission.READ_ONLY)
@@ -81,9 +85,10 @@ Job description:
 
 JSON object:"""
 
+    t0 = time.monotonic()
     try:
         model = ModelInference(
-            model_id="ibm/granite-4-h-small",
+            model_id=_MODEL_ID,
             api_client=client,
             params={
                 GenParams.MAX_NEW_TOKENS: 600,
@@ -91,6 +96,7 @@ JSON object:"""
             },
         )
         raw = model.generate_text(prompt=prompt).strip()
+        latency_ms = (time.monotonic() - t0) * 1000
         if raw.startswith("```"):
             raw = raw.split("```")[1]
             if raw.startswith("json"):
@@ -98,15 +104,16 @@ JSON object:"""
         result = json.loads(raw.strip())
 
         gap_skills = result.get("gap_skills", [])
+        coverage_pct = result.get("coverage_pct", 0)
 
         # ── KB-grounded course and program lookups ─────────────────────────
         skillsbuild = lookup_skillsbuild(target_career_path, gap_skills)
         skillbridge = lookup_skillbridge(target_career_path)
 
-        return {
+        output = {
             "covered_skills": result.get("covered_skills", []),
             "gap_skills": gap_skills,
-            "coverage_pct": result.get("coverage_pct", 0),
+            "coverage_pct": coverage_pct,
             "skillsbuild_recommendations": [
                 {
                     "course_id": c["course_id"],
@@ -140,7 +147,41 @@ JSON object:"""
             "error": None,
         }
 
+        # ── Governance: log inference fact ────────────────────────────────
+        subs = get_subscription_ids()
+        log_inference(
+            tool_name="analyze_skills_gap",
+            model_id=_MODEL_ID,
+            prompt=prompt,
+            response=raw,
+            input_data={
+                "target_career_path": target_career_path,
+            },
+            output_data={
+                "coverage_pct": coverage_pct,
+                "gap_skill_count": len(gap_skills),
+                "covered_skill_count": len(result.get("covered_skills", [])),
+                "error": None,
+            },
+            subscription_id=subs.get("analyze_skills_gap"),
+            latency_ms=latency_ms,
+            metadata={"fairness_attribute_career_path": target_career_path},
+        )
+
+        return output
+
     except Exception as exc:
+        log_inference(
+            tool_name="analyze_skills_gap",
+            model_id=_MODEL_ID,
+            prompt=prompt,
+            response="",
+            input_data={"target_career_path": target_career_path},
+            output_data={"coverage_pct": 0, "error": str(exc)},
+            subscription_id=get_subscription_ids().get("analyze_skills_gap"),
+            latency_ms=(time.monotonic() - t0) * 1000,
+            metadata={"fairness_attribute_career_path": target_career_path},
+        )
         return {
             "covered_skills": None, "gap_skills": None, "coverage_pct": 0,
             "skillsbuild_recommendations": None, "skillbridge_programs": None,

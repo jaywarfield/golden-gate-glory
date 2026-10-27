@@ -45,3 +45,22 @@ variable "resource_tags" {
   type        = list(string)
   default     = ["project:mission-veteran-ai", "env:dev"]
 }
+
+# ── Governance variables ────────────────────────────────────────────────────
+
+variable "governance_instance_name" {
+  description = "Display name for the watsonx Governance (Watson OpenScale) service instance."
+  type        = string
+  default     = "mission-veteran-ai-governance"
+}
+
+variable "governance_plan" {
+  description = "Service plan for watsonx Governance. Options: lite, standard."
+  type        = string
+  default     = "lite"
+
+  validation {
+    condition     = contains(["lite", "standard"], var.governance_plan)
+    error_message = "governance_plan must be one of: lite, standard."
+  }
+}

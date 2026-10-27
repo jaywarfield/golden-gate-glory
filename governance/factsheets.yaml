@@ -1,0 +1,209 @@
+# governance/factsheets.yaml
+# Mission Veteran AI by Golden Gate Glory — watsonx Governance
+# AI Factsheet definitions
+#
+# These records register each AI use case and its associated model asset in
+# IBM watsonx Governance (OpenScale AI Factsheet service).
+#
+# Import / register with:
+#   python governance/register_factsheets.py
+#
+# One AI use case per toolkit. Each use case tracks:
+#   - The Granite model used for inference.
+#   - The associated monitor subscriptions (defined in monitors.yaml).
+#   - Responsible-AI metadata: task type, data sensitivity, intended use,
+#     out-of-scope uses, risk tier, and human oversight requirements.
+#
+# These values populate the Governance AI Factsheet visible in the IBM
+# watsonx platform UI under AI Use Cases.
+
+factsheets:
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 1. Bullet Translator
+  # ──────────────────────────────────────────────────────────────────────────
+  - use_case_id: mvai-bullet-translator
+    name: "Mission Veteran AI — Bullet Translator"
+    description: >
+      Translates a PII-free U.S. military accomplishment bullet into an
+      ATS-ready civilian resume bullet using IBM Granite.
+      Output is consumed directly by transitioning veterans for job applications.
+    task_type: text_generation
+    model_id: ibm/granite-4-h-small
+    model_provider: IBM watsonx.ai
+    toolkit: bullet_translator
+    entry_tool: translate_bullet
+    data_sensitivity: high              # veteran career data; no PII by design
+    risk_tier: high                     # output used in consequential job applications
+    intended_use: >
+      Convert a single PII-free military accomplishment bullet to one civilian
+      resume bullet for a transitioning U.S. service member.
+    out_of_scope_uses: >
+      Hiring decisions, eligibility determinations, benefits assessments,
+      medical or legal advice, salary predictions.
+    human_oversight_required: true
+    human_oversight_note: >
+      All output is tagged DRAFT and must be reviewed by the veteran before
+      submission to an employer.
+    monitors:
+      - bias_monitor
+      - drift_monitor
+      - content_safety_monitor
+      - explainability_monitor
+    tags:
+      - veteran-transition
+      - resume
+      - text-generation
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 2. Skill Mapper
+  # ──────────────────────────────────────────────────────────────────────────
+  - use_case_id: mvai-skill-mapper
+    name: "Mission Veteran AI — Skill Mapper"
+    description: >
+      Maps a veteran's MOS/AFSC/rating and PII-free service summary to a
+      structured civilian skill inventory grounded by O*NET data.
+    task_type: text_generation
+    model_id: ibm/granite-4-h-small
+    model_provider: IBM watsonx.ai
+    toolkit: skill_mapper
+    entry_tool: map_military_skills
+    data_sensitivity: high
+    risk_tier: high
+    intended_use: >
+      Produce a categorised civilian skill inventory for a transitioning
+      U.S. service member based on their occupational specialty and
+      O*NET knowledge base data.
+    out_of_scope_uses: >
+      Hiring decisions, clearance assessments, disability ratings, legal or
+      financial advice, salary predictions.
+    human_oversight_required: true
+    human_oversight_note: >
+      All output is tagged DRAFT. Veterans must verify every skill against
+      their actual service record before use in an application.
+    fairness_attributes:
+      - name: service_branch
+        reference_group: Army
+        monitored_groups:
+          - Navy
+          - Marine Corps
+          - Air Force
+          - Space Force
+          - Coast Guard
+    monitors:
+      - bias_monitor
+      - drift_monitor
+      - content_safety_monitor
+      - explainability_monitor
+    tags:
+      - veteran-transition
+      - skill-mapping
+      - onet
+      - text-generation
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 3. Gap Analyzer
+  # ──────────────────────────────────────────────────────────────────────────
+  - use_case_id: mvai-gap-analyzer
+    name: "Mission Veteran AI — Gap Analyzer"
+    description: >
+      Compares a veteran's civilian skill inventory against a target job
+      description, identifies covered and gap skills, and recommends free
+      IBM SkillsBuild courses and DoD SkillBridge programs.
+    task_type: text_generation
+    model_id: ibm/granite-4-h-small
+    model_provider: IBM watsonx.ai
+    toolkit: gap_analyzer
+    entry_tool: analyze_skills_gap
+    data_sensitivity: high
+    risk_tier: high
+    intended_use: >
+      Produce a skill gap report with course recommendations for a
+      transitioning U.S. service member targeting a specific civilian role.
+    out_of_scope_uses: >
+      Hiring decisions, course enrollment guarantees, clearance assessments,
+      benefits or legal advice.
+    human_oversight_required: true
+    human_oversight_note: >
+      Coverage percentage and course recommendations are informational only.
+      Veterans should verify SkillsBuild availability and SkillBridge
+      eligibility independently.
+    fairness_attributes:
+      - name: service_branch
+        reference_group: Army
+        monitored_groups:
+          - Navy
+          - Marine Corps
+          - Air Force
+          - Space Force
+          - Coast Guard
+      - name: target_career_path
+        reference_group: Project Management
+        monitored_groups:
+          - Operations
+          - IT/Cybersecurity
+          - Logistics
+    monitors:
+      - bias_monitor
+      - drift_monitor
+      - content_safety_monitor
+      - explainability_monitor
+    tags:
+      - veteran-transition
+      - gap-analysis
+      - skillsbuild
+      - text-generation
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 4. Plan Builder
+  # ──────────────────────────────────────────────────────────────────────────
+  - use_case_id: mvai-plan-builder
+    name: "Mission Veteran AI — Plan Builder"
+    description: >
+      Three-step gated pipeline: analyses a civilian job description, builds
+      an evidence-tagged resume draft (EVIDENCED / INFERRED / MISSING), and
+      evaluates an export gate that blocks sharing until all ambiguous tags
+      are resolved by the veteran.
+    task_type: text_generation
+    model_id: ibm/granite-4-h-small
+    model_provider: IBM watsonx.ai
+    toolkit: plan_builder
+    entry_tool: build_resume_draft
+    data_sensitivity: high
+    risk_tier: high
+    intended_use: >
+      Produce a tagged, reviewer-gated resume draft for a transitioning
+      U.S. service member based on verified inputs from earlier pipeline steps.
+    out_of_scope_uses: >
+      Finalised resume generation without veteran review, hiring decisions,
+      eligibility assessments, legal or financial advice.
+    human_oversight_required: true
+    human_oversight_note: >
+      Export is hard-blocked until all INFERRED and MISSING tags are resolved
+      by the veteran. Final document must be reviewed before submission.
+    fairness_attributes:
+      - name: service_branch
+        reference_group: Army
+        monitored_groups:
+          - Navy
+          - Marine Corps
+          - Air Force
+          - Space Force
+          - Coast Guard
+      - name: role_level
+        reference_group: Mid
+        monitored_groups:
+          - Entry
+          - Senior
+          - Manager
+          - Director
+    monitors:
+      - bias_monitor
+      - drift_monitor
+      - content_safety_monitor
+      - explainability_monitor
+    tags:
+      - veteran-transition
+      - resume
+      - export-gate
+      - text-generation

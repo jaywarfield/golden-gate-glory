@@ -1,5 +1,5 @@
 # toolkits/shared/_common.py
-# Mission Veteran AI
+# Mission Veteran AI — a Golden Gate Glory project
 # Shared utilities — PII guard, credential helper, KB loader
 # Used by all four toolkits.
 

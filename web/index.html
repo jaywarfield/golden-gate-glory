@@ -211,6 +211,28 @@
     .conf-high   { color: #166534; font-weight: 600; }
     .conf-medium { color: #92400e; font-weight: 600; }
     .conf-low    { color: #57606a; }
+
+    /* ── Mobile (≤ 480 px) ───────────────────────────────────────── */
+    @media (max-width: 480px) {
+      /* Topbar: shrink text so it fits on one line without overflow */
+      .topbar-title { font-size: 11px; }
+      .topbar-sub   { font-size: 10px; }
+
+      /* Profile form: stack the branch/specialty pair vertically */
+      .field-row { grid-template-columns: 1fr; }
+
+      /* Skill inventory table: collapse to 2 cols, hide Confidence */
+      .inv-grid { grid-template-columns: 2fr 1fr; }
+      .inv-grid .inv-header:nth-child(3),
+      .inv-grid .inv-cell:nth-child(3n) { display: none; }
+
+      /* Buttons: full-width stacked on small screens */
+      .btn-row { flex-direction: column; }
+      .btn     { width: 100%; text-align: center; }
+
+      /* Cards: tighter padding */
+      .card { padding: 14px 12px; }
+    }
   </style>
 </head>
 <body>
@@ -371,7 +393,7 @@
     <div class="card-title">Target Job Description</div>
     <div class="field">
       <label for="s3-jd">Job description text <span class="req">*</span></label>
-      <textarea id="s3-jd" rows="8" maxlength="2000"
+      <textarea id="s3-jd" rows="5" maxlength="2000"
         placeholder="Paste the full job posting here. PII-free — remove recruiter names, company contacts, etc."></textarea>
       <div class="field-hint">Maximum 2000 characters.</div>
     </div>

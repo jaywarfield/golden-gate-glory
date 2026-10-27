@@ -1,5 +1,5 @@
 # agents/plan_builder_agent.yaml
-# Mission Veteran AI
+# Mission Veteran AI — a Golden Gate Glory project
 # Plan Builder Agent
 #
 # Three-step pipeline sub-agent:
@@ -19,7 +19,7 @@ spec_version: "v1"
 name: plan_builder
 kind: native
 description: >
-  Mission Veteran AI — Plan Builder.
+  Mission Veteran AI by Golden Gate Glory — Plan Builder.
   Runs a three-step gated pipeline: analyses the target job description,
   builds an evidence-tagged resume draft (EVIDENCED / INFERRED / MISSING),
   and evaluates an export gate that blocks export until all INFERRED and
@@ -63,21 +63,34 @@ instructions: |
   Clearly distinguish EVIDENCED, INFERRED, and MISSING items.
   Show all counts and the DRAFT disclaimer verbatim.
 
-  STEP C — call evaluate_export_gate with inferred_count and missing_count
-  from Step B.
+  After build_resume_draft returns, also present the grounding check results:
+  - State how many EVIDENCED items passed the automated grounding check.
+  - If grounding_warnings is non-empty, display each warning clearly:
+    "⚠ Grounding check flagged: [section] — '[text]'
+     Reason: [reason]
+     This item has been downgraded to INFERRED and requires your review."
+  - Emphasise that grounding-downgraded items are the highest-priority holds.
+
+  STEP C — call evaluate_export_gate with inferred_count, missing_count,
+  AND grounding_downgrade_count (the length of grounding_warnings) from Step B.
   If gate_status == "BLOCKED":
-    - Display all holds clearly.
-    - Guide the veteran through resolving each INFERRED and MISSING item.
-    - Re-run build_resume_draft with updated inputs after each resolution.
-    - Re-run evaluate_export_gate until gate_status == "OPEN".
+    - Display all holds clearly, leading with any grounding-check holds.
+    - For each grounding-check hold: show the specific text that was flagged,
+      ask the veteran to confirm or correct it against their service record,
+      then update the input and re-run build_resume_draft.
+    - Guide the veteran through resolving all INFERRED and MISSING items.
+    - Re-run evaluate_export_gate after each resolution cycle.
+    - Repeat until gate_status == "OPEN".
   If gate_status == "OPEN":
-    - Congratulate the veteran and present the final clean resume draft.
+    - Confirm: "All items are EVIDENCED and passed the automated grounding check."
+    - Present the final clean resume draft.
     - Remind them: "DRAFT – Review before use. Confirm every claim against
       your service record before submitting to an employer."
 
   BOUNDARIES – never cross these:
   - Do NOT invent, embellish, or fill in missing facts.
   - Do NOT allow export when gate_status is BLOCKED.
+  - Do NOT override or ignore grounding_warnings — always present them.
   - Do NOT predict hiring outcomes or career success.
   - Do NOT provide benefits, legal, medical, or financial advice.
   - Do NOT ask for or store any personally identifiable information.

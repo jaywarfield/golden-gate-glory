@@ -1,0 +1,185 @@
+# governance/monitors.yaml
+# Mission Veteran AI by Golden Gate Glory — watsonx Governance
+# Monitor subscription definitions
+#
+# Defines the four monitor types attached to each AI use case in
+# governance/factsheets.yaml.
+#
+# Applied to:
+#   mvai-bullet-translator
+#   mvai-skill-mapper
+#   mvai-gap-analyzer
+#   mvai-plan-builder
+#
+# Register with:
+#   python governance/register_factsheets.py
+#
+# Thresholds are starting points; tune after accumulating 200+ inference
+# records per use case.
+
+monitors:
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 1. Bias / Fairness Monitor
+  # ──────────────────────────────────────────────────────────────────────────
+  # Detects whether the model produces systematically different output quality
+  # across service branches or career paths.
+  # Quality proxy: skill_count (Skill Mapper), coverage_pct (Gap Analyzer),
+  # inferred_count (Plan Builder), translated_bullet length (Bullet Translator).
+  # ──────────────────────────────────────────────────────────────────────────
+  - monitor_id: bias_monitor
+    name: "Bias & Fairness Monitor"
+    monitor_type: fairness
+    applies_to:
+      - mvai-skill-mapper
+      - mvai-gap-analyzer
+      - mvai-plan-builder
+      - mvai-bullet-translator
+    fairness_checks:
+      - attribute: service_branch
+        favorable_outcome_field: quality_score   # computed by register_factsheets.py
+        favorable_outcome_threshold: 0.70        # 70% quality score = acceptable
+        minimum_records_per_group: 50
+        alert_threshold: 0.10                    # flag if any group deviates >10 pp
+      - attribute: target_career_path
+        favorable_outcome_field: coverage_pct
+        favorable_outcome_threshold: 60          # 60% coverage = acceptable
+        minimum_records_per_group: 30
+        alert_threshold: 10                      # flag if any path deviates >10 pp
+    evaluation_schedule: daily
+    notes: >
+      Fairness attributes (service_branch, target_career_path) are logged as
+      non-PII metadata fields by each toolkit's governance.log_inference() call.
+      No veteran identity information is stored.
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 2. Model Drift Monitor
+  # ──────────────────────────────────────────────────────────────────────────
+  # Detects degradation in model output quality over time — e.g. after a
+  # Granite model version update or a knowledge base refresh.
+  # Uses the inference payload log as the scoring input distribution.
+  # ──────────────────────────────────────────────────────────────────────────
+  - monitor_id: drift_monitor
+    name: "Model Drift Monitor"
+    monitor_type: drift
+    applies_to:
+      - mvai-skill-mapper
+      - mvai-gap-analyzer
+      - mvai-plan-builder
+      - mvai-bullet-translator
+    drift_checks:
+      data_drift:
+        enabled: true
+        alert_threshold: 0.10                    # Jensen-Shannon divergence > 0.10
+        features_to_monitor:
+          - prompt_length
+          - output_token_count
+          - latency_ms
+      model_quality_drift:
+        enabled: true
+        quality_metric: coverage_pct             # Gap Analyzer primary metric
+        baseline_window_days: 30
+        alert_threshold: 0.05                    # 5 percentage point drop
+    evaluation_schedule: weekly
+    notes: >
+      Baseline is established from the first 30 days of production traffic.
+      Re-baseline manually after each planned Granite model version upgrade
+      or quarterly knowledge base refresh (O*NET, SkillsBuild, SkillBridge).
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 3. Content Safety / PII Monitor
+  # ──────────────────────────────────────────────────────────────────────────
+  # Second-layer ML-based PII and harmful content detection, complementing
+  # the regex guard in toolkits/shared/_common.py.
+  # Scans both the incoming prompt and the generated output.
+  # ──────────────────────────────────────────────────────────────────────────
+  - monitor_id: content_safety_monitor
+    name: "Content Safety & PII Monitor"
+    monitor_type: content_safety
+    applies_to:
+      - mvai-bullet-translator
+      - mvai-skill-mapper
+      - mvai-gap-analyzer
+      - mvai-plan-builder
+    checks:
+      pii_detection:
+        enabled: true
+        scan_input: true
+        scan_output: true
+        # Categories to flag; extend as needed.
+        categories:
+          - name
+          - ssn
+          - dod_id
+          - email
+          - phone
+          - address
+          - date_of_birth
+          - financial_account
+          - medical
+        action_on_detection: alert_and_block    # block inference, raise pii_warning
+      harmful_content:
+        enabled: true
+        scan_output: true
+        categories:
+          - hate_speech
+          - self_harm
+          - violence
+        action_on_detection: alert             # alert only; do not suppress resume output
+      hallucination_detection:
+        enabled: true
+        scan_output: true
+        # Flag output that introduces skills or credentials not present in
+        # the input context (prompt grounding check).
+        grounding_threshold: 0.80             # output must be ≥80% grounded in prompt
+        action_on_detection: alert
+    evaluation_schedule: realtime
+    notes: >
+      realtime evaluation means every inference payload is scored before the
+      tool returns its result to the agent. If pii_detection blocks a payload,
+      the tool returns the standard pii_warning response without calling the LLM.
+      This monitor supersedes — it does NOT replace — the regex PII guard.
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 4. Explainability Monitor
+  # ──────────────────────────────────────────────────────────────────────────
+  # Produces a human-readable rationale for why specific skills were tagged
+  # EVIDENCED vs. INFERRED in build_resume_draft, and why specific courses
+  # were recommended in analyze_skills_gap.
+  # Stored as an explanation record alongside each inference transaction.
+  # ──────────────────────────────────────────────────────────────────────────
+  - monitor_id: explainability_monitor
+    name: "Explainability Monitor"
+    monitor_type: explainability
+    applies_to:
+      - mvai-skill-mapper
+      - mvai-gap-analyzer
+      - mvai-plan-builder
+    method: lime                              # LIME local explanation per inference
+    explanation_fields:
+      mvai-skill-mapper:
+        input_fields:
+          - service_branch
+          - specialty_code
+          - target_career_path
+        output_field: skills                  # explain which input features drove each skill
+      mvai-gap-analyzer:
+        input_fields:
+          - veteran_skills_json
+          - target_career_path
+          - job_description
+        output_field: coverage_pct            # explain what drove the coverage score
+      mvai-plan-builder:
+        input_fields:
+          - service_summary
+          - translated_bullets_json
+          - skill_inventory_json
+          - job_analysis_json
+        output_field: inferred_count          # explain what drove INFERRED tag count
+    store_explanations: true                  # attach explanation to the factsheet record
+    evaluation_schedule: on_request           # generate explanation on demand; not realtime
+    notes: >
+      Explanations are available via the watsonx Governance UI and via
+      client.get_explanation(record_id) in the AIGovFactsClient.
+      Veterans or programme officers can request an explanation for any
+      specific inference record using its record_id returned by log_inference().

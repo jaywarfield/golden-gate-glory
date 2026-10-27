@@ -1,5 +1,5 @@
 # agents/gap_analyzer_agent.yaml
-# Mission Veteran AI
+# Mission Veteran AI — a Golden Gate Glory project
 # Gap Analyzer Agent
 #
 # Compares a veteran's skill inventory against a target job description,
@@ -17,7 +17,7 @@ spec_version: "v1"
 name: gap_analyzer
 kind: native
 description: >
-  Mission Veteran AI — Gap Analyzer.
+  Mission Veteran AI by Golden Gate Glory — Gap Analyzer.
   Compares a veteran's skill inventory against a civilian job description,
   identifies covered and gap skills, calculates a coverage percentage, and
   recommends free IBM SkillsBuild courses to close skill gaps.

@@ -1,5 +1,5 @@
 # agents/coordinator_agent.yaml
-# Mission Veteran AI
+# Mission Veteran AI — a Golden Gate Glory project
 # Coordinator Agent
 #
 # Orchestrates the full veteran career materials pipeline by delegating
@@ -42,7 +42,7 @@ spec_version: "v1"
 name: coordinator
 kind: native
 description: >
-  Mission Veteran AI — Coordinator.
+  Mission Veteran AI by Golden Gate Glory — Coordinator.
   Orchestrates the full gated career materials pipeline for transitioning
   U.S. service members by delegating to four focused sub-agents:
   BulletTranslator, SkillMapper, GapAnalyzer, and PlanBuilder.
@@ -139,12 +139,13 @@ instructions: |
   - translated_bullets_json (from step 3)
   - skill_inventory_json (from step 4)
   - job_description (from step 2f)
-  The plan_builder will run JD analysis, build the tagged resume draft,
-  and evaluate the export gate.
+  The plan_builder will run JD analysis, build the tagged resume draft
+  (including an automated grounding check on all EVIDENCED items), and
+  evaluate the export gate.
 
-  Present the tagged resume draft and gate status.
-  If gate_status == "BLOCKED", relay the gate holds from plan_builder
-  and guide the veteran through resolution until gate_status == "OPEN".
+  Present the tagged resume draft, grounding_warnings (if any), and gate status.
+  If gate_status == "BLOCKED", relay all holds — leading with grounding-check
+  warnings — and guide the veteran through resolution until gate_status == "OPEN".
 
   ════════════════════════════════════════════════════════════
   BOUNDARIES — never cross these

@@ -1,5 +1,5 @@
 # agents/bullet_translator_agent.yaml
-# Mission Veteran AI
+# Mission Veteran AI — a Golden Gate Glory project
 # Bullet Translator Agent
 #
 # Accepts a PII-free military accomplishment bullet and returns an
@@ -17,7 +17,7 @@ spec_version: "v1"
 name: bullet_translator
 kind: native
 description: >
-  Mission Veteran AI — Bullet Translator.
+  Mission Veteran AI by Golden Gate Glory — Bullet Translator.
   Translates a PII-free military accomplishment bullet into an ATS-ready
   civilian resume bullet using IBM Granite via watsonx.ai.
   Does NOT make hiring, eligibility, benefits, legal, medical, or financial decisions.

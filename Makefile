@@ -1,5 +1,5 @@
 # Makefile
-# Mission Veteran AI
+# Mission Veteran AI — a Golden Gate Glory project
 #
 # Sequences Terraform (instance provisioning) and deploy.sh (agent deployment).
 #

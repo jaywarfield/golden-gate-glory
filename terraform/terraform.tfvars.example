@@ -7,8 +7,12 @@
 #   cp terraform/terraform.tfvars.example terraform/terraform.tfvars
 
 ibmcloud_api_key          = "YOUR_IBM_CLOUD_API_KEY"
-region                    = "us-south"       # us-south | eu-de | eu-gb | jp-tok | au-syd
-resource_group_name       = "Default"        # your resource group name
+region                    = "us-south"         # us-south | eu-de | eu-gb | jp-tok | au-syd
+resource_group_name       = "Default"          # your resource group name
 orchestrate_instance_name = "mission-veteran-ai"
-plan                      = "lite"           # lite | essentials-agentic-mau | standard-agentic-mau
+plan                      = "lite"             # lite | essentials-agentic-mau | standard-agentic-mau
 resource_tags             = ["project:mission-veteran-ai", "env:dev"]
+
+# watsonx Governance
+governance_instance_name  = "mission-veteran-ai-governance"
+governance_plan           = "lite"             # lite | standard

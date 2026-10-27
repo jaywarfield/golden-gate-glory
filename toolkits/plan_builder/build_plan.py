@@ -1,5 +1,5 @@
 # toolkits/plan_builder/build_plan.py
-# Mission Veteran AI
+# Mission Veteran AI — a Golden Gate Glory project
 # Toolkit: plan_builder
 # Tools: analyze_job_description, build_resume_draft, evaluate_export_gate
 #
@@ -11,6 +11,7 @@
 import json
 import sys
 import os
+import time
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -19,8 +20,11 @@ from ibm_watsonx_ai.foundation_models import ModelInference
 from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
 
 from shared._common import contains_pii, pii_warning_message, get_credentials
+from shared.governance import log_inference, get_subscription_ids
 
 from ibm_watsonx_orchestrate.agent_builder.tools import tool, ToolPermission
+
+_MODEL_ID = "ibm/granite-4-h-small"
 
 
 def _client() -> APIClient:
@@ -33,7 +37,7 @@ def _client() -> APIClient:
 
 def _model(client: APIClient) -> ModelInference:
     return ModelInference(
-        model_id="ibm/granite-4-h-small",
+        model_id=_MODEL_ID,
         api_client=client,
         params={
             GenParams.MAX_NEW_TOKENS: 800,
@@ -77,8 +81,10 @@ Job description:
 
 JSON object:"""
 
+    t0 = time.monotonic()
     try:
         raw = _model(_client()).generate_text(prompt=prompt).strip()
+        latency_ms = (time.monotonic() - t0) * 1000
         if raw.startswith("```"):
             raw = raw.split("```")[1]
             if raw.startswith("json"):
@@ -86,8 +92,37 @@ JSON object:"""
         result = json.loads(raw.strip())
         result["pii_warning"] = None
         result["error"] = None
+
+        # ── Governance: log inference fact ────────────────────────────────
+        subs = get_subscription_ids()
+        log_inference(
+            tool_name="analyze_job_description",
+            model_id=_MODEL_ID,
+            prompt=prompt,
+            response=raw,
+            input_data={"jd_length": len(job_description)},
+            output_data={
+                "role_level": result.get("role_level"),
+                "industry": result.get("industry"),
+                "required_skill_count": len(result.get("required_skills", [])),
+                "error": None,
+            },
+            subscription_id=subs.get("analyze_job_description"),
+            latency_ms=latency_ms,
+        )
+
         return result
     except Exception as exc:
+        log_inference(
+            tool_name="analyze_job_description",
+            model_id=_MODEL_ID,
+            prompt=prompt,
+            response="",
+            input_data={"jd_length": len(job_description)},
+            output_data={"error": str(exc)},
+            subscription_id=get_subscription_ids().get("analyze_job_description"),
+            latency_ms=(time.monotonic() - t0) * 1000,
+        )
         return {"pii_warning": None, "error": str(exc)}
 
 
@@ -126,6 +161,16 @@ def build_resume_draft(
     if contains_pii(combined):
         return {"resume_sections": None, "pii_warning": pii_warning_message()}
 
+    # ── Context block reused by both the draft prompt and grounding check ───
+    context_block = (
+        f"Service branch: {service_branch}\n"
+        f"Specialty code: {specialty_code}\n"
+        f"Service summary: {service_summary}\n"
+        f"Translated bullets: {translated_bullets_json}\n"
+        f"Skill inventory: {skill_inventory_json}\n"
+        f"Job analysis: {job_analysis_json}"
+    )
+
     prompt = f"""You are an expert veteran resume writer.
 
 Using ONLY the evidence below, produce a resume draft. Tag each bullet/sentence:
@@ -142,49 +187,151 @@ Return ONLY a valid JSON object with this structure:
 }}
 No preamble, no markdown fences.
 
-Service branch: {service_branch}
-Specialty code: {specialty_code}
-Service summary: {service_summary}
-Translated bullets: {translated_bullets_json}
-Skill inventory: {skill_inventory_json}
-Job analysis: {job_analysis_json}
+{context_block}
 
 JSON object:"""
 
+    t0_draft = time.monotonic()
     try:
         raw = _model(_client()).generate_text(prompt=prompt).strip()
+        latency_ms_draft = (time.monotonic() - t0_draft) * 1000
         if raw.startswith("```"):
             raw = raw.split("```")[1]
             if raw.startswith("json"):
                 raw = raw[4:]
         sections = json.loads(raw.strip())
 
-        # Count tags across all sections
+        # ── Grounding check: verify every EVIDENCED tag ────────────────────
+        # Build a flat list of all EVIDENCED items for the check prompt.
+        evidenced_items = [
+            {"section": section, "index": i, "text": item["text"]}
+            for section, items in sections.items()
+            for i, item in enumerate(items)
+            if item.get("tag") == "EVIDENCED"
+        ]
+
+        grounding_warnings = []
+
+        if evidenced_items:
+            check_prompt = f"""You are a strict fact-checker for veteran resumes.
+
+Below is the ORIGINAL SOURCE CONTEXT that a resume was built from, followed by a list
+of resume items that were tagged [EVIDENCED] — meaning they must be DIRECTLY supported
+by the source context.
+
+For each item, respond ONLY with a JSON array. Each element must have:
+  "index":    the same integer index provided in the input
+  "section":  the same section name provided in the input
+  "verdict":  "CONFIRMED" if the text is directly supported by the source context,
+              or "DOWNGRADE" if it adds, inflates, or implies anything not present
+  "reason":   one sentence explaining a DOWNGRADE, or "" for CONFIRMED
+
+SOURCE CONTEXT:
+{context_block}
+
+EVIDENCED ITEMS TO CHECK:
+{json.dumps(evidenced_items, indent=2)}
+
+JSON array:"""
+
+            t0_check = time.monotonic()
+            check_raw = _model(_client()).generate_text(prompt=check_prompt).strip()
+            latency_ms_check = (time.monotonic() - t0_check) * 1000
+
+            if check_raw.startswith("```"):
+                check_raw = check_raw.split("```")[1]
+                if check_raw.startswith("json"):
+                    check_raw = check_raw[4:]
+
+            try:
+                verdicts = json.loads(check_raw.strip())
+            except Exception:
+                verdicts = []
+
+            # Apply downgrades directly to the sections dict
+            for v in verdicts:
+                if v.get("verdict") == "DOWNGRADE":
+                    sec = v.get("section")
+                    idx = v.get("index")
+                    reason = v.get("reason", "")
+                    if sec in sections and isinstance(idx, int) and idx < len(sections[sec]):
+                        sections[sec][idx]["tag"] = "INFERRED"
+                        grounding_warnings.append({
+                            "section": sec,
+                            "text": sections[sec][idx]["text"],
+                            "reason": reason,
+                        })
+        else:
+            latency_ms_check = 0.0
+
+        # Count tags across all sections (after any grounding downgrades)
         evidenced = inferred = missing = 0
         for items in sections.values():
             for item in items:
-                t = item.get("tag", "")
-                if t == "EVIDENCED":
+                tag = item.get("tag", "")
+                if tag == "EVIDENCED":
                     evidenced += 1
-                elif t == "INFERRED":
+                elif tag == "INFERRED":
                     inferred += 1
-                elif t == "MISSING":
+                elif tag == "MISSING":
                     missing += 1
 
-        return {
+        result = {
             "resume_sections": sections,
             "evidenced_count": evidenced,
             "inferred_count": inferred,
             "missing_count": missing,
+            "grounding_warnings": grounding_warnings,
             "disclaimer": (
                 "DRAFT – Review before use. Confirm every claim against your "
                 "service record before submitting to an employer. "
-                "INFERRED and MISSING items require your review and resolution."
+                "INFERRED and MISSING items require your review and resolution. "
+                + (
+                    f"{len(grounding_warnings)} item(s) were automatically downgraded "
+                    "from EVIDENCED to INFERRED by the grounding check — "
+                    "review these carefully."
+                    if grounding_warnings else
+                    "All EVIDENCED items passed the grounding check."
+                )
             ),
             "pii_warning": None,
             "error": None,
         }
+
+        # ── Governance: log inference fact ────────────────────────────────
+        subs = get_subscription_ids()
+        log_inference(
+            tool_name="build_resume_draft",
+            model_id=_MODEL_ID,
+            prompt=prompt,
+            response=raw,
+            input_data={"service_branch": service_branch},
+            output_data={
+                "evidenced_count": evidenced,
+                "inferred_count": inferred,
+                "missing_count": missing,
+                "grounding_downgrade_count": len(grounding_warnings),
+                "error": None,
+            },
+            subscription_id=subs.get("build_resume_draft"),
+            latency_ms=latency_ms_draft + latency_ms_check,
+            metadata={"fairness_attribute_service_branch": service_branch},
+        )
+
+        return result
+
     except Exception as exc:
+        log_inference(
+            tool_name="build_resume_draft",
+            model_id=_MODEL_ID,
+            prompt=prompt,
+            response="",
+            input_data={"service_branch": service_branch},
+            output_data={"evidenced_count": 0, "inferred_count": 0, "missing_count": 0, "error": str(exc)},
+            subscription_id=get_subscription_ids().get("build_resume_draft"),
+            latency_ms=(time.monotonic() - t0_draft) * 1000,
+            metadata={"fairness_attribute_service_branch": service_branch},
+        )
         return {
             "resume_sections": None,
             "evidenced_count": 0,
@@ -204,21 +351,31 @@ JSON object:"""
 def evaluate_export_gate(
     inferred_count: int,
     missing_count: int,
+    grounding_downgrade_count: int = 0,
     gate_holds_json: str = "[]",
 ) -> dict:
     """
     Evaluate whether a resume draft is cleared for export.
-    Export is BLOCKED if any INFERRED or MISSING tags remain unresolved.
+
+    Export is BLOCKED if any of the following remain unresolved:
+      - INFERRED-tagged items (including items downgraded by the grounding check)
+      - MISSING-tagged items
+      - Any explicit holds passed by the caller
 
     Args:
-        inferred_count: Number of INFERRED-tagged items in the draft.
+        inferred_count: Number of INFERRED-tagged items remaining in the draft
+                        (includes items the grounding check downgraded from EVIDENCED).
         missing_count: Number of MISSING-tagged items in the draft.
+        grounding_downgrade_count: Number of items the automated grounding check
+                                   downgraded from EVIDENCED to INFERRED.
+                                   These are surfaced as a distinct hold so the
+                                   veteran knows they require extra scrutiny.
         gate_holds_json: Optional JSON array of specific hold descriptions
                          from the resume draft review.
 
     Returns:
         A dict with keys: gate_status ("OPEN" or "BLOCKED"),
-        holds (list of blocking issues), message.
+        holds (list of blocking issues), grounding_downgrade_count, message.
     """
     holds = []
 
@@ -226,6 +383,15 @@ def evaluate_export_gate(
         explicit_holds = json.loads(gate_holds_json) if gate_holds_json.strip() else []
     except Exception:
         explicit_holds = []
+
+    # Grounding downgrades are surfaced first — they are the most actionable
+    # because the veteran can see exactly which claim was questioned and why.
+    if grounding_downgrade_count > 0:
+        holds.append(
+            f"{grounding_downgrade_count} item(s) were downgraded from EVIDENCED to INFERRED "
+            "by the automated grounding check. Review the 'grounding_warnings' list in the "
+            "resume draft and confirm or correct each item before export."
+        )
 
     if inferred_count > 0:
         holds.append(
@@ -241,17 +407,24 @@ def evaluate_export_gate(
         return {
             "gate_status": "BLOCKED",
             "holds": holds,
+            "grounding_downgrade_count": grounding_downgrade_count,
             "message": (
                 "Export is BLOCKED. Resolve all holds listed above before "
-                "this document may be shared with an employer."
+                "this document may be shared with an employer. "
+                "Pay particular attention to any grounding-check warnings — "
+                "these indicate claims the AI could not confirm against your "
+                "provided service record."
             ),
         }
 
     return {
         "gate_status": "OPEN",
         "holds": [],
+        "grounding_downgrade_count": grounding_downgrade_count,
         "message": (
-            "Export gate OPEN. All resume items are EVIDENCED. "
-            "Final review by the veteran is still required before submission."
+            "Export gate OPEN. All resume items are EVIDENCED and passed the "
+            "automated grounding check. "
+            "Final human review by the veteran is still required before submission "
+            "to an employer. Confirm every claim against your service record."
         ),
     }

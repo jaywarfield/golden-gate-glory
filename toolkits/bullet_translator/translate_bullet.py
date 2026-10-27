@@ -1,5 +1,5 @@
 # toolkits/bullet_translator/translate_bullet.py
-# Mission Veteran AI
+# Mission Veteran AI — a Golden Gate Glory project
 # Toolkit: bullet_translator
 # Tool: translate_bullet
 #
@@ -9,6 +9,7 @@
 import json
 import sys
 import os
+import time
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -17,8 +18,11 @@ from ibm_watsonx_ai.foundation_models import ModelInference
 from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
 
 from shared._common import contains_pii, pii_warning_message, get_credentials
+from shared.governance import log_inference, get_subscription_ids
 
 from ibm_watsonx_orchestrate.agent_builder.tools import tool, ToolPermission
+
+_MODEL_ID = "ibm/granite-4-h-small"
 
 
 @tool(permission=ToolPermission.READ_ONLY)
@@ -75,9 +79,10 @@ Military bullet:
 
 Civilian resume bullet:"""
 
+    t0 = time.monotonic()
     try:
         model = ModelInference(
-            model_id="ibm/granite-4-h-small",
+            model_id=_MODEL_ID,
             api_client=client,
             params={
                 GenParams.MAX_NEW_TOKENS: 120,
@@ -86,9 +91,10 @@ Civilian resume bullet:"""
             },
         )
         response = model.generate_text(prompt=prompt)
+        latency_ms = (time.monotonic() - t0) * 1000
         translated = response.strip().lstrip("•-– ").strip()
 
-        return {
+        result = {
             "translated_bullet": translated,
             "disclaimer": (
                 "DRAFT – Review before use. Confirm every claim against your "
@@ -97,7 +103,39 @@ Civilian resume bullet:"""
             "pii_warning": None,
             "error": None,
         }
+
+        # ── Governance: log inference fact ────────────────────────────────
+        subs = get_subscription_ids()
+        log_inference(
+            tool_name="translate_bullet",
+            model_id=_MODEL_ID,
+            prompt=prompt,
+            response=translated,
+            input_data={
+                "target_role": target_role,
+                "has_metrics": bool(metrics.strip()),
+            },
+            output_data={
+                "translated_bullet_length": len(translated),
+                "error": None,
+            },
+            subscription_id=subs.get("translate_bullet"),
+            latency_ms=latency_ms,
+        )
+
+        return result
+
     except Exception as exc:
+        log_inference(
+            tool_name="translate_bullet",
+            model_id=_MODEL_ID,
+            prompt=prompt,
+            response="",
+            input_data={"target_role": target_role, "has_metrics": bool(metrics.strip())},
+            output_data={"error": str(exc)},
+            subscription_id=get_subscription_ids().get("translate_bullet"),
+            latency_ms=(time.monotonic() - t0) * 1000,
+        )
         return {
             "translated_bullet": None,
             "disclaimer": None,
