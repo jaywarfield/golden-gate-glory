@@ -1,14 +1,14 @@
 # **Mission Veteran AI** *by Golden Gate Glory*
 
-<!--
-## [Problem and Solution](docs/problem_and_solution.md)
+[Architecture](docs/architecture.md)
 
-## [Video and Output](docs/video_and_output.md)
+[Environment](docs/environment.md)
 
-## [Feedback and Evaluation](docs/feedback_and_evaluation.md)
--->
+[RAG Sources](docs/rag_sources.md)
 
-## [Design](docs/design.md)
+[Notebooks](docs/notebooks.md)
+
+[Governance](docs/governance.md)
 
 ---
 
