@@ -1,12 +1,8 @@
 # **Mission Veteran AI – IBM AI Lab Challenge**
 
-### Architecture
-
-<a href="environment.png" target="_blank">
-  <img src="images/architecture.png"
-       alt="Mission Veteran AI Environment Architecture"
-       style="width:100%; height:auto;">
-</a>
+<img src="images/architecture.png"
+     alt="Mission Veteran AI Environment Architecture"
+     style="width:100%; height:auto;">
 
 ---
 
