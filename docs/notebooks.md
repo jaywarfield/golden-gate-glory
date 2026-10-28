@@ -33,15 +33,6 @@ Notes:
 
 5. NB 07 is the authoritative end-to-end test — it imports the real toolkit functions and runs them in the correct web UI order (Steps 1→7), making it the single notebook that validates the whole pipeline works together.
 
-#### Agents and Tools
-
-Agents and @tool-decorated Python scripts in watsonx Orchestrate enable production integration with autonomous tasks and governance:
-
-- Autonomous Task Execution with Agents that use LLMs, reasoning loops (like ReAct or default modes), and multi-agent coordination to dynamically decide when and how to invoke capabilities based on user prompts.
-- Isolated, Reusable Python Tools with code that is wrapped using the @tool decorator, placed in standalone containers or toolkits, and exposed to the Orchestrate tool catalog for enterprise automation.
-- Enterprise Governance & Guardrails with built-in credential handling, token tracking, role-based tool permissions, human-in-the-loop approval steps, and OpenTelemetry observability.
-- Production Integration that directly connects business applications (e.g., Salesforce, Workday, Slack, custom APIs) so end-users can trigger live workflows via a conversational chat interface or agentic handoffs.
-
 ---
 
 # License

@@ -6,9 +6,11 @@
 
 [RAG Sources](docs/rag_sources.md)
 
-[Notebooks](docs/notebooks.md)
-
 [Governance](docs/governance.md)
+
+[Agents](docs/agents.md)
+
+[Notebooks](docs/notebooks.md)
 
 ---
 
