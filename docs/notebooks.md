@@ -9,6 +9,8 @@ Jupyter Notebooks in watsonx.ai Studio+Runtime enable exploratory engineering:
 - Rich Narrative and Documentation that combine live executable code with Markdown text, equations, and media to explain methodology and share insights with teams.
 - Loose, Ad-Hoc Execution that is great for research, trial-and-error experimentation, and data wrangling before any logic is productionized.
 
+Several notebooks are implemented and defined as follows:
+
 | Notebook | Web UI step | Toolkit function | What it does |
 | :---:    | :---:       | :---:            | :---:        | 
 | NB 01 | 01_bullet_translation | Step 2 — Military Bullet Translation | translate_bullet | Translates raw military accomplishment bullets into ATS-ready civilian resume bullets |
