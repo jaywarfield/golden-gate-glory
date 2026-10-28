@@ -2,7 +2,7 @@
 
 #### Notebooks
 
-Jupyter Notebooks in the broader IBM watsonx ecosystem (watsonx.ai Studio and watsonx.ai Runtime) enable an exploratory engineering purpose compared to autonomous agents and @tool-decorated Python scripts running inside watsonx Orchestrate:
+Jupyter Notebooks in watsonx.ai Studio+Runtime enable exploratory engineering:
 
 - Interactive Data Exploration and Prototyping by running small blocks of code interactively, inspect intermediate dataframes, and view visualizations, charts, or mathematical outputs immediately in the browser.
 - Machine Learning Lifecycle Workflows designed for data scientists to assemble, train, evaluate, and tune machine learning models (using scikit-learn, PySpark, XGBoost, etc.) and save artifacts directly to model runtimes.
@@ -31,7 +31,9 @@ Notes:
 
 5. NB 07 is the authoritative end-to-end test — it imports the real toolkit functions and runs them in the correct web UI order (Steps 1→7), making it the single notebook that validates the whole pipeline works together.
 
-Agents and Tools (watsonx Orchestrate):
+#### Agents and Tools
+
+Agents and @tool-decorated Python scripts in watsonx Orchestrate enable production integration with autonomous tasks and governance:
 
 - Autonomous Task Execution with Agents that use LLMs, reasoning loops (like ReAct or default modes), and multi-agent coordination to dynamically decide when and how to invoke capabilities based on user prompts.
 - Isolated, Reusable Python Tools with code that is wrapped using the @tool decorator, placed in standalone containers or toolkits, and exposed to the Orchestrate tool catalog for enterprise automation.
