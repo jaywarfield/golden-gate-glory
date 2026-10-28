@@ -1,4 +1,4 @@
-# **Mission Veteran AI – IBM AI Lab Challenge**
+# **Mission Veteran AI** *by G3*
 
 #### Agents and Tools
 

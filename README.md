@@ -1,4 +1,4 @@
-# **Mission Veteran AI** *by Golden Gate Glory*
+# **Mission Veteran AI** *by G3*
 
 [Architecture](docs/architecture.md)
 
