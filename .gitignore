@@ -10,6 +10,7 @@
 *.secret
 *.pem
 openshift
+terraform.tfvars
 
 # -------------------------------------------------------------------
 # Operating System Files

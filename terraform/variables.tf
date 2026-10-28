@@ -30,13 +30,13 @@ variable "orchestrate_instance_name" {
 }
 
 variable "plan" {
-  description = "Service plan. Options: lite, essentials-agentic-mau, standard-agentic-mau."
+  description = "Service plan. Options: trial, lite, essentials-agentic-mau, standard-agentic-mau."
   type        = string
-  default     = "lite"
+  default     = "trial"
 
   validation {
-    condition     = contains(["lite", "essentials-agentic-mau", "standard-agentic-mau"], var.plan)
-    error_message = "plan must be one of: lite, essentials-agentic-mau, standard-agentic-mau."
+    condition     = contains(["trial", "lite", "essentials-agentic-mau", "standard-agentic-mau"], var.plan)
+    error_message = "plan must be one of: trial, lite, essentials-agentic-mau, standard-agentic-mau."
   }
 }
 
