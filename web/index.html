@@ -242,7 +242,7 @@
   <div class="topbar-inner">
     <div>
       <div class="topbar-title">Mission Veteran AI by G3</div>
-      <div class="topbar-sub" id="topbar-phase">Veteran Career Navigator</div>
+      <div class="topbar-sub" id="topbar-sub">Veteran Career Navigator</div>
     </div>
   </div>
 </div>
@@ -706,7 +706,7 @@
         // Live: call /api/translate for each bullet
         STATE.translatedBullets = [];
         for (const bullet of rawBullets) {
-          const r = await apiCall({ phase: 1, input: { military_bullet: bullet, target_role: STATE.targetRole } });
+          const r = await apiCall({ step: 'translate_bullet', input: { military_bullet: bullet, target_role: STATE.targetRole } });
           STATE.translatedBullets.push(r.translated_bullet || bullet);
         }
       }
@@ -741,7 +741,7 @@
       if (USE_MOCK) {
         STATE.jobAnalysis = mockJobAnalysis(jd, STATE.skills);
       } else {
-        STATE.jobAnalysis = await apiCall({ phase: 3, step: 'analyze_job', input: { job_description: jd, veteran_skills_json: JSON.stringify(STATE.skills) } });
+        STATE.jobAnalysis = await apiCall({ step: 'analyze_job', input: { job_description: jd, veteran_skills_json: JSON.stringify(STATE.skills) } });
       }
       renderStep3();
     } catch (e) { showStepError('s3', `Could not analyze job description: ${e.message}`); }
@@ -780,8 +780,8 @@
         skillResult = mockSkillMap(STATE.branch, STATE.specialty, STATE.summary, STATE.careerPath);
         gapResult   = mockGapAnalysis(skillResult.skills, STATE.careerPath);
       } else {
-        skillResult = await apiCall({ phase: 2, step: 'map_skills', input: { service_branch: STATE.branch, specialty_code: STATE.specialty, service_summary: STATE.summary, target_career_path: STATE.careerPath, job_description: STATE.jobDescription } });
-        gapResult   = await apiCall({ phase: 2, step: 'gap_analysis', input: { veteran_skills_json: JSON.stringify(skillResult.skills), target_career_path: STATE.careerPath, job_description: STATE.jobDescription } });
+        skillResult = await apiCall({ step: 'map_skills', input: { service_branch: STATE.branch, specialty_code: STATE.specialty, service_summary: STATE.summary, target_career_path: STATE.careerPath, job_description: STATE.jobDescription } });
+        gapResult   = await apiCall({ step: 'gap_analysis', input: { veteran_skills_json: JSON.stringify(skillResult.skills), target_career_path: STATE.careerPath, job_description: STATE.jobDescription } });
       }
       STATE.skills = skillResult.skills || [];
       STATE.gapResult = gapResult;
@@ -839,7 +839,7 @@
       if (USE_MOCK) {
         result = mockResumeDraft(STATE);
       } else {
-        result = await apiCall({ phase: 3, step: 'build_resume', input: {
+        result = await apiCall({ step: 'build_resume', input: {
           service_branch: STATE.branch, specialty_code: STATE.specialty,
           service_summary: STATE.summary, translated_bullets_json: JSON.stringify(STATE.translatedBullets),
           skill_inventory_json: JSON.stringify(STATE.skills),
@@ -901,7 +901,7 @@
       if (USE_MOCK) {
         result = mockInterviewPrep(STATE);
       } else {
-        result = await apiCall({ phase: 3, step: 'interview_prep', input: {
+        result = await apiCall({ step: 'interview_prep', input: {
           target_role: STATE.targetRole, service_summary: STATE.summary,
           translated_bullets_json: JSON.stringify(STATE.translatedBullets),
           skill_inventory_json: JSON.stringify(STATE.skills),
@@ -949,7 +949,7 @@
       if (USE_MOCK) {
         result = mockGate(STATE.resumeDraft);
       } else {
-        result = await apiCall({ phase: 3, step: 'gate', input: { resume_draft_json: JSON.stringify(STATE.resumeDraft) }});
+        result = await apiCall({ step: 'gate', input: { resume_draft_json: JSON.stringify(STATE.resumeDraft) }});
       }
       STATE.gateResult = result;
       renderStep7();
