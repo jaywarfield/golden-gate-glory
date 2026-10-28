@@ -13,7 +13,7 @@
 #   2. Secrets set in Orchestrate (Draft + Live):
 #        WATSONX_API_KEY, WATSONX_URL, WATSONX_PROJECT_ID
 #   3. Connection app_id 'watsonx_credentials' already created, or run:
-#        orchestrate connections import -f connections/watsonx_credentials.yaml
+#        orchestrate connections import --file connections/watsonx_credentials.yaml
 
 set -euo pipefail
 
@@ -48,19 +48,43 @@ if [ "$LIVE_ONLY" = false ]; then
   log "=== Step 1: Import toolkits ==="
 
   log "  bullet_translator"
-  orchestrate toolkits import -f toolkits/bullet_translator/toolkit.yaml --app-id watsonx_credentials
+  orchestrate toolkits import \
+    --kind mcp --language python \
+    --name bullet_translator \
+    --description "Mission Veteran AI by G3 — Bullet Translator toolkit." \
+    --package-root toolkits/bullet_translator \
+    --command "python -m bullet_translator" \
+    --app-id watsonx_credentials
   ok "  bullet_translator imported"
 
   log "  skill_mapper"
-  orchestrate toolkits import -f toolkits/skill_mapper/toolkit.yaml --app-id watsonx_credentials
+  orchestrate toolkits import \
+    --kind mcp --language python \
+    --name skill_mapper \
+    --description "Mission Veteran AI by G3 — Skill Mapper toolkit." \
+    --package-root toolkits/skill_mapper \
+    --command "python -m skill_mapper" \
+    --app-id watsonx_credentials
   ok "  skill_mapper imported"
 
   log "  gap_analyzer"
-  orchestrate toolkits import -f toolkits/gap_analyzer/toolkit.yaml --app-id watsonx_credentials
+  orchestrate toolkits import \
+    --kind mcp --language python \
+    --name gap_analyzer \
+    --description "Mission Veteran AI by G3 — Gap Analyzer toolkit." \
+    --package-root toolkits/gap_analyzer \
+    --command "python -m gap_analyzer" \
+    --app-id watsonx_credentials
   ok "  gap_analyzer imported"
 
   log "  plan_builder"
-  orchestrate toolkits import -f toolkits/plan_builder/toolkit.yaml --app-id watsonx_credentials
+  orchestrate toolkits import \
+    --kind mcp --language python \
+    --name plan_builder \
+    --description "Mission Veteran AI by G3 — Plan Builder toolkit." \
+    --package-root toolkits/plan_builder \
+    --command "python -m plan_builder" \
+    --app-id watsonx_credentials
   ok "  plan_builder imported"
 
   echo ""

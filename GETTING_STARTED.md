@@ -145,9 +145,9 @@ Run `make register-governance` again after:
 - `orchestrate agents --help`
 - `orchestrate agents list -v`
 - `orchestrate agents remove --name my-agent --kind native`
-- `orchestrate tools import -f my-file.py -k python`
-- `orchestrate knowledge-bases import -f my-kb.yaml`
-- `orchestrate agents import -f my-agent.yaml`
+- `orchestrate tools import --file my-file.py -k python`
+- `orchestrate knowledge-bases import --file my-kb.yaml`
+- `orchestrate agents import --file my-agent.yaml`
 
 ---
 

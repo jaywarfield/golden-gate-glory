@@ -47,18 +47,27 @@ module "watsonx_orchestrate" {
   source  = "terraform-ibm-modules/watsonx-orchestrate/ibm"
   version = "1.2.1" # pin to latest stable; update deliberately
 
-  watsonx_orchestrate_name = var.orchestrate_instance_name
-  region                   = var.region
-  plan                     = var.plan
-  resource_group_id        = data.ibm_resource_group.group.id
-  resource_tags            = var.resource_tags
+  watsonx_orchestrate_name                   = var.orchestrate_instance_name
+  region                                     = var.region
+  plan                                       = var.plan
+  resource_group_id                          = data.ibm_resource_group.group.id
+  resource_tags                              = var.resource_tags
+  existing_watsonx_orchestrate_instance_crn  = var.existing_watsonx_orchestrate_instance_crn
 }
 
 # ── watsonx Governance (Watson OpenScale) instance ─────────────────────────
-# Provisions the service instance and captures its GUID as a Terraform output.
+# When existing_governance_instance_crn is set (e.g. a shared Hackathon instance),
+# Terraform looks up the existing instance rather than creating a new one.
 # The IBM provider does not yet support use case / monitor subscription
 # resources — those are registered post-apply via register_factsheets.py.
+
+data "ibm_resource_instance" "governance_existing" {
+  count      = var.existing_governance_instance_crn != null ? 1 : 0
+  identifier = var.existing_governance_instance_crn
+}
+
 resource "ibm_resource_instance" "governance" {
+  count             = var.existing_governance_instance_crn != null ? 0 : 1
   name              = var.governance_instance_name
   service           = "aiopenscale"
   plan              = var.governance_plan

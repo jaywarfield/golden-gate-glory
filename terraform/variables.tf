@@ -30,14 +30,24 @@ variable "orchestrate_instance_name" {
 }
 
 variable "plan" {
-  description = "Service plan. Options: trial, lite, essentials-agentic-mau, standard-agentic-mau."
+  description = "Service plan for a new instance: essentials, standard. Ignored when existing_watsonx_orchestrate_instance_crn is set."
   type        = string
-  default     = "trial"
+  default     = "essentials"
 
   validation {
-    condition     = contains(["trial", "lite", "essentials-agentic-mau", "standard-agentic-mau"], var.plan)
-    error_message = "plan must be one of: trial, lite, essentials-agentic-mau, standard-agentic-mau."
+    condition     = var.existing_watsonx_orchestrate_instance_crn != null || contains(["essentials", "standard"], var.plan)
+    error_message = "plan must be one of: essentials, standard (only required when not using an existing instance)."
   }
+}
+
+variable "existing_watsonx_orchestrate_instance_crn" {
+  description = <<-EOT
+    CRN of an already-provisioned watsonx Orchestrate instance (e.g. a Hackathon trial).
+    When set, the module skips provisioning and attaches to the existing instance instead.
+    Retrieve from: IBM Cloud console → Resource list → watsonx Orchestrate → CRN.
+  EOT
+  type        = string
+  default     = null
 }
 
 variable "resource_tags" {
@@ -47,6 +57,16 @@ variable "resource_tags" {
 }
 
 # ── Governance variables ────────────────────────────────────────────────────
+
+variable "existing_governance_instance_crn" {
+  description = <<-EOT
+    CRN of an already-provisioned watsonx Governance instance (e.g. a Hackathon shared instance).
+    When set, Terraform imports the existing instance instead of creating a new one.
+    Retrieve from: IBM Cloud console → Resource list → your Governance instance → CRN.
+  EOT
+  type        = string
+  default     = null
+}
 
 variable "governance_instance_name" {
   description = "Display name for the watsonx Governance (Watson OpenScale) service instance."
