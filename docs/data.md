@@ -6,7 +6,7 @@
 
 [View Wireframes](data/MVPWireframe.md)
 
-[View Technical](data/TechnicalArchitecture.png)
+[View Technical](data/TechnicalArchitecture.pdf)
 
 ---
 
