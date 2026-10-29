@@ -13,14 +13,14 @@ ibm-watsonx-ai>=1.1.0
 # Environment variable management – load .env file locally
 python-dotenv>=1.0.0
 
-# Phase 2 – Skill Mapping, Gap Analysis & SkillsBuild RAG
+# Skill Mapping, Gap Analysis & SkillsBuild RAG
 openpyxl>=3.1.0          # read FoundationG3Project.xlsx
 pandas>=2.0.0            # tabular data manipulation
 chromadb>=0.5.0          # in-memory vector store for RAG
 langchain-ibm>=0.1.0     # LangChain IBM integration
 langchain>=0.2.0         # RAG chain utilities
 
-# Phase 5 – watsonx Governance (connectivity check + UI-based monitor setup)
+# watsonx Governance (connectivity check + UI-based monitor setup)
 # Note: install with "python -m pip install" not bare "pip", to avoid Python version mismatch.
 # Required env vars for make governance:
 #   GOVERNANCE_API_KEY        — IBM Cloud API key (defaults to WATSONX_API_KEY)
@@ -29,10 +29,10 @@ langchain>=0.2.0         # RAG chain utilities
 ibm-watson-openscale>=3.1.11    # Watson OpenScale / watsonx.governance API client
 pyyaml>=6.0.0                   # governance/register_factsheets.py YAML parsing
 
-# Phase 3 (add when starting notebooks/04_jd_analysis.ipynb)
+# Add when starting notebooks/04_jd_analysis.ipynb)
 # pymupdf>=1.24.0          # PDF/document ingestion (already in GETTING_STARTED.md)
 
-# Phase 4 (add when starting notebooks/06_action_plan.ipynb)
+# Add when starting notebooks/06_action_plan.ipynb)
 # requests>=2.32.0         # public source URL fetch
 
 # Testing
