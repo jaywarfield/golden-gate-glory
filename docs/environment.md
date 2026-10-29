@@ -144,19 +144,19 @@ export GOVERNANCE_SUB_PLAN_BUILDER=<id-from-script>
 
 5. Complete setup order (first time)
 
-- Clone repo and install packages
+    1. Clone repo and install packages
 
-```
-python3 -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
-```
+    ```
+    python3 -m venv venv && source venv/bin/activate
+    pip install -r requirements.txt
+    ```
 
-- Authenticate Orchestrate CLI
+    1. Authenticate Orchestrate CLI
 
-```
-orchestrate env add --name my-env --url <url>
-orchestrate env activate my-env
-```
+    ``` 
+    orchestrate env add --name my-env --url <url>
+    orchestrate env activate my-env
+    ```
 
 -  Create the watsonx connection (set secrets in UI after this)
 
