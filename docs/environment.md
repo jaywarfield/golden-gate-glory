@@ -10,7 +10,7 @@
 </a>
 -->
 
-#### Environments
+#### Running make
 
 watsonx Orchestrate has two environments inside a single instance:
 
@@ -21,7 +21,7 @@ watsonx Orchestrate has two environments inside a single instance:
 
 They are completely independent. Importing to Draft never touches Live, and promoting to Live never re-imports — it snapshots Draft as-is.
 
-#### Import to Draft only (development)
+1. Import to Draft only (development)
 
 ```
 make deploy
@@ -33,7 +33,7 @@ make deploy
 - Runs governance registration (if GOVERNANCE_INSTANCE_GUID is set)
 - Live is not touched
 
-#### Import to Live only (test) — without re-importing to Draft
+2. Import to Live only (test) — without re-importing to Draft
 
 ```
 make promote
@@ -45,7 +45,19 @@ make promote
 - Skips all tool/agent import steps entirely
 - Draft is not touched
 
-#### Governance — Draft vs Live
+3. Import to both Draft and Live in one step
+
+```
+make deploy-live
+# or directly:
+./deploy.sh --live
+```
+
+- Imports tools + agents → Draft
+- Then immediately promotes Draft → Live
+- Use this when you want to update both environments together
+
+4. Governance — Draft vs Live
 
 Governance (watsonx Governance / AI Factsheets) is not environment-scoped in the same way — it tracks inference facts at the tool level regardless of which Orchestrate environment called the tool. Registration is a one-time step per instance:
 
@@ -61,7 +73,7 @@ make register-governance   # same thing — it's an alias
 
 This registers the AI use cases and monitor subscriptions once. After that, governance logging is automatic at inference time — every tool call logs facts regardless of whether it was called from Draft or Live. No separate governance import is needed per environment.
 
-#### Typical workflow
+5. Typical workflow
 
 ```
 # First time or after code changes:
@@ -78,7 +90,7 @@ export GOVERNANCE_INSTANCE_GUID=<guid>
 make governance
 ```
 
-#### Requirements before running make deploy
+#### Requirements before running make
 
 1. Python virtual environment & packages
 
