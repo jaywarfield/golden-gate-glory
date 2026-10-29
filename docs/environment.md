@@ -30,7 +30,7 @@ make deploy
 ```
 
 - Imports all tools, agents → Draft
-- Runs governance registration (if GOVERNANCE_INSTANCE_GUID is set)
+- Runs governance connectivity check (if GOVERNANCE_INSTANCE_GUID is set)
 - Live is not touched
 
 2. Import to Live only (test) — without re-importing to Draft
@@ -59,21 +59,19 @@ make deploy-live
 
 4. Governance — Draft vs Live
 
-Governance (watsonx Governance / AI Factsheets) is not environment-scoped in the same way — it tracks inference facts at the tool level regardless of which Orchestrate environment called the tool. Registration is a one-time step per instance:
+Governance (watsonx Governance / AI Factsheets) is not environment-scoped — it tracks use cases at the instance level, shared across Draft and Live. Run once to verify connectivity:
 
 ```
-# Set the GUID via the IBM Cloud CLI:
-#   ibmcloud resource service-instance '<Your Watson OpenScale instance name>'
-# The GUID field in the output is your value.
-export GOVERNANCE_INSTANCE_GUID=<guid-from-ibmcloud-cli>
+# GUID from: IBM Cloud Resource list → AI/Machine Learning → <your instance> → right panel
+export GOVERNANCE_INSTANCE_GUID=<guid>
 
-# Then register
+# Verify connection
 make governance
 # or:
 make register-governance   # same thing — it's an alias
 ```
 
-This registers the AI use cases and monitor subscriptions once. After that, governance logging is automatic at inference time — every tool call logs facts regardless of whether it was called from Draft or Live. No separate governance import is needed per environment.
+This verifies the connection and lists available data marts. AI use cases and monitor subscriptions (bias, drift, content safety, explainability) are then created and attached via the watsonx.governance UI.
 
 5. Typical workflow
 
@@ -87,7 +85,7 @@ make promote         ← snapshot Draft → Live, notify tester
 # If you need to update both at once:
 make deploy-live     ← import + promote in one step
 
-# Governance (once after provisioning, or after model/KB updates):
+# Governance (once after provisioning, to verify connectivity):
 export GOVERNANCE_INSTANCE_GUID=<guid>
 make governance
 ```
@@ -138,22 +136,11 @@ export WATSONX_PROJECT_ID=<your-watsonx-project-id>
 export WATSONX_URL=https://us-south.ml.cloud.ibm.com   # optional, this is the default
 ```
 
-Governance (required only for make governance / Step 4 of deploy)
+Governance (required only for make governance)
 
 ```
-export GOVERNANCE_INSTANCE_GUID=<your-openscale-instance-guid>
-export GOVERNANCE_API_KEY=<your-ibm-cloud-api-key>      # defaults to WATSONX_API_KEY if omitted
-export GOVERNANCE_URL=https://aiopenscale.cloud.ibm.com  # optional, this is the default
-export GOVERNANCE_ENABLED=true                            # optional, true by default
-```
-
-After running make governance for the first time, it prints four subscription IDs. Add them to your environment:
-
-```
-export GOVERNANCE_SUB_BULLET_TRANSLATOR=<id-from-script>
-export GOVERNANCE_SUB_SKILL_MAPPER=<id-from-script>
-export GOVERNANCE_SUB_GAP_ANALYZER=<id-from-script>
-export GOVERNANCE_SUB_PLAN_BUILDER=<id-from-script>
+export GOVERNANCE_INSTANCE_GUID=<guid>             # Resource list → AI/Machine Learning → <instance> → GUID
+export GOVERNANCE_API_KEY=<your-ibm-cloud-api-key> # defaults to WATSONX_API_KEY if omitted
 ```
 
 5. Complete setup order (first time)

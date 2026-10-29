@@ -75,16 +75,17 @@ lint:
 ## register-governance: Register AI Factsheets and monitors (alias for governance)
 register-governance: governance
 
-## governance: Register AI Factsheets and monitors with watsonx Governance
+## governance: Verify watsonx Governance connectivity (monitors attached via UI)
 governance:
-	@echo "$(BLUE)▶ Registering AI Factsheets and monitors with watsonx Governance...$(NC)"
+	@echo "$(BLUE)▶ Verifying watsonx Governance connectivity...$(NC)"
 	@if [ -z "$$GOVERNANCE_INSTANCE_GUID" ]; then \
-	  echo "$(YELLOW)⚠ GOVERNANCE_INSTANCE_GUID not set. Run:$(NC)"; \
-	  echo "  export GOVERNANCE_INSTANCE_GUID=<your-openscale-instance-guid>"; \
+	  echo "$(YELLOW)⚠ GOVERNANCE_INSTANCE_GUID not set.$(NC)"; \
+	  echo "  IBM Cloud Resource list → AI/Machine Learning → <instance> → GUID"; \
+	  echo "  export GOVERNANCE_INSTANCE_GUID=<guid>"; \
 	  exit 1; \
 	fi
 	python governance/register_factsheets.py
-	@echo "$(GREEN)✓ Governance registration complete$(NC)"
+	@echo "$(GREEN)✓ Governance connection verified$(NC)"
 
 ## help: Show available targets
 help:

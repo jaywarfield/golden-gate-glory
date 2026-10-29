@@ -58,55 +58,41 @@ four agent toolkits.
 
 **Step 1 – Install the Governance client**
 ```
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
-`ibm-aigov-facts-client>=2.0.0` and `pyyaml>=6.0.0` are now included.
+`ibm-watson-openscale` and `pyyaml` are included.
+Use `python -m pip` (not bare `pip`) to ensure packages install into the correct Python version inside your venv.
 
 **Step 2 – Find your Governance instance GUID**
 
-Retrieve the GUID using the IBM Cloud CLI:
-```
-ibmcloud login --sso
-ibmcloud resource service-instance '<Your Watson OpenScale instance name>'
-```
-The `GUID` field in the output is your value. The service name in the IBM Cloud resource list is **Watson OpenScale** (service: `aiopenscale`).
+In the IBM Cloud console:
+- Go to **Resource list** → **AI / Machine Learning**
+- Click your watsonx Governance instance (e.g. *watsonx-Hackathon GOV*)
+- The **GUID** is shown in the right-hand details panel
 
-**Step 3 – Add Governance secrets to your `.env` file**
+**Step 3 – Add Governance secrets to your environment**
 ```
+GOVERNANCE_INSTANCE_GUID=<guid-from-resource-list>
 GOVERNANCE_API_KEY=<your-ibm-cloud-api-key>          # defaults to WATSONX_API_KEY if omitted
-GOVERNANCE_INSTANCE_GUID=<guid-from-ibmcloud-cli>
-GOVERNANCE_URL=https://aiopenscale.cloud.ibm.com      # default; change for CPD deployments
-GOVERNANCE_ENABLED=true                                # set false to disable without removing code
 ```
 
-**Step 4 – Register AI use cases and monitor subscriptions (run once per environment)**
+**Step 4 – Verify connectivity (run once)**
 ```
 make register-governance
 ```
-The script prints four subscription IDs. Add them to `.env`:
-```
-GOVERNANCE_SUB_BULLET_TRANSLATOR=<id-from-script>
-GOVERNANCE_SUB_SKILL_MAPPER=<id-from-script>
-GOVERNANCE_SUB_GAP_ANALYZER=<id-from-script>
-GOVERNANCE_SUB_PLAN_BUILDER=<id-from-script>
-```
+The script connects to your instance and lists available data marts and service providers.
+Then create AI use cases and attach monitors (bias, drift, content safety, explainability)
+via the watsonx.governance UI → AI use cases → Evaluations tab.
 
 **Step 5 – Deploy agents as normal**
 No changes to the agent import or deploy commands are required.
-Governance logging is activated automatically at inference time once the
-environment variables above are set.
 
 **Step 6 – View dashboards**
-- Open your Governance instance in IBM Cloud.
+- Open watsonx.governance in the watsonx.ai UI.
 - Navigate to **AI use cases** → select any Mission Veteran AI use case.
 - Dashboards show: bias / fairness by service branch and career path,
   model drift over time, content safety alerts, and explainability records.
-- To retrieve an explanation for a specific inference:
-  ```python
-  from ibm_aigov_facts_client import AIGovFactsClient
-  client = AIGovFactsClient(api_key=..., instance_guid=..., service_url=...)
-  client.get_explanation(record_id="<record_id_from_tool_response>")
-  ```
+- Explanations and audit records are accessed via the watsonx.governance UI.
 
 **Re-baselining after updates**
 Run `make register-governance` again after:

@@ -15,7 +15,7 @@
 #   3. Connection app_id 'watsonx_credentials' already created, or run:
 #        orchestrate connections import -f connections/watsonx_credentials.yaml
 #   4. For governance: GOVERNANCE_INSTANCE_GUID set in environment:
-#        export GOVERNANCE_INSTANCE_GUID=<your-openscale-instance-guid>
+#        export GOVERNANCE_INSTANCE_GUID=<guid-from-resource-list>
 
 set -euo pipefail
 
@@ -112,8 +112,9 @@ if [ "$LIVE_ONLY" = false ]; then
   echo ""
   log "=== Step 4: Register watsonx Governance ==="
   if [ -z "${GOVERNANCE_INSTANCE_GUID:-}" ]; then
-    warn "GOVERNANCE_INSTANCE_GUID not set — skipping governance registration."
-    warn "Set it with: export GOVERNANCE_INSTANCE_GUID=<your-openscale-instance-guid>"
+    warn "GOVERNANCE_INSTANCE_GUID not set — skipping governance connectivity check."
+    warn "IBM Cloud Resource list → AI/Machine Learning → <instance> → GUID"
+    warn "Set it with: export GOVERNANCE_INSTANCE_GUID=<guid>"
   else
     python governance/register_factsheets.py
     ok "  AI Factsheets and monitors registered"
