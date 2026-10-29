@@ -29,10 +29,10 @@ langchain>=0.2.0         # RAG chain utilities
 ibm-watson-openscale>=3.1.11    # Watson OpenScale / watsonx.governance API client
 pyyaml>=6.0.0                   # governance/register_factsheets.py YAML parsing
 
-# Add when starting notebooks/04_jd_analysis.ipynb)
+# Add when starting notebooks/04_jd_analysis.ipynb
 # pymupdf>=1.24.0          # PDF/document ingestion (already in GETTING_STARTED.md)
 
-# Add when starting notebooks/06_action_plan.ipynb)
+# Add when starting notebooks/06_action_plan.ipynb
 # requests>=2.32.0         # public source URL fetch
 
 # Testing
