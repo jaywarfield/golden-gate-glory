@@ -158,31 +158,31 @@ export GOVERNANCE_SUB_PLAN_BUILDER=<id-from-script>
     orchestrate env activate my-env
     ```
 
--  Create the watsonx connection (set secrets in UI after this)
+    c. Create the watsonx connection (set secrets in UI after this)
 
-```
-orchestrate connections import -f connections/watsonx_credentials.yaml
-```
+    ```
+    orchestrate connections import -f connections/watsonx_credentials.yaml
+    ```
 
-- Set environment variables
+    d. Set environment variables
 
-```
-export WATSONX_API_KEY=...
-export WATSONX_PROJECT_ID=...
-export GOVERNANCE_INSTANCE_GUID=...
-```
+    ```
+    export WATSONX_API_KEY=...
+    export WATSONX_PROJECT_ID=...
+    export GOVERNANCE_INSTANCE_GUID=...
+    ```
 
-- Import everything to Draft
+    e. Import everything to Draft
 
-```
-make deploy
-```
+    ```
+    make deploy
+    ```
 
-- When Draft is verified, promote to Live
+    f. When Draft is verified, promote to Live
 
-```
-make promote
-```
+    ```
+    make promote
+    ```
 
 ---
 
