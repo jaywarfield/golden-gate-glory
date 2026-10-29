@@ -26,7 +26,7 @@
 - Copy `terraform/terraform.tfvars.example` → `terraform/terraform.tfvars` and fill in credentials.
 - Run `make all` to provision IBM Cloud instances and import agents to Draft.
 - Run `make deploy-live` to also promote Draft to the Live (test) environment.
-- Test in UI via the dashboard URL printed by `terraform output dashboard_url`.
+- Test in UI via the watsonx Orchestrate dashboard URL in your IBM Cloud console.
 
 ### Setup IBM Bob
 - Go to bob.ibm.com and select Download for your OS.
@@ -62,25 +62,17 @@ pip install -r requirements.txt
 ```
 `ibm-aigov-facts-client>=2.0.0` and `pyyaml>=6.0.0` are now included.
 
-**Step 2 – Provision the Governance service instance with Terraform**
+**Step 2 – Find your Governance instance GUID**
 
-The Governance instance is provisioned alongside watsonx Orchestrate.
-If you have not run Terraform yet, add the two new variables to your
-`terraform/terraform.tfvars` (see `terraform.tfvars.example`) and run:
-```
-make provision
-```
-After provisioning completes, retrieve the GUID:
-```
-cd terraform && terraform output governance_instance_guid
-```
-If you already ran `make provision` before this change, run it again —
-it will add only the new Governance instance without touching Orchestrate.
+Retrieve the GUID from the IBM Cloud console:
+- Open the [IBM Cloud Resource list](https://cloud.ibm.com/resources).
+- Locate your Watson OpenScale (watsonx Governance) instance.
+- Copy the **GUID** from the instance details page.
 
 **Step 3 – Add Governance secrets to your `.env` file**
 ```
 GOVERNANCE_API_KEY=<your-ibm-cloud-api-key>          # defaults to WATSONX_API_KEY if omitted
-GOVERNANCE_INSTANCE_GUID=<value from terraform output governance_instance_guid>
+GOVERNANCE_INSTANCE_GUID=<your-openscale-instance-guid>
 GOVERNANCE_URL=https://aiopenscale.cloud.ibm.com      # default; change for CPD deployments
 GOVERNANCE_ENABLED=true                                # set false to disable without removing code
 ```

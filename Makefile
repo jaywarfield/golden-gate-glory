@@ -80,7 +80,7 @@ governance:
 	@echo "$(BLUE)▶ Registering AI Factsheets and monitors with watsonx Governance...$(NC)"
 	@if [ -z "$$GOVERNANCE_INSTANCE_GUID" ]; then \
 	  echo "$(YELLOW)⚠ GOVERNANCE_INSTANCE_GUID not set. Run:$(NC)"; \
-	  echo "  export GOVERNANCE_INSTANCE_GUID=\$$(cd terraform && terraform output -raw governance_instance_guid)"; \
+	  echo "  export GOVERNANCE_INSTANCE_GUID=<your-openscale-instance-guid>"; \
 	  exit 1; \
 	fi
 	python governance/register_factsheets.py

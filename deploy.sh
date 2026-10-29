@@ -14,8 +14,8 @@
 #        WATSONX_API_KEY, WATSONX_URL, WATSONX_PROJECT_ID
 #   3. Connection app_id 'watsonx_credentials' already created, or run:
 #        orchestrate connections import -f connections/watsonx_credentials.yaml
-#   4. For governance: GOVERNANCE_INSTANCE_GUID set in environment, or run:
-#        cd terraform && terraform output governance_instance_guid
+#   4. For governance: GOVERNANCE_INSTANCE_GUID set in environment:
+#        export GOVERNANCE_INSTANCE_GUID=<your-openscale-instance-guid>
 
 set -euo pipefail
 
@@ -113,7 +113,7 @@ if [ "$LIVE_ONLY" = false ]; then
   log "=== Step 4: Register watsonx Governance ==="
   if [ -z "${GOVERNANCE_INSTANCE_GUID:-}" ]; then
     warn "GOVERNANCE_INSTANCE_GUID not set — skipping governance registration."
-    warn "Set it with: export GOVERNANCE_INSTANCE_GUID=\$(cd terraform && terraform output -raw governance_instance_guid)"
+    warn "Set it with: export GOVERNANCE_INSTANCE_GUID=<your-openscale-instance-guid>"
   else
     python governance/register_factsheets.py
     ok "  AI Factsheets and monitors registered"

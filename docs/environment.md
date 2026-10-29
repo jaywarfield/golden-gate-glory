@@ -62,8 +62,8 @@ make deploy-live
 Governance (watsonx Governance / AI Factsheets) is not environment-scoped in the same way — it tracks inference facts at the tool level regardless of which Orchestrate environment called the tool. Registration is a one-time step per instance:
 
 ```
-# Set the GUID first (from terraform output or IBM Cloud console)
-export GOVERNANCE_INSTANCE_GUID=$(cd terraform && terraform output -raw governance_instance_guid)
+# Set the GUID first (from the IBM Cloud console — Resource list → Watson OpenScale instance → GUID)
+export GOVERNANCE_INSTANCE_GUID=<your-openscale-instance-guid>
 
 # Then register
 make governance
