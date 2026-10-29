@@ -144,14 +144,14 @@ export GOVERNANCE_SUB_PLAN_BUILDER=<id-from-script>
 
 5. Complete setup order (first time)
 
-    1. Clone repo and install packages
+    a. Clone repo and install packages
 
     ```
     python3 -m venv venv && source venv/bin/activate
     pip install -r requirements.txt
     ```
 
-    1. Authenticate Orchestrate CLI
+    b. Authenticate Orchestrate CLI
 
     ``` 
     orchestrate env add --name my-env --url <url>
