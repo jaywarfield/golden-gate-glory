@@ -7,6 +7,9 @@
 # The watsonx.ai notebook environment has ibm-watsonx-ai pre-installed.
 # Running pip install here is safe; it installs only if missing.
 
+
+
+
 # IBM watsonx.ai SDK – foundation model inference and API client
 ibm-watsonx-ai>=1.1.0
 
