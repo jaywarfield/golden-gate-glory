@@ -1,6 +1,5 @@
 # toolkits/skill_mapper/map_military_skills.py
-# Mission Veteran AI — a Golden Gate Glory project
-# Toolkit: skill_mapper
+# Mission Veteran AI by G3
 # Tool: map_military_skills
 #
 # Maps a veteran's MOS/AFSC/rating and service summary to a structured
@@ -9,11 +8,8 @@
 # LLM: ibm/granite-4-h-small (expands beyond KB where evidence supports)
 
 import json
-import sys
 import os
 import time
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from ibm_watsonx_ai import APIClient, Credentials
 from ibm_watsonx_ai.foundation_models import ModelInference

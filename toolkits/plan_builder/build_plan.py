@@ -1,6 +1,5 @@
 # toolkits/plan_builder/build_plan.py
-# Mission Veteran AI — a Golden Gate Glory project
-# Toolkit: plan_builder
+# Mission Veteran AI by G3
 # Tools: analyze_job_description, build_resume_draft, evaluate_export_gate
 #
 # Three-tool pipeline:
@@ -9,11 +8,8 @@
 #   3. evaluate_export_gate     — block export until all tags are resolved
 
 import json
-import sys
 import os
 import time
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from ibm_watsonx_ai import APIClient, Credentials
 from ibm_watsonx_ai.foundation_models import ModelInference

@@ -1,6 +1,5 @@
 # toolkits/gap_analyzer/analyze_skills_gap.py
-# Mission Veteran AI — a Golden Gate Glory project
-# Toolkit: gap_analyzer
+# Mission Veteran AI by G3
 # Tool: analyze_skills_gap
 #
 # Compares a veteran's skill inventory against the target job description,
@@ -10,11 +9,8 @@
 # Grounded by: IBM SkillsBuild Course Catalog + DoD SkillBridge Program List
 
 import json
-import sys
 import os
 import time
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from ibm_watsonx_ai import APIClient, Credentials
 from ibm_watsonx_ai.foundation_models import ModelInference
