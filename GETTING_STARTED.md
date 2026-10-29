@@ -64,15 +64,17 @@ pip install -r requirements.txt
 
 **Step 2 – Find your Governance instance GUID**
 
-Retrieve the GUID from the IBM Cloud console:
-- Open the [IBM Cloud Resource list](https://cloud.ibm.com/resources).
-- Locate your Watson OpenScale (watsonx Governance) instance.
-- Copy the **GUID** from the instance details page.
+Retrieve the GUID using the IBM Cloud CLI:
+```
+ibmcloud login --sso
+ibmcloud resource service-instance '<Your Watson OpenScale instance name>'
+```
+The `GUID` field in the output is your value. The service name in the IBM Cloud resource list is **Watson OpenScale** (service: `aiopenscale`).
 
 **Step 3 – Add Governance secrets to your `.env` file**
 ```
 GOVERNANCE_API_KEY=<your-ibm-cloud-api-key>          # defaults to WATSONX_API_KEY if omitted
-GOVERNANCE_INSTANCE_GUID=<your-openscale-instance-guid>
+GOVERNANCE_INSTANCE_GUID=<guid-from-ibmcloud-cli>
 GOVERNANCE_URL=https://aiopenscale.cloud.ibm.com      # default; change for CPD deployments
 GOVERNANCE_ENABLED=true                                # set false to disable without removing code
 ```
