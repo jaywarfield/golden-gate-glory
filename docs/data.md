@@ -2,11 +2,11 @@
 
 #### Input Data
 
-[View Foundation](../data/FoundationG3Project.xlsx)
+[View Foundation](data/FoundationG3Project.md)
 
-[View Wireframes](../data/MVPWireframe.pptx)
+[View Wireframes](data/MVPWireframe.md)
 
-[View Technical](../data/TechnicalArchitecture.pptx)
+[View Technical](data/TechnicalArchitecture.md)
 
 ---
 
