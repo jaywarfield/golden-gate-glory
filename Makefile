@@ -2,11 +2,13 @@
 # Mission Veteran AI by G3
 #
 # Imports tools, agents, and governance into watsonx Orchestrate.
+# Terraform is NOT invoked by any make target — run it directly:
+#   cd terraform && terraform init
+#   cd terraform && terraform apply
 #
 # ── First-time setup ────────────────────────────────────────────────────────
-#   cp terraform/terraform.tfvars.example terraform/terraform.tfvars
-#   # edit terraform/terraform.tfvars with your IBM Cloud credentials
-#   # provision IBM Cloud instances manually or via Terraform, then:
+#   # 1. Provision IBM Cloud instances with Terraform (see above)
+#   # 2. Import agents to Draft:
 #   make deploy
 #
 # ── Day-to-day development ──────────────────────────────────────────────────
@@ -16,6 +18,7 @@
 #
 # ── Teardown ────────────────────────────────────────────────────────────────
 #   make destroy      # remove all agents from the Orchestrate instance
+#   # To also destroy IBM Cloud instances: cd terraform && terraform destroy
 
 .PHONY: all deploy deploy-live promote destroy \
         test test-unit lint register-governance governance help

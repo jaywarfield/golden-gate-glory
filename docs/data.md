@@ -2,8 +2,6 @@
 
 #### Input Data
 
-[View Foundation](data/FoundationG3Project.md)
-
 [View Wireframes](data/MVPWireframe.pdf)
 
 [View Technical](data/TechnicalArchitecture.pdf)

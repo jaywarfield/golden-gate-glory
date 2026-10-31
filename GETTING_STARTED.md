@@ -13,19 +13,22 @@
 - source venv/bin/activate
 
 ### Setup Orchestrate
-- pip install pymupdf
-- pip install ibm-watsonx-orchestrate
-- TBD
-- TBD
-- Please enter WXO API key:  (cut-and-paste your API Key here)
+- `pip install pymupdf`
+- `pip install ibm-watsonx-orchestrate`
+- `orchestrate env add --name <your-env> --url <your-orchestrate-url>` — find the URL in the IBM Cloud console → Resource list → watsonx Orchestrate → Dashboard URL
+- `orchestrate env activate <your-env>` — prompts for your IBM Cloud API key
 - Note: Token will need to be reactivated when it expires.
 
 ### Setup Mission Veteran AI
 - Browse to https://github.com/jaywarfield/golden-gate-glory
 - Select Code and Open with GitHub Desktop.
-- Copy `terraform/terraform.tfvars.example` → `terraform/terraform.tfvars` and fill in credentials.
-- Run `make all` to provision IBM Cloud instances and import agents to Draft.
-- Run `make deploy-live` to also promote Draft to the Live (test) environment.
+- **(Optional) Provision IBM Cloud instances with Terraform** — skip if using an existing instance:
+  - Copy `terraform/terraform.tfvars.example` → `terraform/terraform.tfvars` and fill in credentials
+  - `cd terraform && terraform init`
+  - `cd terraform && terraform apply`
+  - Retrieve outputs: `terraform output` — copy `dashboard_url` for Orchestrate setup above and `governance_instance_guid` for Governance setup below
+- Import agents to Draft: `make deploy`
+- Promote to Live (test) environment: `make deploy-live`
 - Test in UI via the watsonx Orchestrate dashboard URL in your IBM Cloud console.
 
 ### Setup IBM Bob
@@ -103,20 +106,41 @@ Run `make register-governance` again after:
 
 ### Make command reference
 
+`make` is used only for Orchestrate import/deploy steps. Terraform is run directly (see below).
+
 | Command | What it does |
 |---|---|
-| `make all` | Provision IBM Cloud instances (Terraform) + import agents to Draft |
-| `make init` | `terraform init` — download providers and modules |
-| `make plan` | Preview infrastructure changes without applying |
-| `make provision` | `terraform apply` — create or update IBM Cloud instances |
 | `make deploy` | Import toolkits + agents to Draft (safe — does not touch Live) |
 | `make deploy-live` | Import to Draft and immediately promote to Live |
 | `make promote` | Promote current Draft snapshot to Live (skip re-import) |
-| `make destroy` | `terraform destroy` — remove all instances and agents |
+| `make destroy` | Remove all agents from the Orchestrate instance |
 | `make test` | Run unit tests: `pytest tests/ -v --tb=short` (all mocked) |
 | `make lint` | Lint toolkit Python files with flake8 |
-| `make register-governance` | Register AI Factsheets and monitors (run once after provision) |
+| `make governance` | Verify watsonx Governance connectivity |
+| `make register-governance` | Alias for `make governance` |
 | `make help` | List all available targets |
+
+### Terraform command reference
+
+Terraform provisions IBM Cloud infrastructure. Run these directly from the `terraform/` directory — they are not wired into `make`.
+
+```sh
+# One-time setup
+cp terraform/terraform.tfvars.example terraform/terraform.tfvars
+# edit terraform/terraform.tfvars with your IBM Cloud credentials
+
+# Download providers and modules
+cd terraform && terraform init
+
+# Preview infrastructure changes without applying
+cd terraform && terraform plan
+
+# Create or update IBM Cloud instances
+cd terraform && terraform apply
+
+# Tear down all provisioned IBM Cloud instances
+cd terraform && terraform destroy
+```
 
 ### Additional orchestrate CLI commands (if needed)
 
