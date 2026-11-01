@@ -31,6 +31,56 @@
 - Promote to Live (test) environment: `make deploy-live`
 - Test in UI via the watsonx Orchestrate dashboard URL in your IBM Cloud console.
 
+### (Optional) Deploy web front-end to OpenShift
+
+`web/index.html` is a fully static single-page app (`USE_MOCK = true` — no backend required).
+These steps deploy it as an nginx pod exposed via an OpenShift Route.
+**Not wired into `make` — run `oc` commands directly.**
+
+Prerequisite: `oc` CLI installed and logged in to your OpenShift cluster.
+
+```sh
+# 1. Create a project (namespace) — skip if it already exists
+oc new-project mission-veteran-ai
+
+# 2. Load the static HTML into a ConfigMap
+oc create configmap veteran-ui --from-file=index.html=web/index.html
+
+# 3. Deploy an nginx container that serves the ConfigMap
+oc create deployment veteran-ui \
+  --image=registry.access.redhat.com/ubi8/nginx-120:latest \
+  --port=8080
+
+# 4. Mount the ConfigMap over nginx's default html directory
+oc set volume deployment/veteran-ui \
+  --add --name=html \
+  --type=configmap \
+  --configmap-name=veteran-ui \
+  --mount-path=/usr/share/nginx/html \
+  --default-mode=0644
+
+# 5. Expose as a ClusterIP service
+oc expose deployment veteran-ui --port=8080
+
+# 6. Create a public Route (HTTP)
+oc expose service veteran-ui
+
+# 7. Get the public URL
+oc get route veteran-ui -o jsonpath='{.spec.host}'
+```
+
+To update after changes to `web/index.html`:
+```sh
+oc create configmap veteran-ui --from-file=index.html=web/index.html \
+  --dry-run=client -o yaml | oc apply -f -
+oc rollout restart deployment/veteran-ui
+```
+
+To tear down:
+```sh
+oc delete deployment,service,route,configmap -l app=veteran-ui
+```
+
 ### Setup IBM Bob
 - Go to bob.ibm.com and select Download for your OS.
 - Open downloaded file, accept license agreement, and follow prompts.
@@ -140,6 +190,31 @@ cd terraform && terraform apply
 
 # Tear down all provisioned IBM Cloud instances
 cd terraform && terraform destroy
+```
+
+### OpenShift command reference
+
+Deploys `web/index.html` as a static nginx pod with a public Route. Run `oc` commands directly — not wired into `make`.
+
+```sh
+oc new-project mission-veteran-ai                                        # create namespace
+oc create configmap veteran-ui --from-file=index.html=web/index.html    # load HTML
+oc create deployment veteran-ui \
+  --image=registry.access.redhat.com/ubi8/nginx-120:latest --port=8080  # deploy nginx
+oc set volume deployment/veteran-ui --add --name=html \
+  --type=configmap --configmap-name=veteran-ui \
+  --mount-path=/usr/share/nginx/html --default-mode=0644                 # mount HTML
+oc expose deployment veteran-ui --port=8080                              # service
+oc expose service veteran-ui                                             # public route
+oc get route veteran-ui -o jsonpath='{.spec.host}'                       # get URL
+
+# Update after web/index.html changes:
+oc create configmap veteran-ui --from-file=index.html=web/index.html \
+  --dry-run=client -o yaml | oc apply -f -
+oc rollout restart deployment/veteran-ui
+
+# Tear down:
+oc delete deployment,service,route,configmap -l app=veteran-ui
 ```
 
 ### Additional orchestrate CLI commands (if needed)
