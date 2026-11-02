@@ -26,7 +26,7 @@ description: >
   MISSING tags are resolved by the veteran.
   Does NOT make hiring, eligibility, benefits, legal, medical, or financial decisions.
 
-llm: ibm/granite-4-h-small
+llm: groq/openai/gpt-oss-120b
 style: react_core
 
 toolkit:

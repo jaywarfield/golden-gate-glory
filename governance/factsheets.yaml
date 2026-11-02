@@ -29,7 +29,7 @@ factsheets:
       ATS-ready civilian resume bullet using IBM Granite.
       Output is consumed directly by transitioning veterans for job applications.
     task_type: text_generation
-    model_id: ibm/granite-4-h-small
+    model_id: ibm/granite-4-h-small        # watsonx.ai toolkit inference model (ModelInference)
     model_provider: IBM watsonx.ai
     toolkit: bullet_translator
     entry_tool: translate_bullet
@@ -64,7 +64,7 @@ factsheets:
       Maps a veteran's MOS/AFSC/rating and PII-free service summary to a
       structured civilian skill inventory grounded by O*NET data.
     task_type: text_generation
-    model_id: ibm/granite-4-h-small
+    model_id: ibm/granite-4-h-small        # watsonx.ai toolkit inference model (ModelInference)
     model_provider: IBM watsonx.ai
     toolkit: skill_mapper
     entry_tool: map_military_skills
@@ -111,7 +111,7 @@ factsheets:
       description, identifies covered and gap skills, and recommends free
       IBM SkillsBuild courses and DoD SkillBridge programs.
     task_type: text_generation
-    model_id: ibm/granite-4-h-small
+    model_id: ibm/granite-4-h-small        # watsonx.ai toolkit inference model (ModelInference)
     model_provider: IBM watsonx.ai
     toolkit: gap_analyzer
     entry_tool: analyze_skills_gap
@@ -165,7 +165,7 @@ factsheets:
       evaluates an export gate that blocks sharing until all ambiguous tags
       are resolved by the veteran.
     task_type: text_generation
-    model_id: ibm/granite-4-h-small
+    model_id: ibm/granite-4-h-small        # watsonx.ai toolkit inference model (ModelInference)
     model_provider: IBM watsonx.ai
     toolkit: plan_builder
     entry_tool: build_resume_draft
