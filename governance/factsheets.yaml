@@ -31,8 +31,8 @@ factsheets:
     task_type: text_generation
     model_id: ibm/granite-4-h-small        # watsonx.ai toolkit inference model (ModelInference)
     model_provider: IBM watsonx.ai
-    toolkit: bullet_translator
-    entry_tool: translate_bullet
+    toolkit: accomplishment_translator
+    entry_tool: translate_accomplishment
     data_sensitivity: high              # veteran career data; no PII by design
     risk_tier: high                     # output used in consequential job applications
     intended_use: >

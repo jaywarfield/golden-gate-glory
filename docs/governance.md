@@ -7,7 +7,7 @@ Governance is a strong fit precisely because of what this solution does and who 
 Where Governance adds real value:
 
 - Bias and fairness monitoring across military branches The map_military_skills and analyze_skills_gap tools both pass free-form text through ibm/granite-4-h-small (watsonx.ai toolkit model) to produce structured outputs. If the model systematically under-scores skills from certain branches (e.g. Coast Guard, Space Force, or enlisted vs. officer) or over-recommends certain career paths, you wouldn't know today. Governance's fairness metrics can surface disparate outputs across demographic or service-branch segments.
-- Prompt injection and hallucination detection translate_bullet.py, analyze_skills_gap.py, and build_plan.py all construct prompts from user-supplied text (the job description, service summary, and bullets). Governance's input/output monitors can flag prompt injection attempts and catch cases where the model fabricates skills or credentials — directly countering the EVIDENCED / INFERRED / MISSING tagging system that is the solution's main trust mechanism.
+- Prompt injection and hallucination detection translate_accomplishment.py, analyze_skills_gap.py, and build_plan.py all construct prompts from user-supplied text (the job description, service summary, and bullets). Governance's input/output monitors can flag prompt injection attempts and catch cases where the model fabricates skills or credentials — directly countering the EVIDENCED / INFERRED / MISSING tagging system that is the solution's main trust mechanism.
 - Explainability for the export gate The evaluate_export_gate logic blocks export when inferred_count > 0 or missing_count > 0. Governance's explainability layer can produce a human-readable rationale log for why a specific claim was tagged INFERRED vs. EVIDENCED — useful if a veteran disputes a gate hold or if the system is audited.
 - Model drift detection over time The static knowledge bases (O*NET, SkillsBuild, SkillBridge) are updated quarterly or annually. If the model's interpretation of those knowledge bases drifts between Granite versions — e.g. an update causes different coverage percentages for the same inputs — Governance's drift monitors would catch it before veterans see degraded results.
 - Audit trail for a high-stakes population Veterans relying on this tool for federal job applications (USAJobs, RAG-006) or civilian employment are making consequential decisions. Governance provides an immutable transaction log of every inference — what went in, what came out, which model version — which is directly relevant to VA/DoD responsible AI requirements and any future compliance reporting.
@@ -21,7 +21,7 @@ Where Governance would add less value:
 
 Practical integration point:
 
-The most targeted entry point would be attaching a Governance AI Factsheet to the gap_analyzer and bullet_translator toolkits — the two that produce the outputs veterans directly copy into job applications. That gives you bias monitoring, drift detection, and an audit trail for the highest-consequence outputs without requiring changes to any of the existing agent or toolkit code.
+The most targeted entry point would be attaching a Governance AI Factsheet to the gap_analyzer and accomplishment_translator toolkits — the two that produce the outputs veterans directly copy into job applications. That gives you bias monitoring, drift detection, and an audit trail for the highest-consequence outputs without requiring changes to any of the existing agent or toolkit code.
 
 ---
 

@@ -4,21 +4,21 @@
 #
 # Orchestrates the full veteran career materials pipeline by delegating
 # to four focused sub-agents in sequence:
-#   1. BulletTranslator  – military bullets → civilian ATS bullets
-#   2. SkillMapper       – MOS/AFSC/rating → civilian skill inventory
-#   3. GapAnalyzer       – skill inventory → gap report + SkillsBuild courses
-#   4. PlanBuilder       – JD analysis → tagged resume draft → export gate
+#   1. AccomplishmentTranslator – military bullets → civilian ATS bullets
+#   2. SkillMapper               – MOS/AFSC/rating → civilian skill inventory
+#   3. GapAnalyzer               – skill inventory → gap report + SkillsBuild courses
+#   4. PlanBuilder               – JD analysis → tagged resume draft → export gate
 #
 # Import into watsonx Orchestrate (all toolkits and sub-agents first):
 #
 #   # 1. Import toolkits
-#   orchestrate toolkits import -f toolkits/bullet_translator/toolkit.yaml --app-id watsonx_credentials
-#   orchestrate toolkits import -f toolkits/skill_mapper/toolkit.yaml      --app-id watsonx_credentials
-#   orchestrate toolkits import -f toolkits/gap_analyzer/toolkit.yaml      --app-id watsonx_credentials
-#   orchestrate toolkits import -f toolkits/plan_builder/toolkit.yaml      --app-id watsonx_credentials
+#   orchestrate toolkits import -f toolkits/accomplishment_translator/toolkit.yaml --app-id watsonx_credentials
+#   orchestrate toolkits import -f toolkits/skill_mapper/toolkit.yaml              --app-id watsonx_credentials
+#   orchestrate toolkits import -f toolkits/gap_analyzer/toolkit.yaml              --app-id watsonx_credentials
+#   orchestrate toolkits import -f toolkits/plan_builder/toolkit.yaml              --app-id watsonx_credentials
 #
 #   # 2. Import sub-agents
-#   orchestrate agents import -f agents/bullet_translator_agent.yaml
+#   orchestrate agents import -f agents/accomplishment_translator_agent.yaml
 #   orchestrate agents import -f agents/skill_mapper_agent.yaml
 #   orchestrate agents import -f agents/gap_analyzer_agent.yaml
 #   orchestrate agents import -f agents/plan_builder_agent.yaml
@@ -28,7 +28,7 @@
 #
 # To promote the full stack to Live (test environment) — run after all
 # sub-agents are verified in Draft:
-#   orchestrate agents deploy --name bullet_translator
+#   orchestrate agents deploy --name accomplishment_translator
 #   orchestrate agents deploy --name skill_mapper
 #   orchestrate agents deploy --name gap_analyzer
 #   orchestrate agents deploy --name plan_builder
@@ -45,7 +45,7 @@ description: >
   Mission Veteran AI by Golden Gate Glory — Coordinator.
   Orchestrates the full gated career materials pipeline for transitioning
   U.S. service members by delegating to four focused sub-agents:
-  BulletTranslator, SkillMapper, GapAnalyzer, and PlanBuilder.
+  AccomplishmentTranslator, SkillMapper, GapAnalyzer, and PlanBuilder.
   Export is blocked until every resume sentence is EVIDENCED.
   Does NOT make hiring, eligibility, benefits, legal, medical, or financial decisions.
 
@@ -53,7 +53,7 @@ llm: groq/openai/gpt-oss-120b
 style: react_core
 
 collaborators:
-  - bullet_translator
+  - accomplishment_translator
   - skill_mapper
   - gap_analyzer
   - plan_builder
@@ -69,7 +69,7 @@ instructions: |
   Greet the veteran and explain the pipeline:
   "This tool will:
    1. Translate your military accomplishments into civilian language.
-      (BulletTranslator)
+      (AccomplishmentTranslator)
    2. Map your military specialty to civilian skills and find gaps,
       with free IBM SkillsBuild course recommendations.
       (SkillMapper + GapAnalyzer)
@@ -107,9 +107,9 @@ instructions: |
   f. Full text of the civilian job description they are targeting.
 
   ════════════════════════════════════════════════════════════
-  STEP 3 — DELEGATE: BulletTranslator
+  STEP 3 — DELEGATE: AccomplishmentTranslator
   ════════════════════════════════════════════════════════════
-  For each bullet from step 2d, delegate to the bullet_translator
+  For each bullet from step 2d, delegate to the accomplishment_translator
   sub-agent with: bullet, target_role (from career path), metrics.
   Collect all translated bullets into a JSON array.
   If the sub-agent reports a pii_warning or error, display it and ask

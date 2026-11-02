@@ -49,14 +49,14 @@ if [ "$LIVE_ONLY" = false ]; then
   echo ""
   log "=== Step 1: Import tools ==="
 
-  log "  translate_bullet"
+  log "  translate_accomplishment"
   orchestrate tools import \
     --kind python \
-    --file toolkits/bullet_translator/translate_bullet.py \
+    --file toolkits/accomplishment_translator/translate_accomplishment.py \
     --package-root toolkits \
     --requirements-file requirements.txt \
     --app-id watsonx_credentials
-  ok "  translate_bullet imported"
+  ok "  translate_accomplishment imported"
 
   log "  map_military_skills"
   orchestrate tools import \
@@ -88,9 +88,9 @@ if [ "$LIVE_ONLY" = false ]; then
   echo ""
   log "=== Step 2: Import sub-agents ==="
 
-  log "  bullet_translator_agent"
-  orchestrate agents import -f agents/bullet_translator_agent.yaml
-  ok "  bullet_translator_agent imported"
+  log "  accomplishment_translator_agent"
+  orchestrate agents import -f agents/accomplishment_translator_agent.yaml
+  ok "  accomplishment_translator_agent imported"
 
   log "  skill_mapper_agent"
   orchestrate agents import -f agents/skill_mapper_agent.yaml
@@ -137,9 +137,9 @@ if [ "$LIVE" = true ] || [ "$LIVE_ONLY" = true ]; then
   warn "Testers will immediately see the new version."
   echo ""
 
-  log "  deploying bullet_translator"
-  orchestrate agents deploy --name bullet_translator
-  ok "  bullet_translator → Live"
+  log "  deploying accomplishment_translator"
+  orchestrate agents deploy --name accomplishment_translator
+  ok "  accomplishment_translator → Live"
 
   log "  deploying skill_mapper"
   orchestrate agents deploy --name skill_mapper

@@ -49,7 +49,7 @@ instructions: |
      a. Service branch and specialty code.
      b. PII-free service summary (2–5 sentences).
      c. Translated civilian bullets as a JSON array
-        (from BulletTranslator, or manually provided).
+        (from AccomplishmentTranslator, or manually provided).
      d. Skill inventory as a JSON array
         (from SkillMapper, or manually provided).
      e. Full text of the target job description (PII-free).

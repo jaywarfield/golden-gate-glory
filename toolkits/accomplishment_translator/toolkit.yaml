@@ -1,11 +1,11 @@
-# toolkits/bullet_translator/toolkit.yaml
-# Mission Veteran AI — Bullet Translator toolkit
+# toolkits/accomplishment_translator/toolkit.yaml
+# Mission Veteran AI — Accomplishment Translator toolkit
 
 spec_version: v1
 kind: python
-name: bullet_translator
+name: accomplishment_translator
 description: >
-  Mission Veteran AI by Golden Gate Glory — Bullet Translator toolkit.
+  Mission Veteran AI by Golden Gate Glory — Accomplishment Translator toolkit.
   Translates PII-free military accomplishment bullets into ATS-ready
   civilian resume bullets using IBM Granite via watsonx.ai.
 
@@ -13,7 +13,7 @@ runtime:
   language: python
   version: "3.11"
 
-entry_file: translate_bullet.py
+entry_file: translate_accomplishment.py
 
 dependencies:
   - ibm-watsonx-ai>=1.0.0

@@ -250,8 +250,8 @@
 
 <!-- ── Step progress rail ────────────────────────────────────────── -->
 <div class="step-rail" id="step-rail">
-  <div class="step-pip active" id="pip-1"><div class="num">1</div>Profile</div>
-  <div class="step-pip"        id="pip-2"><div class="num">2</div>Bullets</div>
+  <div class="step-pip active" id="pip-1"><div class="num">1</div>Consent</div>
+  <div class="step-pip"        id="pip-2"><div class="num">2</div>Intake</div>
   <div class="step-pip"        id="pip-3"><div class="num">3</div>Job</div>
   <div class="step-pip"        id="pip-4"><div class="num">4</div>Skills</div>
   <div class="step-pip"        id="pip-5"><div class="num">5</div>Resume</div>
@@ -262,24 +262,77 @@
 <div class="shell">
 
 <!-- ════════════════════════════════════════════════════════════════
-     STEP 1 — VETERAN PROFILE SETUP
+     STEP 1 — WELCOME AND CONSENT
      ════════════════════════════════════════════════════════════════ -->
 <div class="section visible" id="section-1">
   <div class="step-header">
     <div class="step-meta">Step 1 of 7 &nbsp;·&nbsp; Setup</div>
-    <div class="step-title">Veteran Profile</div>
+    <div class="step-title">Welcome and Consent</div>
     <span class="draft-badge">Not shared</span>
   </div>
 
   <div class="notice">
-    <strong>What this step does:</strong> Collects your service profile — branch,
-    specialty code, a PII-free service summary, and your target role. No personal
-    identifiers are stored.
+    <strong>User goal:</strong> Review how your information is used, give consent,
+    and choose how your draft is stored. No personal identifiers are collected.
   </div>
   <div class="notice warn">
     <strong>PII Reminder:</strong> Do not include full names, Social Security numbers,
     DoD ID numbers, phone numbers, email addresses, home addresses, birth dates,
     medical details, classified information, exact unit designations, or deployment locations.
+  </div>
+
+  <div class="card">
+    <div class="card-title">Consent</div>
+    <div class="field">
+      <label>Consent choice <span class="req">*</span></label>
+      <label style="font-weight:400;display:flex;align-items:center;gap:8px;margin-top:4px">
+        <input type="checkbox" id="s1-consent">
+        I understand and agree
+      </label>
+    </div>
+    <div class="field">
+      <label>Draft storage <span class="req">*</span></label>
+      <label style="font-weight:400;display:flex;align-items:center;gap:8px;margin-top:4px">
+        <input type="radio" name="s1-storage" id="s1-storage-session" value="session" checked>
+        Entire session
+      </label>
+      <label style="font-weight:400;display:flex;align-items:center;gap:8px;margin-top:4px">
+        <input type="radio" name="s1-storage" id="s1-storage-save" value="save">
+        Save draft
+      </label>
+    </div>
+    <div class="notice" style="margin-top:8px;margin-bottom:0">
+      <strong>User controls:</strong> Withdraw consent or delete draft at any time.
+    </div>
+    <div class="notice" style="margin-top:8px;margin-bottom:0">
+      <strong>Evidence:</strong> Not collected. &nbsp;<strong>AI Claims:</strong> None yet.
+    </div>
+    <div class="notice success" style="margin-top:8px;margin-bottom:0">
+      <strong>Output:</strong> Consent choice and a new career-intake draft.
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="step1Next()">Continue to Intake →</button>
+      <button class="btn btn-secondary" onclick="step1Exit()">Exit without saving</button>
+    </div>
+    <div class="notice pii" id="s1-error" style="display:none">
+      <strong>Error:</strong> <span id="s1-error-text"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     STEP 2 — GUIDED CAREER INTAKE
+     ════════════════════════════════════════════════════════════════ -->
+<div class="section" id="section-2">
+  <div class="step-header">
+    <div class="step-meta">Step 2 of 7 &nbsp;·&nbsp; Guided Career Intake &nbsp;·&nbsp; Draft in progress</div>
+    <div class="step-title">Guided Career Intake</div>
+    <span class="draft-badge">Draft: not shared</span>
+  </div>
+
+  <div class="notice">
+    <strong>User goal:</strong> Describe your service profile, key accomplishments,
+    and career goals so the AI can translate your experience into civilian-ready language.
   </div>
 
   <div class="card">
@@ -300,10 +353,31 @@
       </div>
     </div>
     <div class="field">
-      <label for="s1-summary">PII-free service summary <span class="req">*</span></label>
+      <label for="s1-summary">Service summary <span class="req">*</span></label>
       <textarea id="s1-summary" rows="4" maxlength="1500"
         placeholder="2–5 sentences. Duties, team size, resources managed, key accomplishments. No names or unit designations."></textarea>
     </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Service Accomplishments</div>
+    <div class="field">
+      <label for="s2-b1">Accomplishment 1 <span class="req">*</span></label>
+      <textarea id="s2-b1" rows="2" maxlength="500"
+        placeholder="e.g. Supervised supply accountability for 3,200 line items valued at $2.1M with 98.7% accuracy."></textarea>
+    </div>
+    <div class="field">
+      <label for="s2-b2">Accomplishment 2 <span class="opt">(optional)</span></label>
+      <textarea id="s2-b2" rows="2" maxlength="500" placeholder="Second accomplishment…"></textarea>
+    </div>
+    <div class="field">
+      <label for="s2-b3">Accomplishment 3 <span class="opt">(optional)</span></label>
+      <textarea id="s2-b3" rows="2" maxlength="500" placeholder="Third accomplishment…"></textarea>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Career Goals</div>
     <div class="field">
       <label for="s1-target-role">Target civilian role <span class="req">*</span></label>
       <input type="text" id="s1-target-role" maxlength="100" placeholder="e.g. Supply Chain Operations Manager">
@@ -316,56 +390,18 @@
         <option>IT/Cybersecurity</option><option>Logistics</option>
       </select>
     </div>
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="step1Next()">Continue to Bullet Translation →</button>
-    </div>
-    <div class="notice pii" id="s1-error" style="display:none">
-      <strong>Error:</strong> <span id="s1-error-text"></span>
-    </div>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════════════════════════════
-     STEP 2 — BULLET TRANSLATION
-     ════════════════════════════════════════════════════════════════ -->
-<div class="section" id="section-2">
-  <div class="step-header">
-    <div class="step-meta">Step 2 of 7 &nbsp;·&nbsp; Bullet Translation &nbsp;·&nbsp; Draft in progress</div>
-    <div class="step-title">Military Bullet Translation</div>
-    <span class="draft-badge">Draft: not shared</span>
   </div>
 
-  <div class="notice">
-    <strong>What this step does:</strong> Translates up to 3 PII-free military
-    accomplishment bullets into ATS-ready civilian resume bullets using IBM Granite.
+  <div class="btn-row">
+    <button class="btn btn-primary" id="s2-btn" onclick="step2Translate()">Translate Accomplishments</button>
+    <button class="btn btn-secondary" onclick="goStep(1)">← Back</button>
   </div>
-
-  <div class="card">
-    <div class="card-title">Accomplishment Bullets</div>
-    <div class="field">
-      <label for="s2-b1">Bullet 1 <span class="req">*</span></label>
-      <textarea id="s2-b1" rows="2" maxlength="500"
-        placeholder="e.g. Supervised supply accountability for 3,200 line items valued at $2.1M with 98.7% accuracy."></textarea>
-    </div>
-    <div class="field">
-      <label for="s2-b2">Bullet 2 <span class="opt">(optional)</span></label>
-      <textarea id="s2-b2" rows="2" maxlength="500" placeholder="Second accomplishment bullet…"></textarea>
-    </div>
-    <div class="field">
-      <label for="s2-b3">Bullet 3 <span class="opt">(optional)</span></label>
-      <textarea id="s2-b3" rows="2" maxlength="500" placeholder="Third accomplishment bullet…"></textarea>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-primary" id="s2-btn" onclick="step2Translate()">Translate Bullets</button>
-      <button class="btn btn-secondary" onclick="goStep(1)">← Back</button>
-    </div>
-    <div class="spinner" id="s2-spinner"><div class="spinner-ring"></div><span>Translating bullets with IBM Granite…</span></div>
-    <div class="notice pii" id="s2-error" style="display:none"><strong>Error:</strong> <span id="s2-error-text"></span></div>
-  </div>
+  <div class="spinner" id="s2-spinner"><div class="spinner-ring"></div><span>Translating accomplishments with IBM Granite…</span></div>
+  <div class="notice pii" id="s2-error" style="display:none"><strong>Error:</strong> <span id="s2-error-text"></span></div>
 
   <div id="s2-output" style="display:none">
     <div class="card">
-      <div class="card-title">Translated Bullets</div>
+      <div class="card-title">Translated Accomplishments</div>
       <div id="s2-bullets-list"></div>
     </div>
     <div class="btn-row">
@@ -663,56 +699,67 @@
   }
 
   // ═══════════════════════════════════════════════════════════════════
-  // STEP 1 — Profile
+  // STEP 1 — Welcome and Consent
   // ═══════════════════════════════════════════════════════════════════
   function step1Next() {
+    const consent = document.getElementById('s1-consent').checked;
+    const err = document.getElementById('s1-error');
+    const errT = document.getElementById('s1-error-text');
+    err.style.display = 'none';
+    if (!consent) {
+      errT.textContent = 'You must check "I understand and agree" to continue.';
+      err.style.display = 'block'; return;
+    }
+    goStep(2);
+  }
+
+  function step1Exit() {
+    if (confirm('Exit without saving? Any unsaved progress will be lost.')) {
+      window.location.reload();
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // STEP 2 — Guided Career Intake
+  // ═══════════════════════════════════════════════════════════════════
+  async function step2Translate() {
     const branch     = document.getElementById('s1-branch').value.trim();
     const specialty  = document.getElementById('s1-specialty').value.trim();
     const summary    = document.getElementById('s1-summary').value.trim();
     const targetRole = document.getElementById('s1-target-role').value.trim();
     const careerPath = document.getElementById('s1-career-path').value.trim();
-    const err = document.getElementById('s1-error');
-    const errT = document.getElementById('s1-error-text');
-    err.style.display = 'none';
-    if (!branch || !specialty || !summary || !targetRole || !careerPath) {
-      errT.textContent = 'All fields are required.';
-      err.style.display = 'block'; return;
-    }
-    const pii = detectPII(summary);
-    if (pii) { errT.textContent = `${pii} detected in summary. Please remove it.`; err.style.display = 'block'; return; }
-    STATE.branch = branch; STATE.specialty = specialty; STATE.summary = summary;
-    STATE.targetRole = targetRole; STATE.careerPath = careerPath;
-    goStep(2);
-  }
-
-  // ═══════════════════════════════════════════════════════════════════
-  // STEP 2 — Bullet Translation
-  // ═══════════════════════════════════════════════════════════════════
-  async function step2Translate() {
     const b1 = document.getElementById('s2-b1').value.trim();
     const b2 = document.getElementById('s2-b2').value.trim();
     const b3 = document.getElementById('s2-b3').value.trim();
     const err = document.getElementById('s2-error');
     err.style.display = 'none';
-    if (!b1) { showStepError('s2', 'At least one bullet is required.'); return; }
+    if (!branch || !specialty || !summary || !targetRole || !careerPath) {
+      showStepError('s2', 'All service profile and career goal fields are required.'); return;
+    }
+    if (!b1) { showStepError('s2', 'At least one accomplishment is required.'); return; }
+    const pii = detectPII(summary);
+    if (pii) { showStepError('s2', `${pii} detected in service summary. Please remove it.`); return; }
     const rawBullets = [b1, b2, b3].filter(Boolean);
-    const pii = rawBullets.map(detectPII).find(Boolean);
-    if (pii) { showStepError('s2', `${pii} detected. Please remove it.`); return; }
+    const piiAcc = rawBullets.map(detectPII).find(Boolean);
+    if (piiAcc) { showStepError('s2', `${piiAcc} detected in accomplishments. Please remove it.`); return; }
+    // Commit intake fields to STATE before translating
+    STATE.branch = branch; STATE.specialty = specialty; STATE.summary = summary;
+    STATE.targetRole = targetRole; STATE.careerPath = careerPath;
     setStepLoading('s2', true);
     await delay(USE_MOCK ? 1200 : 0);
     try {
       if (USE_MOCK) {
         STATE.translatedBullets = rawBullets.map(b => mockTranslateBullet(b, STATE.targetRole));
       } else {
-        // Live: call /api/translate for each bullet
+        // Live: call /api/translate for each accomplishment
         STATE.translatedBullets = [];
-        for (const bullet of rawBullets) {
-          const r = await apiCall({ step: 'translate_bullet', input: { military_bullet: bullet, target_role: STATE.targetRole } });
-          STATE.translatedBullets.push(r.translated_bullet || bullet);
+        for (const accomplishment of rawBullets) {
+          const r = await apiCall({ step: 'translate_accomplishment', input: { military_bullet: accomplishment, target_role: STATE.targetRole } });
+          STATE.translatedBullets.push(r.translated_bullet || accomplishment);
         }
       }
       renderStep2();
-    } catch (e) { showStepError('s2', `Could not translate bullets: ${e.message}`); }
+    } catch (e) { showStepError('s2', `Could not translate accomplishments: ${e.message}`); }
     finally { setStepLoading('s2', false); }
   }
 

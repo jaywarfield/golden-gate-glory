@@ -7,20 +7,20 @@ folder_paths:
   models: ./models
 
 # Toolkit import order (all must be imported before any agent):
-#   orchestrate toolkits import -f toolkits/bullet_translator/toolkit.yaml --app-id watsonx_credentials
-#   orchestrate toolkits import -f toolkits/skill_mapper/toolkit.yaml      --app-id watsonx_credentials
-#   orchestrate toolkits import -f toolkits/gap_analyzer/toolkit.yaml      --app-id watsonx_credentials
-#   orchestrate toolkits import -f toolkits/plan_builder/toolkit.yaml      --app-id watsonx_credentials
+#   orchestrate toolkits import -f toolkits/accomplishment_translator/toolkit.yaml --app-id watsonx_credentials
+#   orchestrate toolkits import -f toolkits/skill_mapper/toolkit.yaml              --app-id watsonx_credentials
+#   orchestrate toolkits import -f toolkits/gap_analyzer/toolkit.yaml              --app-id watsonx_credentials
+#   orchestrate toolkits import -f toolkits/plan_builder/toolkit.yaml              --app-id watsonx_credentials
 #
 # Sub-agent import order:
-#   orchestrate agents import -f agents/bullet_translator_agent.yaml
+#   orchestrate agents import -f agents/accomplishment_translator_agent.yaml
 #   orchestrate agents import -f agents/skill_mapper_agent.yaml
 #   orchestrate agents import -f agents/gap_analyzer_agent.yaml
 #   orchestrate agents import -f agents/plan_builder_agent.yaml
 #   orchestrate agents import -f agents/coordinator_agent.yaml
 #
 # Promote full stack to Live (test environment):
-#   orchestrate agents deploy --name bullet_translator
+#   orchestrate agents deploy --name accomplishment_translator
 #   orchestrate agents deploy --name skill_mapper
 #   orchestrate agents deploy --name gap_analyzer
 #   orchestrate agents deploy --name plan_builder

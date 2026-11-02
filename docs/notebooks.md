@@ -13,7 +13,7 @@ Several notebooks are implemented and defined as follows:
 
 | Notebook | Web UI step | Toolkit function | What it does |
 | :---:    | :---:       | :---:            | :---:        | 
-| NB 01 | 01_bullet_translation | Step 2 — Military Bullet Translation | translate_bullet | Translates raw military accomplishment bullets into ATS-ready civilian resume bullets |
+| NB 01 | 01_accomplishment_translation | Step 2 — Military Accomplishment Translation | translate_accomplishment | Translates raw military accomplishment bullets into ATS-ready civilian resume bullets |
 | NB 02 | 02_skill_knowledge_base | Step 4 — Skill Mapping (first half) |  map_military_skills + analyze_skills_gap | Maps MOS/AFSC/rating to civilian skill inventory via O*NET crosswalk, then identifies gaps and recommends IBM SkillsBuild courses |
 | NB 03 | 03_job_analyzer | Step 3 — Job Description Analysis | analyze_job_description | Extracts required skills, preferred skills, ATS keywords, seniority, and industry from a pasted job description |
 | NB 04 | 04_resume_builder |  Step 5 — Tagged Resume Draft (first pass) | build_resume_draft (raw prompt path) | Builds the evidence-tagged resume draft; tests the raw Granite prompt directly against prompt_templates.json PT-002 |

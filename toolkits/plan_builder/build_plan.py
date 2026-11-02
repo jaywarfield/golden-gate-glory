@@ -144,7 +144,7 @@ def build_resume_draft(
         service_branch: Military branch (e.g. "Army").
         specialty_code: Occupational code (MOS/AFSC/rating/etc.).
         service_summary: 2–5 sentence PII-free service description.
-        translated_bullets_json: JSON array from translate_bullet calls.
+        translated_bullets_json: JSON array from translate_accomplishment calls.
         skill_inventory_json: JSON array from map_military_skills.
         job_analysis_json: JSON object from analyze_job_description.
 
