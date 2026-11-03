@@ -782,6 +782,9 @@
     if (!jd) { showStepError('s3', 'Job description is required.'); return; }
     if (jd.length < 50) { showStepError('s3', 'Please paste the full job description (at least 50 characters).'); return; }
     document.getElementById('s3-error').style.display = 'none';
+    // Re-read career goal fields in case the user reached step 3 without running step2Translate
+    STATE.targetRole = document.getElementById('s1-target-role').value.trim() || STATE.targetRole;
+    STATE.careerPath = document.getElementById('s1-career-path').value.trim() || STATE.careerPath;
     STATE.jobDescription = jd;
     setStepLoading('s3', true);
     await delay(USE_MOCK ? 1400 : 0);
@@ -820,6 +823,8 @@
   // ═══════════════════════════════════════════════════════════════════
   async function step4Analyze() {
     document.getElementById('s4-error').style.display = 'none';
+    STATE.targetRole = document.getElementById('s1-target-role').value.trim() || STATE.targetRole;
+    STATE.careerPath = document.getElementById('s1-career-path').value.trim() || STATE.careerPath;
     setStepLoading('s4', true);
     await delay(USE_MOCK ? 1600 : 0);
     try {
@@ -880,6 +885,8 @@
   // ═══════════════════════════════════════════════════════════════════
   async function step5Build() {
     document.getElementById('s5-error').style.display = 'none';
+    STATE.targetRole = document.getElementById('s1-target-role').value.trim() || STATE.targetRole;
+    STATE.careerPath = document.getElementById('s1-career-path').value.trim() || STATE.careerPath;
     setStepLoading('s5', true);
     await delay(USE_MOCK ? 1800 : 0);
     try {
