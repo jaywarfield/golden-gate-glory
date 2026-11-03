@@ -1085,79 +1085,224 @@
     return `${v} ${bullet.replace(/\b(supervised|managed|led|coordinated|oversaw)\b/gi,'').trim().toLowerCase()}, contributing to ${role||'organizational'} objectives.`;
   }
 
-  function mockJobAnalysis(jd) {
-    return {
+  // ── Mock data keyed by career path ──────────────────────────────────────────
+  const _MOCK = {
+    'IT/Cybersecurity': {
+      role_title: 'Network Administrator',
+      seniority_level: 'Mid-level (3-5 years)',
+      industry: 'Information Technology / Cybersecurity',
+      required_skills: ['network administration','TCP/IP & routing protocols','firewall & VPN configuration','system hardening','incident response','access control management'],
+      preferred_skills: ['CompTIA Security+','CCNA','SIEM tools','zero-trust architecture'],
+      ats_keywords: ['network','cybersecurity','firewall','VPN','incident response','SIEM','CompTIA','access control'],
+      alignment_pct: 72,
+      matched_skills: ['access control management','incident response','system hardening','team leadership'],
+      unmatched_skills: ['SIEM tools','firewall & VPN configuration','network administration'],
+      skills: [
+        { skill_name: 'Network Operations',           category: 'IT Infrastructure', confidence: 'High'   },
+        { skill_name: 'Cybersecurity Awareness',      category: 'Security',          confidence: 'High'   },
+        { skill_name: 'Access Control Management',    category: 'Security',          confidence: 'High'   },
+        { skill_name: 'System Hardening',             category: 'IT Infrastructure', confidence: 'Medium' },
+        { skill_name: 'Incident Response',            category: 'Security',          confidence: 'High'   },
+        { skill_name: 'Team Leadership',              category: 'Leadership',        confidence: 'High'   },
+      ],
+      gap_skills: [
+        { skill_name: 'SIEM Tools (e.g. Splunk)',   priority: 'High',   courses: [{ title: 'Cybersecurity Fundamentals', credential_type: 'Badge', hours_estimate: 10, url: 'https://skillsbuild.org' }] },
+        { skill_name: 'Firewall & VPN Config',       priority: 'High',   courses: [{ title: 'Network Security Essentials', credential_type: 'Badge', hours_estimate: 8, url: 'https://skillsbuild.org' }] },
+      ],
+      resume_summary: (branch) => `Results-driven IT professional with ${branch||'military'} communications and network operations experience, proven access control management, and a track record of securing critical infrastructure under operational pressure.`,
+      resume_bullets_extra: [
+        { text: 'Applied zero-trust access principles to harden network perimeter, reducing unauthorized access attempts by 40%.', tag: 'INFERRED' },
+        { text: 'Deployed and administered SIEM platform to centralise log monitoring across all network segments.', tag: 'MISSING' },
+      ],
+      skills_section: ['Network Operations','Cybersecurity Awareness','Access Control Management','System Hardening','Incident Response'],
+      interview_q1: {
+        question: 'Tell me about a time when you identified and responded to a security incident under time pressure.',
+        skill_mapped: 'Incident Response',
+        star_scaffold: {
+          situation: (s) => `In your role as ${s.specialty||'a communications specialist'} in the ${s.branch||'military'}, you were responsible for monitoring and securing network operations.`,
+          task: 'You detected anomalous traffic patterns suggesting an active intrusion attempt.',
+          action: (s) => `You isolated the affected segment, notified the chain of command, and coordinated with ${s.skills.length||'the'} security team members to contain the threat and restore services.`,
+          result: 'The incident was contained within 45 minutes with no data loss and full service restored within the hour.',
+        },
+      },
+      interview_q2: {
+        question: 'Describe a situation where you hardened a system or network against a known vulnerability.',
+        skill_mapped: 'System Hardening',
+        star_scaffold: {
+          situation: 'You were conducting a routine security audit and identified several unpatched vulnerabilities on critical servers.',
+          task: 'Your task was to remediate the vulnerabilities within a narrow maintenance window without disrupting operations.',
+          action: 'You prioritised patches by CVSS score, coordinated a change-freeze window, applied updates, and verified system integrity post-patch.',
+          result: 'All critical vulnerabilities were remediated within the window and the system passed the follow-up audit.',
+        },
+      },
+      interview_q3: {
+        question: 'Tell me about a time when you managed access control for a sensitive system.',
+        skill_mapped: 'Access Control Management',
+        star_scaffold: {
+          situation: 'You administered role-based access for a classified network supporting over 200 users.',
+          task: 'You needed to enforce least-privilege principles following a personnel rotation.',
+          action: 'You audited all user accounts, removed stale permissions, and implemented a quarterly access-review process.',
+          result: 'Unauthorised access attempts dropped by 60% in the subsequent quarter.',
+        },
+      },
+    },
+    'Project Management': {
+      role_title: 'Project Manager',
+      seniority_level: 'Mid-level (3-5 years)',
+      industry: 'Professional Services / PMO',
+      required_skills: ['project planning & scheduling','stakeholder management','risk management','budget tracking','cross-functional team leadership','status reporting'],
+      preferred_skills: ['PMP','Agile/Scrum','MS Project','JIRA'],
+      ats_keywords: ['project management','PMP','stakeholder','risk','schedule','budget','Agile','deliverables'],
+      alignment_pct: 74,
+      matched_skills: ['cross-functional team leadership','budget tracking','risk management','status reporting'],
+      unmatched_skills: ['Agile/Scrum','MS Project','JIRA'],
+      skills: [
+        { skill_name: 'Project Planning',             category: 'Planning',      confidence: 'High'   },
+        { skill_name: 'Stakeholder Communication',    category: 'Communication', confidence: 'High'   },
+        { skill_name: 'Risk Management',              category: 'Planning',      confidence: 'High'   },
+        { skill_name: 'Budget Oversight',             category: 'Finance',       confidence: 'Medium' },
+        { skill_name: 'Cross-functional Leadership',  category: 'Leadership',    confidence: 'High'   },
+        { skill_name: 'Process Improvement',          category: 'Operations',    confidence: 'Medium' },
+      ],
+      gap_skills: [
+        { skill_name: 'Agile / Scrum',   priority: 'High',   courses: [{ title: 'Agile Explorer', credential_type: 'Badge', hours_estimate: 6, url: 'https://skillsbuild.org' }] },
+        { skill_name: 'JIRA / MS Project', priority: 'Medium', courses: [{ title: 'Project Management Fundamentals', credential_type: 'Badge', hours_estimate: 8, url: 'https://skillsbuild.org' }] },
+      ],
+      resume_summary: (branch) => `Results-driven project management professional with ${branch||'military'} leadership experience, proven risk management expertise, and a track record of delivering complex cross-functional projects on schedule and within budget.`,
+      resume_bullets_extra: [
+        { text: 'Applied Agile sprint planning methodology to accelerate project delivery cycle by 20%.', tag: 'INFERRED' },
+        { text: 'Managed project portfolio using JIRA and MS Project to track milestones and dependencies.', tag: 'MISSING' },
+      ],
+      skills_section: ['Project Planning','Risk Management','Stakeholder Communication','Budget Oversight','Cross-functional Leadership'],
+      interview_q1: {
+        question: 'Tell me about a time when you managed a complex project under a tight deadline.',
+        skill_mapped: 'Project Planning',
+        star_scaffold: {
+          situation: (s) => `In your role as ${s.specialty||'a military planner'} in the ${s.branch||'military'}, you were tasked with leading a high-priority, time-sensitive project.`,
+          task: 'You needed to coordinate multiple teams, track dependencies, and deliver the project on time.',
+          action: (s) => `You built a detailed project plan, assigned clear ownership across ${s.skills.length||'multiple'} workstreams, and ran daily stand-ups to surface blockers early.`,
+          result: 'The project was delivered on schedule with all key deliverables accepted by stakeholders.',
+        },
+      },
+      interview_q2: {
+        question: 'Describe a situation where you identified and mitigated a significant project risk.',
+        skill_mapped: 'Risk Management',
+        star_scaffold: {
+          situation: 'You identified early signals that a critical dependency could slip and jeopardise the project schedule.',
+          task: 'Your task was to assess the risk, quantify the impact, and develop a mitigation plan.',
+          action: 'You escalated to stakeholders, sourced an alternative supplier, and built schedule buffer into the remaining phases.',
+          result: 'The risk was mitigated with zero schedule impact and stakeholders credited the early escalation.',
+        },
+      },
+      interview_q3: {
+        question: 'Tell me about a time when you had to manage competing stakeholder priorities.',
+        skill_mapped: 'Stakeholder Communication',
+        star_scaffold: {
+          situation: 'Two senior stakeholders had conflicting requirements that threatened to delay the project.',
+          task: 'You needed to facilitate alignment without losing either stakeholder\'s support.',
+          action: 'You organised a structured requirements review, surfaced the trade-offs clearly, and proposed a phased delivery approach.',
+          result: 'Stakeholders agreed on scope and the project proceeded without delay.',
+        },
+      },
+    },
+    'Operations': {
+      role_title: 'Operations Manager',
+      seniority_level: 'Mid-level (3-5 years)',
+      industry: 'Operations / General Management',
+      required_skills: ['operations management','process improvement','workforce scheduling','KPI tracking','budget oversight','cross-functional team leadership'],
+      preferred_skills: ['Lean Six Sigma','ERP systems','workforce management tools'],
+      ats_keywords: ['operations','process improvement','KPI','Lean','Six Sigma','workforce','budget','cross-functional'],
+      alignment_pct: 70,
+      matched_skills: ['cross-functional team leadership','budget oversight','KPI tracking','process improvement'],
+      unmatched_skills: ['Lean Six Sigma certification','ERP systems','workforce management tools'],
+      skills: [
+        { skill_name: 'Operations Management',        category: 'Operations',    confidence: 'High'   },
+        { skill_name: 'Team Leadership',              category: 'Leadership',    confidence: 'High'   },
+        { skill_name: 'Process Improvement',          category: 'Operations',    confidence: 'High'   },
+        { skill_name: 'Budget Oversight',             category: 'Finance',       confidence: 'Medium' },
+        { skill_name: 'KPI Tracking',                 category: 'Analytics',     confidence: 'High'   },
+        { skill_name: 'Cross-functional Coordination',category: 'Collaboration', confidence: 'High'   },
+      ],
+      gap_skills: [
+        { skill_name: 'Lean Six Sigma',    priority: 'High',   courses: [{ title: 'Lean and Six Sigma Principles', credential_type: 'Badge', hours_estimate: 10, url: 'https://skillsbuild.org' }] },
+        { skill_name: 'ERP Systems',       priority: 'Medium', courses: [{ title: 'Enterprise Technology Fundamentals', credential_type: 'Badge', hours_estimate: 6, url: 'https://skillsbuild.org' }] },
+      ],
+      resume_summary: (branch) => `Results-driven operations professional with ${branch||'military'} leadership experience, proven process improvement expertise, and a track record of measurable operational performance gains.`,
+      resume_bullets_extra: [
+        { text: 'Applied Lean Six Sigma DMAIC methodology to reduce process cycle time by 22%.', tag: 'INFERRED' },
+        { text: 'Administered ERP workforce scheduling module across three operational sites.', tag: 'MISSING' },
+      ],
+      skills_section: ['Operations Management','Process Improvement','Team Leadership','Budget Oversight','KPI Tracking'],
+      interview_q1: {
+        question: 'Tell me about a time when you improved an operational process to increase efficiency.',
+        skill_mapped: 'Process Improvement',
+        star_scaffold: {
+          situation: (s) => `As ${s.specialty||'an operations NCO'} in the ${s.branch||'military'}, you identified that an existing process was creating bottlenecks and inefficiency.`,
+          task: 'You were tasked with redesigning the process to improve throughput without additional resources.',
+          action: (s) => `You mapped the current state, identified waste, and piloted a revised workflow with ${s.skills.length||'your'} team.`,
+          result: 'Process cycle time dropped by 22% and the improved workflow was adopted unit-wide.',
+        },
+      },
+      interview_q2: {
+        question: 'Describe a situation where you tracked and reported on KPIs to drive performance.',
+        skill_mapped: 'KPI Tracking',
+        star_scaffold: {
+          situation: 'You were responsible for operational readiness reporting for a large unit.',
+          task: 'Leadership required weekly KPI dashboards to make resourcing decisions.',
+          action: 'You built a standardised reporting template, trained NCOs on data entry, and presented findings at weekly leadership reviews.',
+          result: 'Leadership credited the improved visibility with a 15% faster decision cycle on resource allocation.',
+        },
+      },
+      interview_q3: {
+        question: 'Tell me about a time when you managed a large team through a period of change.',
+        skill_mapped: 'Team Leadership',
+        star_scaffold: {
+          situation: 'Your unit underwent a major reorganisation affecting roles, responsibilities, and reporting lines.',
+          task: 'You needed to maintain morale and operational output through the transition.',
+          action: 'You communicated transparently, clarified new expectations one-on-one, and created a transition checklist to ensure no tasks fell through the gaps.',
+          result: 'The unit maintained full operational readiness through the transition with no performance degradation.',
+        },
+      },
+    },
+    'Logistics': {
       role_title: 'Supply Chain Operations Manager',
       seniority_level: 'Mid-level (3-5 years)',
       industry: 'Logistics / Distribution',
       required_skills: ['supply chain coordination','inventory management','vendor management','budget oversight','ERP/WMS proficiency','cross-functional team leadership'],
       preferred_skills: ['APICS CSCP','Six Sigma','SAP'],
       ats_keywords: ['supply chain','logistics','inventory','KPI','cross-functional','procurement'],
-      alignment: { alignment_pct: 67, matched_skills: ['inventory management','budget oversight','cross-functional team leadership'], unmatched_skills: ['vendor management','ERP/WMS proficiency','supply chain coordination'] },
-    };
-  }
-
-  function mockSkillMap(branch, specialty, summary) {
-    return { skills: [
-      { skill_name: 'Logistics Coordination',        category: 'Operations',    confidence: 'High'   },
-      { skill_name: 'Team Leadership',               category: 'Leadership',    confidence: 'High'   },
-      { skill_name: 'Inventory Management',          category: 'Supply Chain',  confidence: 'High'   },
-      { skill_name: 'Budget Oversight',              category: 'Finance',       confidence: 'Medium' },
-      { skill_name: 'Cross-functional Coordination', category: 'Collaboration', confidence: 'High'   },
-      { skill_name: 'Process Improvement',           category: 'Operations',    confidence: 'Medium' },
-    ]};
-  }
-
-  function mockGapAnalysis(skills) {
-    return {
-      coverage_pct: 67,
-      covered_skills: [
-        { skill_name: 'Inventory Management' },
-        { skill_name: 'Budget Oversight' },
-        { skill_name: 'Cross-functional Team Leadership' },
-        { skill_name: 'Logistics Coordination' },
+      alignment_pct: 67,
+      matched_skills: ['inventory management','budget oversight','cross-functional team leadership'],
+      unmatched_skills: ['vendor management','ERP/WMS proficiency','supply chain coordination'],
+      skills: [
+        { skill_name: 'Logistics Coordination',        category: 'Operations',    confidence: 'High'   },
+        { skill_name: 'Team Leadership',               category: 'Leadership',    confidence: 'High'   },
+        { skill_name: 'Inventory Management',          category: 'Supply Chain',  confidence: 'High'   },
+        { skill_name: 'Budget Oversight',              category: 'Finance',       confidence: 'Medium' },
+        { skill_name: 'Cross-functional Coordination', category: 'Collaboration', confidence: 'High'   },
+        { skill_name: 'Process Improvement',           category: 'Operations',    confidence: 'Medium' },
       ],
       gap_skills: [
         { skill_name: 'Vendor Management',    priority: 'High',   courses: [{ title: 'Supply Chain Excellence', credential_type: 'Badge', hours_estimate: 8, url: 'https://skillsbuild.org' }] },
         { skill_name: 'ERP/WMS Proficiency',  priority: 'Medium', courses: [{ title: 'Enterprise Technology Fundamentals', credential_type: 'Badge', hours_estimate: 6, url: 'https://skillsbuild.org' }] },
       ],
-      summary: `Your ${skills.length} mapped skills provide 67% coverage of the target role. Two skill gaps were identified with free IBM SkillsBuild courses to close them.`,
-    };
-  }
-
-  function mockResumeDraft(state) {
-    const bullets = state.translatedBullets.length ? state.translatedBullets : [
-      'Directed a 12-member logistics team improving on-time delivery from 82% to 96%.',
-      'Managed a $2.1M annual inventory with 98.7% accountability.',
-    ];
-    return {
-      summary: { text: `Results-driven supply chain professional with ${state.branch||'military'} logistics expertise, proven team leadership, and a track record of measurable operational improvements.`, tag: 'EVIDENCED' },
-      bullets: [
-        { text: bullets[0], tag: 'EVIDENCED' },
-        { text: bullets[1] || 'Implemented process improvements reducing shrinkage by 18%.', tag: 'EVIDENCED' },
+      resume_summary: (branch) => `Results-driven supply chain professional with ${branch||'military'} logistics expertise, proven team leadership, and a track record of measurable operational improvements.`,
+      resume_bullets_extra: [
         { text: 'Applied lean process improvement methodologies to reduce supply chain waste by 12%.', tag: 'INFERRED' },
         { text: 'Managed ERP system configuration and vendor portal administration across three sites.', tag: 'MISSING' },
       ],
       skills_section: ['Logistics Coordination','Inventory Management','Team Leadership','Budget Oversight','Cross-functional Collaboration'],
-      tag_counts: { EVIDENCED: 3, INFERRED: 1, MISSING: 1 },
-      gate_status: 'BLOCKED',
-    };
-  }
-
-  function mockInterviewPrep(state) {
-    return { questions: [
-      {
+      interview_q1: {
         question: 'Tell me about a time when you managed a complex logistics operation under time pressure.',
         skill_mapped: 'Logistics Coordination',
         star_scaffold: {
-          situation: `In your role as ${state.specialty||'a logistics specialist'} in the ${state.branch||'military'}, you were responsible for coordinating supply operations for a large unit.`,
+          situation: (s) => `In your role as ${s.specialty||'a logistics specialist'} in the ${s.branch||'military'}, you were responsible for coordinating supply operations for a large unit.`,
           task: 'You needed to ensure mission-critical supplies reached multiple locations within a tight window.',
-          action: `You coordinated with ${state.skills.length||'multiple'} cross-functional team members, prioritized shipments, and implemented a real-time tracking process.`,
+          action: (s) => `You coordinated with ${s.skills.length||'multiple'} cross-functional team members, prioritized shipments, and implemented a real-time tracking process.`,
           result: 'On-time delivery improved from 82% to 96%, and no mission-critical shortfalls occurred.',
         },
-        disclaimer: 'DRAFT – Review before use.',
       },
-      {
+      interview_q2: {
         question: 'Describe a situation where you identified and resolved an inventory discrepancy.',
         skill_mapped: 'Inventory Management',
         star_scaffold: {
@@ -1166,9 +1311,8 @@
           action: 'You implemented a cycle-count reconciliation program and trained team members on new procedures.',
           result: 'Inventory accuracy rose to 98.7% and shrinkage was reduced by 18%.',
         },
-        disclaimer: 'DRAFT – Review before use.',
       },
-      {
+      interview_q3: {
         question: 'Tell me about a time when you led a cross-functional team to achieve a difficult goal.',
         skill_mapped: 'Cross-functional Team Leadership',
         star_scaffold: {
@@ -1177,13 +1321,102 @@
           action: 'You established clear roles, ran weekly coordination meetings, and aligned priorities across functions.',
           result: 'The unit achieved its top readiness rating for three consecutive evaluation cycles.',
         },
+      },
+    },
+  };
+
+  function _mockData(careerPath) {
+    return _MOCK[careerPath] || _MOCK['Logistics'];
+  }
+
+  function mockJobAnalysis(jd, skills, careerPath) {
+    const d = _mockData(careerPath || STATE.careerPath);
+    return {
+      role_title: STATE.targetRole || d.role_title,
+      seniority_level: d.seniority_level,
+      industry: d.industry,
+      required_skills: d.required_skills,
+      preferred_skills: d.preferred_skills,
+      ats_keywords: d.ats_keywords,
+      alignment: { alignment_pct: d.alignment_pct, matched_skills: d.matched_skills, unmatched_skills: d.unmatched_skills },
+    };
+  }
+
+  function mockSkillMap(branch, specialty, summary, careerPath) {
+    return { skills: _mockData(careerPath).skills };
+  }
+
+  function mockGapAnalysis(skills, careerPath) {
+    const d = _mockData(careerPath);
+    return {
+      coverage_pct: d.alignment_pct,
+      covered_skills: d.matched_skills.map(s => ({ skill_name: s })),
+      gap_skills: d.gap_skills,
+      summary: `Your ${skills.length} mapped skills provide ${d.alignment_pct}% coverage of the target role. ${d.gap_skills.length} skill gap${d.gap_skills.length !== 1 ? 's were' : ' was'} identified with free IBM SkillsBuild courses to close them.`,
+    };
+  }
+
+  function mockResumeDraft(state) {
+    const d = _mockData(state.careerPath);
+    const bullets = state.translatedBullets.length ? state.translatedBullets : [
+      d.skills[0] ? `Directed a team leveraging ${d.skills[0].skill_name} to deliver measurable operational results.` : 'Directed a team delivering measurable operational results.',
+      d.skills[2] ? `Managed ${d.skills[2].skill_name.toLowerCase()} program with 98%+ accuracy.` : 'Managed key program with 98%+ accuracy.',
+    ];
+    return {
+      summary: { text: d.resume_summary(state.branch), tag: 'EVIDENCED' },
+      bullets: [
+        { text: bullets[0], tag: 'EVIDENCED' },
+        { text: bullets[1] || d.resume_bullets_extra[0].text, tag: 'EVIDENCED' },
+        ...d.resume_bullets_extra,
+      ],
+      skills_section: d.skills_section,
+      tag_counts: { EVIDENCED: 3, INFERRED: 1, MISSING: 1 },
+      gate_status: 'BLOCKED',
+    };
+  }
+
+  function mockInterviewPrep(state) {
+    const d = _mockData(state.careerPath);
+    const resolve = (v) => typeof v === 'function' ? v(state) : v;
+    return { questions: [
+      {
+        question: d.interview_q1.question,
+        skill_mapped: d.interview_q1.skill_mapped,
+        star_scaffold: {
+          situation: resolve(d.interview_q1.star_scaffold.situation),
+          task: resolve(d.interview_q1.star_scaffold.task),
+          action: resolve(d.interview_q1.star_scaffold.action),
+          result: resolve(d.interview_q1.star_scaffold.result),
+        },
         disclaimer: 'DRAFT – Review before use.',
       },
       {
-        question: 'Describe a situation where you had to manage a budget and find cost savings.',
+        question: d.interview_q2.question,
+        skill_mapped: d.interview_q2.skill_mapped,
+        star_scaffold: {
+          situation: resolve(d.interview_q2.star_scaffold.situation),
+          task: resolve(d.interview_q2.star_scaffold.task),
+          action: resolve(d.interview_q2.star_scaffold.action),
+          result: resolve(d.interview_q2.star_scaffold.result),
+        },
+        disclaimer: 'DRAFT – Review before use.',
+      },
+      {
+        question: d.interview_q3.question,
+        skill_mapped: d.interview_q3.skill_mapped,
+        star_scaffold: {
+          situation: resolve(d.interview_q3.star_scaffold.situation),
+          task: resolve(d.interview_q3.star_scaffold.task),
+          action: resolve(d.interview_q3.star_scaffold.action),
+          result: resolve(d.interview_q3.star_scaffold.result),
+        },
+        disclaimer: 'DRAFT – Review before use.',
+      },
+      {
+        question: `Describe a situation where you had to manage a budget and find cost savings.`,
         skill_mapped: 'Budget Oversight',
         star_scaffold: {
-          situation: 'You were responsible for oversight of a $2.1M annual supply budget.',
+          situation: `You were responsible for oversight of a significant annual budget in the ${state.branch||'military'}.`,
           task: 'You were asked to identify areas for cost reduction without degrading operational capability.',
           action: '[MISSING: Describe specific cost-reduction actions you took]',
           result: '[MISSING: Describe the measurable cost savings achieved]',
@@ -1194,10 +1427,10 @@
         question: 'Tell me about a time when you improved a process to achieve better results.',
         skill_mapped: 'Process Improvement',
         star_scaffold: {
-          situation: 'You identified that the existing inventory cycle-count process was producing high error rates.',
-          task: 'You needed to redesign the process to improve accuracy and reduce shrinkage.',
-          action: 'You implemented a structured cycle-count program with new SOPs and staff training.',
-          result: 'Inventory shrinkage was reduced by 18% within the first 90 days.',
+          situation: `You identified that an existing ${state.careerPath||'operational'} process was producing suboptimal results.`,
+          task: 'You needed to redesign the process to improve accuracy and throughput.',
+          action: 'You implemented a structured improvement program with new SOPs and staff training.',
+          result: 'Performance improved measurably within the first 90 days.',
         },
         disclaimer: 'DRAFT – Review before use.',
       },
