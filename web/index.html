@@ -205,7 +205,7 @@
     .course-card { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px 12px; margin-top: 6px; }
     .course-title { font-size: 13px; font-weight: 600; color: #1e3a8a; }
     .course-meta  { font-size: 12px; color: #57606a; margin-top: 2px; }
-    .inv-grid { display: grid; grid-template-columns: 2fr 1.5fr 80px; }
+    .inv-grid { display: grid; grid-template-columns: 2fr 1.5fr 100px; }
     .inv-header { font-size: 12px; font-weight: 700; color: #57606a; padding: 6px 8px; background: #f7f8fa; border-bottom: 2px solid #e5e7eb; }
     .inv-cell { font-size: 13px; padding: 8px; border-bottom: 1px solid #f3f4f6; color: #1f2328; }
     .inv-cell.muted { color: #57606a; font-size: 12px; }
@@ -496,12 +496,11 @@
     </div>
     <div class="card">
       <div class="card-title">Civilian Skill Inventory</div>
-      <div class="inv-grid">
+      <div class="inv-grid" id="s4-inventory">
         <div class="inv-header">Skill</div>
         <div class="inv-header">Category</div>
         <div class="inv-header">Confidence</div>
       </div>
-      <div id="s4-inventory"></div>
     </div>
     <div class="btn-row">
       <button class="btn btn-primary" onclick="goStep(5)">Continue to Resume Draft →</button>
@@ -922,16 +921,17 @@
       return '<span class="tag tag-mi">MISSING</span>';
     };
 
-    // Action buttons for unresolved tags
-    const actionBtn = (section, idx, tag) => {
+    // Tag + action button — wrapped in a non-shrinking container so flex-grow on
+    // .bullet-text never squeezes the controls out of view
+    const tagAndBtn = (section, idx, tag) => {
       const t = tag ? tag.toUpperCase() : '';
-      if (t === 'INFERRED') return `
-        <button class="btn btn-secondary" style="padding:2px 10px;font-size:12px;margin-left:8px"
-          onclick="s5Confirm('${section}',${idx})">✓ Confirm</button>`;
-      if (t === 'MISSING') return `
-        <button class="btn" style="padding:2px 10px;font-size:12px;margin-left:8px;background:#ffeef0;border-color:#f97583;color:#86181d"
-          onclick="s5Remove('${section}',${idx})">✕ Remove</button>`;
-      return '';
+      const badge = tagBadge(tag);
+      let btn = '';
+      if (t === 'INFERRED') btn = `<button onclick="s5Confirm('${section}',${idx})"
+          style="padding:2px 10px;font-size:12px;border:1px solid #6e7781;border-radius:4px;background:#f6f8fa;cursor:pointer;white-space:nowrap">✓ Confirm</button>`;
+      if (t === 'MISSING')  btn = `<button onclick="s5Remove('${section}',${idx})"
+          style="padding:2px 10px;font-size:12px;border:1px solid #f97583;border-radius:4px;background:#ffeef0;color:#86181d;cursor:pointer;white-space:nowrap">✕ Remove</button>`;
+      return `<span style="display:flex;align-items:center;gap:6px;flex-shrink:0">${badge}${btn}</span>`;
     };
 
     // Summary row
@@ -939,16 +939,14 @@
     document.getElementById('s5-summary').innerHTML = `
       <div class="bullet-row">
         <span class="bullet-text">${esc(sum.text||'')}</span>
-        ${tagBadge(sum.tag)}
-        ${actionBtn('summary', 0, sum.tag)}
+        ${tagAndBtn('summary', 0, sum.tag)}
       </div>`;
 
     // Experience bullets
     document.getElementById('s5-bullets').innerHTML = (rd.bullets||[]).map((b, i) => `
       <div class="bullet-row" id="s5-bullet-row-${i}">
         <span class="bullet-text">${esc(b.text||'')}</span>
-        ${tagBadge(b.tag)}
-        ${actionBtn('bullet', i, b.tag)}
+        ${tagAndBtn('bullet', i, b.tag)}
       </div>`).join('');
 
     // Skills (no tags — always shown as-is)
