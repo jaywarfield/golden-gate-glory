@@ -910,6 +910,10 @@
 
   function renderStep5() {
     const rd = STATE.resumeDraft;
+
+    // Normalise summary to object form
+    if (typeof rd.summary === 'string') rd.summary = { text: rd.summary, tag: 'INFERRED' };
+
     const tagBadge = tag => {
       if (!tag) return '';
       const t = tag.toUpperCase();
@@ -917,31 +921,93 @@
       if (t==='INFERRED')  return '<span class="tag tag-in">INFERRED</span>';
       return '<span class="tag tag-mi">MISSING</span>';
     };
-    const summary = typeof rd.summary === 'string' ? {text:rd.summary,tag:'INFERRED'} : rd.summary;
+
+    // Action buttons for unresolved tags
+    const actionBtn = (section, idx, tag) => {
+      const t = tag ? tag.toUpperCase() : '';
+      if (t === 'INFERRED') return `
+        <button class="btn btn-secondary" style="padding:2px 10px;font-size:12px;margin-left:8px"
+          onclick="s5Confirm('${section}',${idx})">✓ Confirm</button>`;
+      if (t === 'MISSING') return `
+        <button class="btn" style="padding:2px 10px;font-size:12px;margin-left:8px;background:#ffeef0;border-color:#f97583;color:#86181d"
+          onclick="s5Remove('${section}',${idx})">✕ Remove</button>`;
+      return '';
+    };
+
+    // Summary row
+    const sum = rd.summary || {};
     document.getElementById('s5-summary').innerHTML = `
       <div class="bullet-row">
-        <span class="bullet-text">${esc((summary||{}).text||'')}</span>
-        ${tagBadge((summary||{}).tag)}
+        <span class="bullet-text">${esc(sum.text||'')}</span>
+        ${tagBadge(sum.tag)}
+        ${actionBtn('summary', 0, sum.tag)}
       </div>`;
-    document.getElementById('s5-bullets').innerHTML = (rd.bullets||[]).map(b=>`
-      <div class="bullet-row">
+
+    // Experience bullets
+    document.getElementById('s5-bullets').innerHTML = (rd.bullets||[]).map((b, i) => `
+      <div class="bullet-row" id="s5-bullet-row-${i}">
         <span class="bullet-text">${esc(b.text||'')}</span>
         ${tagBadge(b.tag)}
+        ${actionBtn('bullet', i, b.tag)}
       </div>`).join('');
+
+    // Skills (no tags — always shown as-is)
     document.getElementById('s5-skills').innerHTML = (rd.skills_section||[]).map(s=>`
       <div class="bullet-row"><span class="bullet-text">• ${esc(s)}</span></div>`).join('');
-    const tc = rd.tag_counts||{};
+
+    s5UpdateTagCounts();
+    document.getElementById('s5-output').style.display = 'block';
+  }
+
+  function s5UpdateTagCounts() {
+    const rd = STATE.resumeDraft;
+    const allItems = [...(rd.bullets||[]), rd.summary||{}];
+    let ev = 0, inf = 0, mis = 0;
+    allItems.forEach(b => {
+      const t = (b.tag||'').toUpperCase();
+      if (t==='EVIDENCED') ev++;
+      else if (t==='INFERRED') inf++;
+      else if (t==='MISSING') mis++;
+    });
+    const blocked = inf > 0 || mis > 0;
+    rd.tag_counts = { EVIDENCED: ev, INFERRED: inf, MISSING: mis };
+    rd.gate_status = blocked ? 'BLOCKED' : 'OPEN';
     document.getElementById('s5-tag-counts').innerHTML = `
       <div style="display:flex;gap:16px;font-size:14px">
-        <span><span class="tag tag-ev">EVIDENCED</span> ${tc.EVIDENCED||0}</span>
-        <span><span class="tag tag-in">INFERRED</span> ${tc.INFERRED||0}</span>
-        <span><span class="tag tag-mi">MISSING</span> ${tc.MISSING||0}</span>
+        <span><span class="tag tag-ev">EVIDENCED</span> ${ev}</span>
+        <span><span class="tag tag-in">INFERRED</span> ${inf}</span>
+        <span><span class="tag tag-mi">MISSING</span> ${mis}</span>
       </div>
       <div style="margin-top:8px;font-size:13px;color:#57606a">
-        Gate: <strong>${rd.gate_status||'?'}</strong>
-        ${rd.gate_status==='BLOCKED' ? ' — resolve INFERRED and MISSING sentences before exporting.' : ' — all sentences evidenced.'}
-      </div>`;
-    document.getElementById('s5-output').style.display = 'block';
+        Gate: <strong>${rd.gate_status}</strong>
+        ${blocked
+          ? ' — confirm INFERRED sentences and remove or address MISSING ones before exporting.'
+          : ' — all sentences evidenced. You may proceed to export.'}
+      </div>
+      ${!blocked ? `<div class="notice success" style="margin-top:8px;margin-bottom:0">All tags resolved — gate is <strong>OPEN</strong>.</div>` : ''}`;
+    // Show/hide Continue button based on gate
+    const cont = document.querySelector('#s5-output .btn-row button.btn-primary');
+    if (cont) cont.disabled = blocked;
+  }
+
+  function s5Confirm(section, idx) {
+    const rd = STATE.resumeDraft;
+    if (section === 'summary') {
+      rd.summary.tag = 'EVIDENCED';
+    } else {
+      if (rd.bullets[idx]) rd.bullets[idx].tag = 'EVIDENCED';
+    }
+    renderStep5();
+  }
+
+  function s5Remove(section, idx) {
+    const rd = STATE.resumeDraft;
+    if (section === 'summary') {
+      rd.summary.tag = 'EVIDENCED'; rd.summary.text = '';
+    } else {
+      rd.bullets.splice(idx, 1);
+    }
+    renderStep5();
   }
 
   // ═══════════════════════════════════════════════════════════════════
