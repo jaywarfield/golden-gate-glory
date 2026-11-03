@@ -6,7 +6,7 @@
 
 [View Technical](data/TechnicalArchitecture.pdf)
 
-[View Examples](data/MissionVeteranExamples)
+[View Examples](data/MissionVeteranExamples.pdf)
 
 ---
 
