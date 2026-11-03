@@ -539,15 +539,15 @@
 
   <div id="s5-output" style="display:none">
     <div class="card">
-      <div class="card-title">Professional Summary</div>
+      <div class="card-title">Summary</div>
       <div id="s5-summary"></div>
     </div>
     <div class="card">
-      <div class="card-title">Experience Bullets</div>
+      <div class="card-title">Experience</div>
       <div id="s5-bullets"></div>
     </div>
     <div class="card">
-      <div class="card-title">Skills Section</div>
+      <div class="card-title">Skills</div>
       <div id="s5-skills"></div>
     </div>
     <div id="s5-tag-counts-card" class="card">
@@ -804,11 +804,11 @@
     const body = document.getElementById('s3-analysis-body');
     const al = ja.alignment || {};
     body.innerHTML = `
+      <div style="margin-bottom:10px"><strong style="font-size:15px">${esc(ja.role_title||'—')}</strong></div>
       <div class="field-row" style="margin-bottom:12px">
-        <div><div class="field-hint">Role</div><strong>${esc(ja.role_title||'—')}</strong></div>
         <div><div class="field-hint">Seniority</div><strong>${esc(ja.seniority_level||'—')}</strong></div>
+        <div><div class="field-hint">Industry</div><strong>${esc(ja.industry||'—')}</strong></div>
       </div>
-      <div class="field-hint" style="margin-bottom:4px">Industry: ${esc(ja.industry||'—')}</div>
       ${al.alignment_pct !== undefined ? `<div class="field-hint" style="margin-bottom:10px">Skill alignment: <strong>${al.alignment_pct}%</strong></div>` : ''}
       <div class="skill-section-title">Required Skills</div>
       ${(ja.required_skills||[]).map(s=>`<div class="bullet-row"><span style="color:#57606a">▸</span><span class="bullet-text">${esc(s)}</span></div>`).join('')}
