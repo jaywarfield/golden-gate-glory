@@ -1414,11 +1414,33 @@
     return _MOCK[careerPath] || _MOCK['Logistics'];
   }
 
+  function _inferSeniority(jd) {
+    const t = (jd || '').toLowerCase();
+    // Explicit years-of-experience patterns  e.g. "10+ years", "8-10 years"
+    const yrsMatch = t.match(/(\d+)\s*(?:\+|or more)?\s*(?:to|-)\s*(\d+)?\s*years?/);
+    const minYrs = yrsMatch ? parseInt(yrsMatch[1], 10) : null;
+    if (minYrs !== null) {
+      if (minYrs >= 10) return 'Senior (10+ years)';
+      if (minYrs >= 7)  return 'Senior (7-10 years)';
+      if (minYrs >= 5)  return 'Mid-Senior (5-7 years)';
+      if (minYrs >= 3)  return 'Mid-level (3-5 years)';
+      if (minYrs >= 1)  return 'Early (1-3 years)';
+      return 'Entry level';
+    }
+    // Title / level keywords
+    if (/\b(vp|vice president|director|head of|chief|principal)\b/.test(t)) return 'Senior (10+ years)';
+    if (/\b(senior|sr\.?|lead|staff|manager)\b/.test(t))                    return 'Senior (7-10 years)';
+    if (/\b(mid[- ]?level|experienced|associate director)\b/.test(t))       return 'Mid-Senior (5-7 years)';
+    if (/\b(junior|jr\.?|associate|entry[- ]?level|new grad|graduate)\b/.test(t)) return 'Entry level';
+    // Default fallback
+    return 'Mid-level (3-5 years)';
+  }
+
   function mockJobAnalysis(jd, skills, careerPath) {
     const d = _mockData(careerPath || STATE.careerPath);
     return {
       role_title: STATE.targetRole || d.role_title,
-      seniority_level: d.seniority_level,
+      seniority_level: _inferSeniority(jd),
       industry: d.industry,
       required_skills: d.required_skills,
       preferred_skills: d.preferred_skills,
