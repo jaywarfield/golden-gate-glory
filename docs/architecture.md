@@ -1,10 +1,6 @@
 # **Mission Veteran AI** *by G3*
 
-![Architecture](data/mission-veteran-ai-architecture.html)
-
-<!--
 ![Architecture](images/architecture.png)
--->
 
 <!--
 <a href="architecture.png" target="_blank">
