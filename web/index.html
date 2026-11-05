@@ -44,9 +44,10 @@
       display: flex; align-items: center; justify-content: center;
       margin-bottom: 3px;
     }
-    .step-pip.done   { color: #166534; }
+    .step-pip.done        { color: #166534; cursor: pointer; }
     .step-pip.done .num   { background: #d1fae5; color: #166534; }
-    .step-pip.active { color: #1e3a8a; border-color: #1e3a8a; }
+    .step-pip.done:hover  { color: #14532d; border-color: #166534; }
+    .step-pip.active      { color: #1e3a8a; border-color: #1e3a8a; cursor: default; }
     .step-pip.active .num { background: #1e3a8a; color: #fff; }
 
     /* ── Section visibility ──────────────────────────────────────── */
@@ -262,13 +263,13 @@
 
 <!-- ── Step progress rail ────────────────────────────────────────── -->
 <div class="step-rail" id="step-rail">
-  <div class="step-pip active" id="pip-1"><div class="num">1</div>Consent</div>
-  <div class="step-pip"        id="pip-2"><div class="num">2</div>Intake</div>
-  <div class="step-pip"        id="pip-3"><div class="num">3</div>Job</div>
-  <div class="step-pip"        id="pip-4"><div class="num">4</div>Skills</div>
-  <div class="step-pip"        id="pip-5"><div class="num">5</div>Resume</div>
-  <div class="step-pip"        id="pip-6"><div class="num">6</div>Interview</div>
-  <div class="step-pip"        id="pip-7"><div class="num">7</div>Export</div>
+  <div class="step-pip active" id="pip-1" onclick="railGoStep(1)"><div class="num">1</div>Consent</div>
+  <div class="step-pip"        id="pip-2" onclick="railGoStep(2)"><div class="num">2</div>Intake</div>
+  <div class="step-pip"        id="pip-3" onclick="railGoStep(3)"><div class="num">3</div>Job</div>
+  <div class="step-pip"        id="pip-4" onclick="railGoStep(4)"><div class="num">4</div>Skills</div>
+  <div class="step-pip"        id="pip-5" onclick="railGoStep(5)"><div class="num">5</div>Resume</div>
+  <div class="step-pip"        id="pip-6" onclick="railGoStep(6)"><div class="num">6</div>Interview</div>
+  <div class="step-pip"        id="pip-7" onclick="railGoStep(7)"><div class="num">7</div>Export</div>
 </div>
 
 <div class="shell">
@@ -418,7 +419,6 @@
 
   <div class="btn-row">
     <button class="btn btn-primary" id="s2-btn" onclick="step2Translate()">Translate Accomplishments</button>
-    <button class="btn btn-secondary" onclick="goStep(1)">← Back</button>
   </div>
   <div class="spinner" id="s2-spinner"><div class="spinner-ring"></div><span>Translating accomplishments with IBM Granite…</span></div>
   <div class="notice pii" id="s2-error" style="display:none"><strong>Error:</strong> <span id="s2-error-text"></span></div>
@@ -460,7 +460,6 @@
     </div>
     <div class="btn-row">
       <button class="btn btn-primary" id="s3-btn" onclick="step3Analyze()">Analyze Job Description</button>
-      <button class="btn btn-secondary" onclick="goStep(2)">← Back</button>
     </div>
     <div class="spinner" id="s3-spinner"><div class="spinner-ring"></div><span>Analyzing with IBM Granite…</span></div>
     <div class="notice pii" id="s3-error" style="display:none"><strong>Error:</strong> <span id="s3-error-text"></span></div>
@@ -497,7 +496,6 @@
     <div class="card-title">Run Skill Analysis</div>
     <div class="btn-row">
       <button class="btn btn-primary" id="s4-btn" onclick="step4Analyze()">Map Skills &amp; Analyze Gaps</button>
-      <button class="btn btn-secondary" onclick="goStep(3)">← Back</button>
     </div>
     <div class="spinner" id="s4-spinner"><div class="spinner-ring"></div><span>Calling IBM Granite via watsonx Orchestrate…</span></div>
     <div class="notice pii" id="s4-error" style="display:none"><strong>Error:</strong> <span id="s4-error-text"></span></div>
@@ -555,7 +553,6 @@
     <div class="card-title">Generate Resume Draft</div>
     <div class="btn-row">
       <button class="btn btn-primary" id="s5-btn" onclick="step5Build()">Build Tagged Resume Draft</button>
-      <button class="btn btn-secondary" onclick="goStep(4)">← Back</button>
     </div>
     <div class="spinner" id="s5-spinner"><div class="spinner-ring"></div><span>Building resume draft with IBM Granite…</span></div>
     <div class="notice pii" id="s5-error" style="display:none"><strong>Error:</strong> <span id="s5-error-text"></span></div>
@@ -604,7 +601,6 @@
     <div class="card-title">Generate Interview Questions</div>
     <div class="btn-row">
       <button class="btn btn-primary" id="s6-btn" onclick="step6Prep()">Generate Interview Prep</button>
-      <button class="btn btn-secondary" onclick="goStep(5)">← Back</button>
     </div>
     <div class="spinner" id="s6-spinner"><div class="spinner-ring"></div><span>Generating interview questions with IBM Granite…</span></div>
     <div class="notice pii" id="s6-error" style="display:none"><strong>Error:</strong> <span id="s6-error-text"></span></div>
@@ -641,7 +637,6 @@
     <div class="card-title">Evaluate Export Gate</div>
     <div class="btn-row">
       <button class="btn btn-primary" id="s7-btn" onclick="step7Gate()">Evaluate Gate</button>
-      <button class="btn btn-secondary" onclick="goStep(6)">← Back</button>
     </div>
     <div class="spinner" id="s7-spinner"><div class="spinner-ring"></div><span>Evaluating export gate…</span></div>
     <div class="notice pii" id="s7-error" style="display:none"><strong>Error:</strong> <span id="s7-error-text"></span></div>
@@ -754,6 +749,7 @@
       }
       if (STATE.targetRole) document.getElementById('s1-target-role').value = STATE.targetRole;
       if (STATE.careerPath) document.getElementById('s1-career-path').value = STATE.careerPath;
+      maxStep = saved.step || 2;   // restore navigation ceiling before goStep guard runs
       goStep(saved.step || 2);
     } catch(e) {
       document.getElementById('s1-restore-banner').style.display = 'none';
@@ -774,22 +770,28 @@
 
   // ── Step navigation ────────────────────────────────────────────────
   let currentStep = 1;
+  let maxStep = 1;   // highest step the user has reached — rail navigation limited to this
 
   function goStep(n) {
+    if (n > maxStep) maxStep = n;   // advance ceiling when navigating forward
     document.getElementById(`section-${currentStep}`).classList.remove('visible');
-    document.getElementById(`pip-${currentStep}`).classList.remove('active');
-    document.getElementById(`pip-${currentStep}`).classList.add('done');
     currentStep = n;
     document.getElementById(`section-${n}`).classList.add('visible');
-    // mark active pip and any previous as done
+    // mark active pip, done for all visited before it, default for future
     for (let i = 1; i <= 7; i++) {
       const pip = document.getElementById(`pip-${i}`);
       pip.classList.remove('active', 'done');
-      if (i < n)      pip.classList.add('done');
-      else if (i === n) pip.classList.add('active');
+      if (i < n && i <= maxStep) pip.classList.add('done');
+      else if (i === n)          pip.classList.add('active');
     }
     window.scrollTo(0, 0);
     draftSave();   // persist after every step advance if "Save draft" is selected
+  }
+
+  // Called by rail pip clicks — only navigates to strictly previous steps
+  function railGoStep(n) {
+    if (n >= maxStep) return;   // current step and future steps are not clickable
+    goStep(n);
   }
 
   // ═══════════════════════════════════════════════════════════════════
