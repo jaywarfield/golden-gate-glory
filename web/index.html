@@ -382,10 +382,10 @@
       </div>
       <div class="drop-zone" id="s2-drop-zone" onclick="document.getElementById('s2-file-input').click()"
            ondragover="s2DragOver(event)" ondragleave="s2DragLeave(event)" ondrop="s2Drop(event)">
-        <input type="file" id="s2-file-input" accept=".txt,.pdf,.docx" onchange="s2FileSelected(event)">
+        <input type="file" id="s2-file-input" accept=".txt,.docx" onchange="s2FileSelected(event)">
         <div class="drop-zone-icon">📄</div>
         <div class="drop-zone-text"><strong>Drag &amp; drop</strong> your military resume file here, or <strong>click to browse</strong></div>
-        <div class="drop-zone-hint">Accepts .txt · .pdf · .docx &nbsp;·&nbsp; Text will be extracted and shown below for editing</div>
+        <div class="drop-zone-hint">Accepts .txt · .docx &nbsp;·&nbsp; Text will be extracted and shown below for editing</div>
       </div>
       <div id="s2-file-name" style="font-size:11px;color:#57606a;margin-top:5px;display:none"></div>
       <textarea id="s2-resume" rows="12" maxlength="8000" style="margin-top:10px;display:none"
@@ -769,44 +769,7 @@
       ta.focus();
     }
 
-    if (file.name.match(/\.pdf$/i)) {
-      // ── PDF: use PDF.js loaded on demand ──────────────────────────
-      const loadLib = window.pdfjsLib
-        ? Promise.resolve()
-        : new Promise((resolve, reject) => {
-            const s = document.createElement('script');
-            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-            s.onload = () => {
-              window.pdfjsLib.GlobalWorkerOptions.workerSrc =
-                'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-              resolve();
-            };
-            s.onerror = reject;
-            document.head.appendChild(s);
-          });
-      loadLib.then(() => {
-        const reader = new FileReader();
-        reader.onload = async function(ev) {
-          try {
-            const typedArray = new Uint8Array(ev.target.result);
-            const pdf = await window.pdfjsLib.getDocument({ data: typedArray }).promise;
-            let pages = [];
-            for (let i = 1; i <= pdf.numPages; i++) {
-              const page = await pdf.getPage(i);
-              const content = await page.getTextContent();
-              pages.push(content.items.map(item => item.str).join(' '));
-            }
-            s2ShowText(pages.join('\n\n'));
-          } catch(err) {
-            s2ShowText('[PDF extraction failed. Please paste your resume text directly below.]');
-          }
-        };
-        reader.readAsArrayBuffer(file);
-      }).catch(() => {
-        s2ShowText('[Could not load PDF library. Please paste your resume text directly below.]');
-      });
-
-    } else if (file.name.match(/\.docx$/i)) {
+    if (file.name.match(/\.docx$/i)) {
       // ── DOCX: use mammoth.js loaded on demand ─────────────────────
       const loadLib = window.mammoth
         ? Promise.resolve()
