@@ -377,12 +377,15 @@
     </div>
     <div class="field">
       <label>Service resume <span class="req">*</span></label>
+      <div class="notice warn" style="margin-bottom:8px;font-size:12px">
+        <strong>PII Reminder:</strong> Remove all personally identifiable information before uploading — no full names, Social Security numbers, DoD ID numbers, phone numbers, email addresses, home addresses, birth dates, medical details, classified information, exact unit designations, or deployment locations.
+      </div>
       <div class="drop-zone" id="s2-drop-zone" onclick="document.getElementById('s2-file-input').click()"
            ondragover="s2DragOver(event)" ondragleave="s2DragLeave(event)" ondrop="s2Drop(event)">
-        <input type="file" id="s2-file-input" accept=".txt,.pdf,.doc,.docx" onchange="s2FileSelected(event)">
+        <input type="file" id="s2-file-input" accept=".txt,.pdf,.docx" onchange="s2FileSelected(event)">
         <div class="drop-zone-icon">📄</div>
         <div class="drop-zone-text"><strong>Drag &amp; drop</strong> your resume file here, or <strong>click to browse</strong></div>
-        <div class="drop-zone-hint">Accepts .txt, .pdf, .doc, .docx &nbsp;·&nbsp; Text will be extracted and shown below for editing</div>
+        <div class="drop-zone-hint">Accepts .txt · .pdf · .docx &nbsp;·&nbsp; Text will be extracted and shown below for editing</div>
       </div>
       <div id="s2-file-name" style="font-size:11px;color:#57606a;margin-top:5px;display:none"></div>
       <textarea id="s2-resume" rows="12" maxlength="8000" style="margin-top:10px;display:none"
@@ -756,33 +759,80 @@
   function s2LoadFile(file) {
     const nameEl = document.getElementById('s2-file-name');
     const ta     = document.getElementById('s2-resume');
-    nameEl.textContent = `📎 ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+    nameEl.textContent = `📎 ${file.name} (${(file.size/1024).toFixed(1)} KB) — extracting text…`;
     nameEl.style.display = 'block';
-    // PDF and Word files: extract what the browser can — fallback to plain text read
-    const reader = new FileReader();
-    reader.onload = function(ev) {
-      let text = '';
-      if (file.name.match(/\.(pdf|doc|docx)$/i)) {
-        // Binary formats: extract printable ASCII as a best-effort plain-text preview
-        const raw = ev.target.result;
-        // Decode as latin-1 and strip non-printable chars, preserving newlines
-        text = raw.replace(/[^\x09\x0A\x0D\x20-\x7E]/g, ' ')
-                  .replace(/ {3,}/g, '  ')
-                  .replace(/(\s*\n){3,}/g, '\n\n')
-                  .trim();
-        if (text.length < 50) {
-          text = '[Could not extract text from this file. Please paste your resume text directly below.]';
-        }
-      } else {
-        text = ev.target.result;
-      }
+
+    function s2ShowText(text) {
       ta.value = text;
       ta.style.display = 'block';
+      nameEl.textContent = `📎 ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
       ta.focus();
-    };
-    if (file.name.match(/\.(pdf|doc|docx)$/i)) {
-      reader.readAsBinaryString(file);
+    }
+
+    if (file.name.match(/\.pdf$/i)) {
+      // ── PDF: use PDF.js loaded on demand ──────────────────────────
+      const loadLib = window.pdfjsLib
+        ? Promise.resolve()
+        : new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+            s.onload = () => {
+              window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+                'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+              resolve();
+            };
+            s.onerror = reject;
+            document.head.appendChild(s);
+          });
+      loadLib.then(() => {
+        const reader = new FileReader();
+        reader.onload = async function(ev) {
+          try {
+            const typedArray = new Uint8Array(ev.target.result);
+            const pdf = await window.pdfjsLib.getDocument({ data: typedArray }).promise;
+            let pages = [];
+            for (let i = 1; i <= pdf.numPages; i++) {
+              const page = await pdf.getPage(i);
+              const content = await page.getTextContent();
+              pages.push(content.items.map(item => item.str).join(' '));
+            }
+            s2ShowText(pages.join('\n\n'));
+          } catch(err) {
+            s2ShowText('[PDF extraction failed. Please paste your resume text directly below.]');
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      }).catch(() => {
+        s2ShowText('[Could not load PDF library. Please paste your resume text directly below.]');
+      });
+
+    } else if (file.name.match(/\.docx$/i)) {
+      // ── DOCX: use mammoth.js loaded on demand ─────────────────────
+      const loadLib = window.mammoth
+        ? Promise.resolve()
+        : new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js';
+            s.onload = resolve;
+            s.onerror = reject;
+            document.head.appendChild(s);
+          });
+      loadLib.then(() => {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          window.mammoth.extractRawText({ arrayBuffer: ev.target.result })
+            .then(result => s2ShowText(result.value))
+            .catch(() => s2ShowText('[DOCX extraction failed. Please paste your resume text directly below.]'));
+        };
+        reader.readAsArrayBuffer(file);
+      }).catch(() => {
+        s2ShowText('[Could not load DOCX library. Please paste your resume text directly below.]');
+      });
+
     } else {
+      // ── Plain text (.txt and anything else) ───────────────────────
+      const reader = new FileReader();
+      reader.onload = ev => s2ShowText(ev.target.result);
       reader.readAsText(file);
     }
   }
