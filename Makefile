@@ -57,7 +57,7 @@ destroy:
 	orchestrate agents remove --name plan_builder  --kind native
 	orchestrate agents remove --name gap_analyzer  --kind native
 	orchestrate agents remove --name skill_mapper  --kind native
-	orchestrate agents remove --name bullet_translator --kind native
+	orchestrate agents remove --name accomplishment_translator --kind native
 	@echo "$(GREEN)✓ Agents removed$(NC)"
 
 ## test: Run the full unit test suite

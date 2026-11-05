@@ -891,14 +891,15 @@
     if (!branch || !specialty || !resumeText || !targetRole || !careerPath) {
       showStepError('s2', 'All service profile and career goal fields are required. Upload or paste your service resume.'); return;
     }
-    // Split resume into non-empty lines as individual bullets to translate
-    const rawBullets = resumeText.split('\n').map(l => l.trim()).filter(l => l.length > 10);
-    if (rawBullets.length === 0) { showStepError('s2', 'No content found in service resume. Please check the text.'); return; }
+    // Split into paragraphs (blank-line separated).
+    // First paragraph = summary. Remaining paragraphs = accomplishment/experience bullets.
+    const paragraphs = resumeText.split(/\n\s*\n/).map(p => p.trim()).filter(p => p.length > 0);
+    if (paragraphs.length === 0) { showStepError('s2', 'No content found in service resume. Please check the text.'); return; }
     const pii = detectPII(resumeText);
     if (pii) { showStepError('s2', `${pii} detected in service resume. Please remove it before proceeding.`); return; }
-    // Use first 500 chars as summary; use first 3 non-trivial lines as bullets
-    const summary    = resumeText.slice(0, 500);
-    const bullets    = rawBullets.slice(0, 3);
+    const summary = paragraphs[0];
+    const bullets = paragraphs.slice(1).filter(p => p.length > 10);
+    if (bullets.length === 0) { showStepError('s2', 'No accomplishment paragraphs found. Add a blank line after your summary, then one paragraph per accomplishment.'); return; }
     // Commit intake fields to STATE before translating
     STATE.branch = branch; STATE.specialty = specialty; STATE.summary = summary;
     STATE.targetRole = targetRole; STATE.careerPath = careerPath;
