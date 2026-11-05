@@ -370,7 +370,7 @@
     <div class="field-row">
       <div class="field">
         <label for="s1-branch">Service branch <span class="req">*</span></label>
-        <select id="s1-branch">
+        <select id="s1-branch" onchange="updateSpecialtyCodes(this.value)">
           <option value="">Select branch…</option>
           <option>Air Force</option><option>Army</option><option>Coast Guard</option>
           <option>Marine Corps</option><option>Navy</option><option>Space Force</option>
@@ -378,8 +378,9 @@
       </div>
       <div class="field">
         <label for="s1-specialty">Specialty code <span class="req">*</span></label>
-        <input type="text" id="s1-specialty" maxlength="20" placeholder="e.g. 92A, 6F0X1, BM">
-        <div class="field-hint">AFSC, MOS, NEC, SFSC, or Rating</div>
+        <select id="s1-specialty" disabled>
+          <option value="">Select branch first…</option>
+        </select>
       </div>
     </div>
     <div class="field">
@@ -740,7 +741,10 @@
       document.getElementById('s1-consent').checked = true;
       document.getElementById('s1-restore-banner').style.display = 'none';
       // Repopulate form fields from restored STATE
-      if (STATE.branch)    document.getElementById('s1-branch').value = STATE.branch;
+      if (STATE.branch) {
+        document.getElementById('s1-branch').value = STATE.branch;
+        updateSpecialtyCodes(STATE.branch);   // repopulate dependent drop-down
+      }
       if (STATE.specialty) document.getElementById('s1-specialty').value = STATE.specialty;
       if (STATE.summary) {
         const ta = document.getElementById('s2-resume');
@@ -886,6 +890,40 @@
       reader.onload = ev => s2ShowText(ev.target.result);
       reader.readAsText(file);
     }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // SPECIALTY CODE DROP-DOWN (driven by branch selection)
+  // ═══════════════════════════════════════════════════════════════════
+  const SPECIALTY_CODES = {
+    'Air Force':    ['1D7X1', '1D7X2', '17D', '17S'],
+    'Army':         ['25B', '25D', '17C', '17A/170A'],
+    'Coast Guard':  ['IT', 'ET', 'CMS'],
+    'Marine Corps': ['0631/0671/0679', '0673', '1702', '1721'],
+    'Navy':         ['IT', 'CWE', 'IP'],
+    'Space Force':  ['1D7XXX', '17S'],
+  };
+
+  function updateSpecialtyCodes(branch) {
+    const sel = document.getElementById('s1-specialty');
+    sel.innerHTML = '';
+    const codes = SPECIALTY_CODES[branch];
+    if (!codes) {
+      sel.disabled = true;
+      sel.innerHTML = '<option value="">Select branch first…</option>';
+      return;
+    }
+    sel.disabled = false;
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Select specialty…';
+    sel.appendChild(placeholder);
+    codes.forEach(code => {
+      const opt = document.createElement('option');
+      opt.value = code;
+      opt.textContent = code;
+      sel.appendChild(opt);
+    });
   }
 
   // ═══════════════════════════════════════════════════════════════════
