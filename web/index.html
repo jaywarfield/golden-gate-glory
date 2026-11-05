@@ -152,6 +152,18 @@
     .skill-name { font-size: 14px; font-weight: 600; }
     .skill-meta { font-size: 12px; color: #57606a; margin-top: 1px; }
 
+    /* ── Service resume drop zone ───────────────────────────────── */
+    .drop-zone {
+      border: 2px dashed #c8d3dd; border-radius:8px; padding:20px 16px;
+      text-align:center; cursor:pointer; transition:border-color .15s, background .15s;
+      background:#f7f8fa; color:#57606a; font-size:13px;
+    }
+    .drop-zone:hover, .drop-zone.drag-over { border-color:#3b82d4; background:#eff6ff; }
+    .drop-zone input[type=file] { display:none; }
+    .drop-zone-icon { font-size:28px; margin-bottom:6px; }
+    .drop-zone-text { font-size:13px; }
+    .drop-zone-hint { font-size:11px; color:#94a3b8; margin-top:4px; }
+
     /* ── Resume draft ────────────────────────────────────────────── */
     .bullet-row {
       display: flex; align-items: flex-start; gap: 8px;
@@ -364,28 +376,17 @@
       </div>
     </div>
     <div class="field">
-      <label for="s1-summary">Service summary <span class="req">*</span></label>
-      <textarea id="s1-summary" rows="4" maxlength="1500"
-        placeholder="Service summary (2-5 sentences)"></textarea>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Service Accomplishments</div>
-    <div class="field">
-      <label for="s2-b1">Accomplishment 1 <span class="req">*</span></label>
-      <textarea id="s2-b1" rows="4" maxlength="500"
-        placeholder="First accomplishment…"></textarea>
-    </div>
-    <div class="field">
-      <label for="s2-b2">Accomplishment 2 <span class="opt">(optional)</span></label>
-      <textarea id="s2-b2" rows="4" maxlength="500"
-        placeholder="Second accomplishment…"></textarea>
-    </div>
-    <div class="field">
-      <label for="s2-b3">Accomplishment 3 <span class="opt">(optional)</span></label>
-      <textarea id="s2-b3" rows="4" maxlength="500"
-        placeholder="Third accomplishment…"></textarea>
+      <label>Service resume <span class="req">*</span></label>
+      <div class="drop-zone" id="s2-drop-zone" onclick="document.getElementById('s2-file-input').click()"
+           ondragover="s2DragOver(event)" ondragleave="s2DragLeave(event)" ondrop="s2Drop(event)">
+        <input type="file" id="s2-file-input" accept=".txt,.pdf,.doc,.docx" onchange="s2FileSelected(event)">
+        <div class="drop-zone-icon">📄</div>
+        <div class="drop-zone-text"><strong>Drag &amp; drop</strong> your resume file here, or <strong>click to browse</strong></div>
+        <div class="drop-zone-hint">Accepts .txt, .pdf, .doc, .docx &nbsp;·&nbsp; Text will be extracted and shown below for editing</div>
+      </div>
+      <div id="s2-file-name" style="font-size:11px;color:#57606a;margin-top:5px;display:none"></div>
+      <textarea id="s2-resume" rows="12" maxlength="8000" style="margin-top:10px;display:none"
+        placeholder="Your resume text will appear here. You can edit it before proceeding."></textarea>
     </div>
   </div>
 
@@ -733,28 +734,81 @@
   }
 
   // ═══════════════════════════════════════════════════════════════════
+  // STEP 2 — Service resume file handling
+  // ═══════════════════════════════════════════════════════════════════
+  function s2DragOver(e) {
+    e.preventDefault();
+    document.getElementById('s2-drop-zone').classList.add('drag-over');
+  }
+  function s2DragLeave(e) {
+    document.getElementById('s2-drop-zone').classList.remove('drag-over');
+  }
+  function s2Drop(e) {
+    e.preventDefault();
+    document.getElementById('s2-drop-zone').classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) s2LoadFile(file);
+  }
+  function s2FileSelected(e) {
+    const file = e.target.files[0];
+    if (file) s2LoadFile(file);
+  }
+  function s2LoadFile(file) {
+    const nameEl = document.getElementById('s2-file-name');
+    const ta     = document.getElementById('s2-resume');
+    nameEl.textContent = `📎 ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+    nameEl.style.display = 'block';
+    // PDF and Word files: extract what the browser can — fallback to plain text read
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      let text = '';
+      if (file.name.match(/\.(pdf|doc|docx)$/i)) {
+        // Binary formats: extract printable ASCII as a best-effort plain-text preview
+        const raw = ev.target.result;
+        // Decode as latin-1 and strip non-printable chars, preserving newlines
+        text = raw.replace(/[^\x09\x0A\x0D\x20-\x7E]/g, ' ')
+                  .replace(/ {3,}/g, '  ')
+                  .replace(/(\s*\n){3,}/g, '\n\n')
+                  .trim();
+        if (text.length < 50) {
+          text = '[Could not extract text from this file. Please paste your resume text directly below.]';
+        }
+      } else {
+        text = ev.target.result;
+      }
+      ta.value = text;
+      ta.style.display = 'block';
+      ta.focus();
+    };
+    if (file.name.match(/\.(pdf|doc|docx)$/i)) {
+      reader.readAsBinaryString(file);
+    } else {
+      reader.readAsText(file);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
   // STEP 2 — Guided Career Intake
   // ═══════════════════════════════════════════════════════════════════
   async function step2Translate() {
     const branch     = document.getElementById('s1-branch').value.trim();
     const specialty  = document.getElementById('s1-specialty').value.trim();
-    const summary    = document.getElementById('s1-summary').value.trim();
+    const resumeText = document.getElementById('s2-resume').value.trim();
     const targetRole = document.getElementById('s1-target-role').value.trim();
     const careerPath = document.getElementById('s1-career-path').value.trim();
-    const b1 = document.getElementById('s2-b1').value.trim();
-    const b2 = document.getElementById('s2-b2').value.trim();
-    const b3 = document.getElementById('s2-b3').value.trim();
     const err = document.getElementById('s2-error');
     err.style.display = 'none';
-    if (!branch || !specialty || !summary || !targetRole || !careerPath) {
-      showStepError('s2', 'All service profile and career goal fields are required.'); return;
+    if (!branch || !specialty || !resumeText || !targetRole || !careerPath) {
+      showStepError('s2', 'All service profile and career goal fields are required. Upload or paste your service resume.'); return;
     }
-    if (!b1) { showStepError('s2', 'At least one accomplishment is required.'); return; }
-    const pii = detectPII(summary);
-    if (pii) { showStepError('s2', `${pii} detected in service summary. Please remove it.`); return; }
-    const rawBullets = [b1, b2, b3].filter(Boolean);
-    const piiAcc = rawBullets.map(detectPII).find(Boolean);
-    if (piiAcc) { showStepError('s2', `${piiAcc} detected in accomplishments. Please remove it.`); return; }
+    // Split resume into non-empty lines as individual bullets to translate
+    const rawBullets = resumeText.split('\n').map(l => l.trim()).filter(l => l.length > 10);
+    if (rawBullets.length === 0) { showStepError('s2', 'No content found in service resume. Please check the text.'); return; }
+    const pii = detectPII(resumeText);
+    if (pii) { showStepError('s2', `${pii} detected in service resume. Please remove it before proceeding.`); return; }
+    // Use first 500 chars as summary; use first 3 non-trivial lines as bullets
+    const summary    = resumeText.slice(0, 500);
+    const bullets    = rawBullets.slice(0, 3);
     // Commit intake fields to STATE before translating
     STATE.branch = branch; STATE.specialty = specialty; STATE.summary = summary;
     STATE.targetRole = targetRole; STATE.careerPath = careerPath;
@@ -762,11 +816,11 @@
     await delay(USE_MOCK ? 1200 : 0);
     try {
       if (USE_MOCK) {
-        STATE.translatedBullets = rawBullets.map(b => mockTranslateBullet(b, STATE.targetRole));
+        STATE.translatedBullets = bullets.map(b => mockTranslateBullet(b, STATE.targetRole));
       } else {
-        // Live: call /api/translate for each accomplishment
+        // Live: call /api/translate for each bullet line
         STATE.translatedBullets = [];
-        for (const accomplishment of rawBullets) {
+        for (const accomplishment of bullets) {
           const r = await apiCall({ step: 'translate_accomplishment', input: { military_bullet: accomplishment, target_role: STATE.targetRole } });
           STATE.translatedBullets.push(r.translated_bullet || accomplishment);
         }
