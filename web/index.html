@@ -374,7 +374,7 @@
       </div>
       <div class="field">
         <label for="s1-specialty">Specialty code <span class="req">*</span></label>
-        <select id="s1-specialty" disabled>
+        <select id="s1-specialty" disabled onchange="updateCareerPath()">
           <option value="">Select branch first…</option>
         </select>
       </div>
@@ -401,16 +401,14 @@
   <div class="card">
     <div class="card-title">Career Goals</div>
     <div class="field">
-      <label for="s1-target-role">Target civilian role <span class="req">*</span></label>
-      <input type="text" id="s1-target-role" maxlength="100" placeholder="e.g. Network Administrator">
+      <label for="s1-career-path">Target career path</label>
+      <input type="text" id="s1-career-path" readonly
+             style="background:#f7f8fa;color:#57606a;cursor:default"
+             placeholder="Set automatically by specialty code">
     </div>
     <div class="field">
-      <label for="s1-career-path">Target career path <span class="req">*</span></label>
-      <select id="s1-career-path">
-        <option value="">Select career path…</option>
-        <option>Project Management</option><option>Operations</option>
-        <option>IT/Cybersecurity</option><option>Logistics</option>
-      </select>
+      <label for="s1-target-role">Target civilian role <span class="req">*</span></label>
+      <input type="text" id="s1-target-role" maxlength="100" placeholder="e.g. Network Administrator">
     </div>
   </div>
 
@@ -880,20 +878,73 @@
   // ═══════════════════════════════════════════════════════════════════
   // SPECIALTY CODE DROP-DOWN (driven by branch selection)
   // ═══════════════════════════════════════════════════════════════════
+  // Each entry: [code, label]
   const SPECIALTY_CODES = {
-    'Air Force':    ['1D7X1 - Cyber Operator', '1D7X2 - Cyber Systems', '17D - Cyber Operator', '17S - Cyber Operator', '62E - Development Engineer', '63A - Development Engineer'],
-    'Army':         ['17A - Cyber Operator', '17C - Cyber Operator', '25B - IT Specialist', '25C - Radio Operator', '25D - Cyber Network', '25P - Satellite Operator', '25Q - Satellite Operator', '25S - Satellite Operator'],
-    'Coast Guard':  ['CMS - Cyber Specialist', 'ET - Electronics Technician', 'IT - IT Technician'],
-    'Marine Corps': ['0602 - Communications Specialist', '0621 - Satellite Operator', '0627 - Satellite Operator', '0631 - Application Developer', '0671 - Application Developer','0673 - Application Developer', '0681 - Security Technician', '1702 - Cyber Operator', '1721 - Cyber Operator'],
-    'Navy':         ['IT - Systems Technician', 'CWE - Cyber Engineer', '741A - Security Technician', '742A - Security Technician', '746A - System Administrator', 'H00A - Network Administrator', '1820 - Cryptologic Technician', '1840 - Cyber Operator'],
-    'Space Force':  ['1D7XXX - Cyber Operator', '17S - Cyber Operator', '62E - Development Engineer'],
+    'Air Force':    [['1D7X1','1D7X1 – Cyber Operator'],['1D7X2','1D7X2 – Cyber Systems'],['17D','17D – Cyber Operator'],['17S','17S – Cyber Operator'],['62E','62E – Development Engineer'],['63A','63A – Development Engineer']],
+    'Army':         [['17A','17A – Cyber Officer'],['17C','17C – Cyber Operations'],['25B','25B – IT Specialist'],['25C','25C – Radio Operator'],['25D','25D – Cyber Network Defender'],['25P','25P – Satellite Operator'],['25Q','25Q – Satellite Operator'],['25S','25S – Satellite Operator']],
+    'Coast Guard':  [['CMS','CMS – Cyber Specialist'],['ET','ET – Electronics Technician'],['IT','IT – IT Technician']],
+    'Marine Corps': [['0602','0602 – Communications Specialist'],['0621','0621 – Satellite Operator'],['0627','0627 – Satellite Operator'],['0631','0631 – Application Developer'],['0671','0671 – IT Specialist'],['0673','0673 – Software Developer'],['0681','0681 – Security Technician'],['1702','1702 – Cyber Officer'],['1721','1721 – Cyber Operator']],
+    'Navy':         [['IT','IT – Systems Technician'],['CWE','CWE – Cyber Engineer'],['741A','741A – Security Technician'],['742A','742A – Security Technician'],['746A','746A – System Administrator'],['H00A','H00A – Network Administrator'],['1820','1820 – Cryptologic Technician'],['1840','1840 – Cyber Operator']],
+    'Space Force':  [['1D7XXX','1D7XXX – Cyber Operator'],['17S','17S – Cyber Operator'],['62E','62E – Development Engineer']],
+  };
+
+  const CAREER_PATH_BY_CODE = {
+    // Air Force
+    '1D7X1': 'IT Infrastructure',
+    '1D7X2': 'Telecommunications',
+    '17D':   'IT Operations',
+    '17S':   'Cybersecurity',
+    '62E':   'Project Management',
+    '63A':   'Project Management',
+    // Army
+    '17A':   'Program Management',
+    '17C':   'Cybersecurity',
+    '25B':   'IT Operations',
+    '25C':   'IT Operations',
+    '25D':   'Cybersecurity',
+    '25P':   'Network Engineering',
+    '25Q':   'Network Engineering',
+    '25S':   'Network Engineering',
+    // Coast Guard
+    'CMS':   'Cybersecurity',
+    'ET':    'Hardware Engineering',
+    // IT handled per-branch below
+    // Marine Corps
+    '0602':  'Project Management',
+    '0621':  'Telecommunications',
+    '0627':  'Telecommunications',
+    '0631':  'Network Infrastructure',
+    '0671':  'IT Support',
+    '0673':  'Software Development',
+    '0681':  'Project Management',
+    '1702':  'Project Management',
+    '1721':  'Cybersecurity',
+    // Navy
+    'CWE':   'Software Engineering',
+    '741A':  'Cybersecurity',
+    '742A':  'Cybersecurity',
+    '746A':  'IT Infrastructure',
+    'H00A':  'Enterprise Systems',
+    '1820':  'Cybersecurity',
+    '1840':  'Cybersecurity',
+    // Space Force
+    '1D7XXX':'Cloud Infrastructure',
+  };
+
+  // Branch-specific overrides for codes that appear in multiple branches
+  const CAREER_PATH_BRANCH_CODE = {
+    'Air Force':   { '17S': 'Cybersecurity' },
+    'Space Force': { '17S': 'Cyber Engineering', '62E': 'Software Engineering' },
+    'Navy':        { 'IT': 'IT Support' },
+    'Coast Guard': { 'IT': 'IT Infrastructure' },
   };
 
   function updateSpecialtyCodes(branch) {
     const sel = document.getElementById('s1-specialty');
     sel.innerHTML = '';
-    const codes = SPECIALTY_CODES[branch];
-    if (!codes) {
+    document.getElementById('s1-career-path').value = '';
+    const entries = SPECIALTY_CODES[branch];
+    if (!entries) {
       sel.disabled = true;
       sel.innerHTML = '<option value="">Select branch first…</option>';
       return;
@@ -903,12 +954,21 @@
     placeholder.value = '';
     placeholder.textContent = 'Select specialty…';
     sel.appendChild(placeholder);
-    codes.forEach(code => {
+    entries.forEach(([code, label]) => {
       const opt = document.createElement('option');
       opt.value = code;
-      opt.textContent = code;
+      opt.textContent = label;
       sel.appendChild(opt);
     });
+  }
+
+  function updateCareerPath() {
+    const branch  = document.getElementById('s1-branch').value;
+    const code    = document.getElementById('s1-specialty').value;
+    const cpField = document.getElementById('s1-career-path');
+    if (!code) { cpField.value = ''; return; }
+    const branchOverrides = CAREER_PATH_BRANCH_CODE[branch] || {};
+    cpField.value = branchOverrides[code] || CAREER_PATH_BY_CODE[code] || '';
   }
 
   // ═══════════════════════════════════════════════════════════════════
@@ -922,7 +982,7 @@
     const careerPath = document.getElementById('s1-career-path').value.trim();
     const err = document.getElementById('s2-error');
     err.style.display = 'none';
-    if (!branch || !specialty || !resumeText || !targetRole || !careerPath) {
+    if (!branch || !specialty || !resumeText || !targetRole) {
       showStepError('s2', 'All service profile and career goal fields are required. Upload or paste your service resume.'); return;
     }
     // Split into paragraphs (blank-line separated).
