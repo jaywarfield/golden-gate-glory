@@ -332,9 +332,6 @@
       </label>
     </div>
     <div class="notice" style="margin-top:8px;margin-bottom:0">
-      <strong>User controls:</strong> Select "Exit without saving" at any time to withdraw consent and delete any saved draft.
-    </div>
-    <div class="notice" style="margin-top:8px;margin-bottom:0">
       <strong>Evidence:</strong> Not collected. &nbsp;<strong>AI Claims:</strong> None yet.
     </div>
     <div class="notice success" style="margin-top:8px;margin-bottom:0">
@@ -342,7 +339,6 @@
     </div>
     <div class="btn-row">
       <button class="btn btn-primary" onclick="step1Next()">Continue to Intake →</button>
-      <button class="btn btn-secondary" onclick="step1Exit()">Exit without saving</button>
     </div>
     <div class="notice pii" id="s1-error" style="display:none">
       <strong>Error:</strong> <span id="s1-error-text"></span>
@@ -765,10 +761,6 @@
     document.getElementById('s1-restore-banner').style.display = 'none';
   }
 
-  function draftDelete() {
-    localStorage.removeItem(DRAFT_KEY);
-  }
-
   // Check for saved draft on load
   window.addEventListener('DOMContentLoaded', draftLoad);
 
@@ -811,13 +803,6 @@
       err.style.display = 'block'; return;
     }
     goStep(2);
-  }
-
-  function step1Exit() {
-    if (confirm('Exit and delete draft? This will remove any saved progress from this browser.')) {
-      draftDelete();
-      window.location.reload();
-    }
   }
 
   // ═══════════════════════════════════════════════════════════════════
