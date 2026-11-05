@@ -14,8 +14,6 @@
 
 [Notebooks](docs/notebooks.md)
 
-[Data](docs/data.md)
-
 ---
 
 # License
