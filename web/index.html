@@ -563,15 +563,19 @@
 
   <div id="s5-output" style="display:none">
     <div class="card">
+      <div class="card-title">Summary</div>
       <div id="s5-summary"></div>
     </div>
     <div class="card">
+      <div class="card-title">Experience</div>
       <div id="s5-bullets"></div>
     </div>
     <div class="card">
+      <div class="card-title">Skills</div>
       <div id="s5-skills"></div>
     </div>
     <div id="s5-tag-counts-card" class="card">
+      <div class="card-title">Tag Summary</div>
       <div id="s5-tag-counts"></div>
     </div>
     <div class="btn-row">
@@ -837,6 +841,14 @@
     nameEl.style.display = 'block';
 
     function s2ShowText(text) {
+      // Strip common resume section headers — standalone lines that are just a
+      // label (e.g. "Summary:", "Accomplishment 1:", "Experience", "Skills").
+      // Matches: optional whitespace, 1–40 word/space/&/-// chars, optional
+      // trailing colon, nothing else. Empty lines are preserved.
+      text = text.split('\n').filter(line => {
+        const t = line.trim();
+        return t.length === 0 || !/^[A-Za-z0-9 &\/\-]{1,40}:?\s*$/.test(t);
+      }).join('\n');
       ta.value = text;
       ta.style.display = 'block';
       nameEl.textContent = `📎 ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
