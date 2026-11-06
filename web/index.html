@@ -407,8 +407,10 @@
              placeholder="Set automatically by specialty code">
     </div>
     <div class="field">
-      <label for="s1-target-role">Target career role<span class="req">*</span></label>
-      <input type="text" id="s1-target-role" maxlength="100" placeholder="e.g. Network Administrator">
+      <label for="s1-target-role">Target career role <span class="req">*</span></label>
+      <select id="s1-target-role" disabled>
+        <option value="">Set career path first…</option>
+      </select>
     </div>
   </div>
 
@@ -737,16 +739,18 @@
       // Repopulate form fields from restored STATE
       if (STATE.branch) {
         document.getElementById('s1-branch').value = STATE.branch;
-        updateSpecialtyCodes(STATE.branch);   // repopulate dependent drop-down
+        updateSpecialtyCodes(STATE.branch);        // repopulate specialty drop-down
       }
-      if (STATE.specialty) document.getElementById('s1-specialty').value = STATE.specialty;
+      if (STATE.specialty) {
+        document.getElementById('s1-specialty').value = STATE.specialty;
+        updateCareerPath();                        // sets career path + populates role drop-down
+      }
+      if (STATE.targetRole) document.getElementById('s1-target-role').value = STATE.targetRole;
       if (STATE.summary) {
         const ta = document.getElementById('s2-resume');
         ta.value = STATE.summary;
         ta.style.display = 'block';
       }
-      if (STATE.targetRole) document.getElementById('s1-target-role').value = STATE.targetRole;
-      if (STATE.careerPath) document.getElementById('s1-career-path').value = STATE.careerPath;
       maxStep = saved.step || 2;   // restore navigation ceiling before goStep guard runs
       goStep(saved.step || 2);
     } catch(e) {
@@ -962,13 +966,59 @@
     });
   }
 
+  const ROLES_BY_CAREER_PATH = {
+    'IT Infrastructure':   ['Infrastructure Engineer', 'Network Administrator', 'Network Engineer'],
+    'Telecommunications':  ['Network Engineer', 'RF Engineer', 'Telecommunications Engineer', 'Satellite Engineer'],
+    'IT Operations':       ['IT Engineer', 'Network Administrator', 'Network Engineer'],
+    'Cybersecurity':       ['Defense Analyst', 'Information Security Engineer', 'Forensics Examiner'],
+    'Project Management':  ['Cyber Program Manager', 'Cyber Security Manager', 'Information Security Officer'],
+    'Program Management':  ['Cyber Program Manager', 'Cyber Security Manager', 'Information Security Officer'],
+    'Network Engineering': ['Network Engineer', 'Satellite Engineer', 'Telecommunications Specialist'],
+    'Hardware Engineering':['Systems Integration Engineer', 'Field Service Engineer', 'Avionics Technician'],
+    'Network Infrastructure':['Network Administrator', 'Network Engineer', 'NOC Analyst'],
+    'IT Support':          ['Cloud Administrator', 'Data Center Technician', 'Network Administrator', 'Systems Administrator'],
+    'Software Development':['Applications Engineer', 'DevOps Engineer', 'Full-Stack Software Developer'],
+    'Software Engineering':['Reverse Engineer', 'Secure Software Developer', 'Solutions Architect', 'Systems Engineer', 'Vulnerability Researcher'],
+    'Enterprise Systems':  ['Data Center Administrator', 'Network Engineer'],
+    'Cloud Infrastructure':['Cloud Security Engineer', 'Infrastructure Systems Architect', 'NOC/SOC Specialist'],
+    'Cyber Engineering':   ['Cybersecurity Architect', 'Incident Response Director', 'Threat Intelligence Lead'],
+  };
+
   function updateCareerPath() {
     const branch  = document.getElementById('s1-branch').value;
     const code    = document.getElementById('s1-specialty').value;
     const cpField = document.getElementById('s1-career-path');
-    if (!code) { cpField.value = ''; return; }
+    if (!code) {
+      cpField.value = '';
+      updateTargetRoles('');
+      return;
+    }
     const branchOverrides = CAREER_PATH_BRANCH_CODE[branch] || {};
-    cpField.value = branchOverrides[code] || CAREER_PATH_BY_CODE[code] || '';
+    const path = branchOverrides[code] || CAREER_PATH_BY_CODE[code] || '';
+    cpField.value = path;
+    updateTargetRoles(path);
+  }
+
+  function updateTargetRoles(careerPath) {
+    const sel   = document.getElementById('s1-target-role');
+    const roles = ROLES_BY_CAREER_PATH[careerPath];
+    sel.innerHTML = '';
+    if (!roles) {
+      sel.disabled = true;
+      sel.innerHTML = '<option value="">Set career path first…</option>';
+      return;
+    }
+    sel.disabled = false;
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Select role…';
+    sel.appendChild(placeholder);
+    roles.forEach(role => {
+      const opt = document.createElement('option');
+      opt.value = role;
+      opt.textContent = role;
+      sel.appendChild(opt);
+    });
   }
 
   // ═══════════════════════════════════════════════════════════════════
