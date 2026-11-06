@@ -1649,8 +1649,27 @@
     },
   };
 
+  // Map the granular career-path values set by specialty code → mock bucket
+  const _MOCK_BUCKET = {
+    'IT Operations':       'IT/Cybersecurity',
+    'IT Support':          'IT/Cybersecurity',
+    'IT Infrastructure':   'IT/Cybersecurity',
+    'Cybersecurity':       'IT/Cybersecurity',
+    'Network Engineering': 'IT/Cybersecurity',
+    'Network Infrastructure': 'IT/Cybersecurity',
+    'Telecommunications':  'IT/Cybersecurity',
+    'Software Development':'IT/Cybersecurity',
+    'Software Engineering':'IT/Cybersecurity',
+    'Cloud Infrastructure':'IT/Cybersecurity',
+    'Cyber Engineering':   'IT/Cybersecurity',
+    'Enterprise Systems':  'IT/Cybersecurity',
+    'Program Management':  'Project Management',
+    'Hardware Engineering':'Operations',
+  };
+
   function _mockData(careerPath) {
-    return _MOCK[careerPath] || _MOCK['Logistics'];
+    const bucket = _MOCK_BUCKET[careerPath] || careerPath;
+    return _MOCK[bucket] || _MOCK['IT/Cybersecurity'];
   }
 
   function _inferSeniority(jd) {
