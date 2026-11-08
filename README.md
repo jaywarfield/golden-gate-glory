@@ -1,4 +1,4 @@
-# **Mission Veteran AI** *by G3*
+# **Mission Veteran AI** *by G3* - Made by IBM Bob
 
 [Overview](docs/overview.md)
 

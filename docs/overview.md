@@ -33,7 +33,7 @@ AI is not better than humans at judgment, but AI is better at consistent, tracea
 - Terraform (IBM / HashiCorp)
 - OpenShift (IBM / Red Hat)
 
-#### IBM Bob Used Everywhere
+#### IBM Bob Uses
 
 - Creating entire implementation with Orchestrate, Governance, watsonx.ai.
 - Creating seven UI screens, Coordinator Agent, 4 subagents, LLM usage, and finding and utilizing 12 RAG sources including SkillsBuild.
