@@ -1,6 +1,8 @@
 # **Mission Veteran AI** *by G3*
 
-#### Agents and Tools
+#### Orchestrate 
+
+##### Agents and Tools
 
 Agents and @tool-decorated Python scripts in watsonx Orchestrate enable production integration with autonomous tasks and governance:
 
@@ -9,7 +11,7 @@ Agents and @tool-decorated Python scripts in watsonx Orchestrate enable producti
 - Enterprise Governance & Guardrails with built-in credential handling, token tracking, role-based tool permissions, human-in-the-loop approval steps, and OpenTelemetry observability.
 - Production Integration that directly connects business applications (e.g., Salesforce, Workday, Slack, custom APIs) so end-users can trigger live workflows via a conversational chat interface or agentic handoffs.
 
-#### Agent Descriptions
+##### Agent Descriptions
 
 Agent LLM (`llm:` in YAML) is `groq/openai/gpt-oss-120b` — used for agent reasoning via Orchestrate.
 Toolkit inference (`_MODEL_ID` in Python) is `ibm/granite-4-h-small` — called directly via watsonx.ai `ModelInference`.
@@ -22,7 +24,7 @@ Toolkit inference (`_MODEL_ID` in Python) is `ibm/granite-4-h-small` — called 
 | gap_analyzer | native | groq/openai/gpt-oss-120b | react_core | Compares skill inventory to a job description; produces coverage %, gap skills, and IBM SkillsBuild course recommendations. |
 | plan_builder | native | groq/openai/gpt-oss-120b | react_core | Runs the 3-step gated resume pipeline: JD analysis → tagged draft → export gate. |
 
-#### Tool Descriptions (per agent)
+##### Tool Descriptions (per agent)
 
 | Agent | Tool  | What it does |
 | :---: | :---: | :---:        |

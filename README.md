@@ -1,18 +1,10 @@
 # **Mission Veteran AI** - *Made by IBM Bob*
 
-[Overview](docs/overview.md)
-
-[Architecture](docs/architecture.md)
-
-[Environment](docs/environment.md)
-
-[RAG Sources](docs/rag_sources.md)
-
-[Governance](docs/governance.md)
-
-[Agents](docs/agents.md)
-
-[Notebooks](docs/notebooks.md)
+| General | Diagrams | Components |
+| :---:   | :---:    | :---       | 
+| [Overview](docs/overview.md) | [Architecture](docs/architecture.md) | [Orchestrate](docs/orchestrate.md) |  
+| [Notebooks](docs/notebooks.md) | [Environment](docs/environment.md) | [Governance](docs/governance.md) |
+| | | [RAG Sources](docs/rag_sources.md) |
 
 ---
 
