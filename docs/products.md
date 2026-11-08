@@ -7,6 +7,7 @@
 - Map veteran technical gaps to IBM SkillsBuild courses
 - IBM Bob
 - IBM Cloud
+- IBM Granite
 - watsonx Orchestrate
 - watsonx.governance
 - watsonx.ai
