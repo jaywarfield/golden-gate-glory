@@ -3,8 +3,8 @@
 | General | Diagrams | Components |
 | :---:   | :---:    | :---       | 
 | [Overview](docs/overview.md) | [Architecture](docs/architecture.md) | [Orchestrate](docs/orchestrate.md) |  
-| [Notebooks](docs/notebooks.md) | [Environment](docs/environment.md) | [Governance](docs/governance.md) |
-| | | [RAG Sources](docs/rag_sources.md) |
+| [Products](docs/products.md) | [Environment](docs/environment.md) | [Governance](docs/governance.md) |
+| [Notebooks](docs/notebooks.md) | | [RAG Sources](docs/rag_sources.md) |
 
 ---
 
