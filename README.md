@@ -17,7 +17,7 @@ Our mission is to help veterans market their genuine technical experience and im
 | 5 | Factsheets & Monitors | [Monitors](docs/monitors.md) | IBM Bob & watsonx.governance |
 | 6 | Granite & RAG | [RAG](docs/rag.md) | IBM Bob & watsonx Orchestrate |
 | 7 | Jupyter Notebooks | [Notebooks](docs/notebooks.md) | IBM Bob & watsonx.ai |
-| 8 | Environments | | IBM Bob |
+| 8 | Environments | [Environment](docs/environment.md | IBM Bob |
 | 9 | Deployment | | IBM Bob & Terraform |
 | 10 | Public Hosting | | IBM Bob, GitHub Pages, OpenShift |
 | 11 | Diagrams | [Architecture](docs/architecture.md)<br>[Environment](docs/environment.md) | IBM Bob |
