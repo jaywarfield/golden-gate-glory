@@ -2,13 +2,27 @@
 
 #### Screens
 
-```
 **Screen 1: Welcome and Consent**
-**Review Welcome.**
-**Consent choice:** *Select I Understand and agree*
-**Draft storage:** *Select Entire session*  
-**Select Continue to Intake**
 ```
+Review Welcome.
+Consent choice: Select I Understand and agree
+Draft storage: Select Entire session  
+Select Continue to Intake
+```
+
+**Screen 2: Guided Career Intake**
+```
+Select branch: Air Force, Army, Coast Guard, Marine Corps, Navy, Space Force
+Specialty code: (Choose specialty affiliated with selected branch) 
+Service resume: (Drag & drop military resume or select a local file to upload)
+Target career path: (Choose career path affiliated with selected specialty)
+Target career role: (Choose career role affiliated with selected career path)
+Select Translate Accomplishments
+Review translated accomplishments, make changes, select translate again.
+Select Continue to Job Description
+
+```
+
 
 ---
 
