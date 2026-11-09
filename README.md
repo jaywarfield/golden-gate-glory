@@ -8,19 +8,19 @@ Our mission is to help veterans market their genuine technical experience and im
 
 ![IBMBobUsage](./docs/images/ibmbobusage.png)
 
-| Index | Component | Document | Summary | How Bob Helped | 
-| :---: | :---:     | :---:    | :---:   | :---           | 
-| 1 | Orchestrate Agents | [Orchestrate](docs/orchestrate.md) | Orchestrate Agents | 5 agents | | |
-| | Orchestrate Tools | [Orchestrate](docs/orchestrate.md) | Orchestrate Tools | 7 tools | | |
-| 3 | Frontend Governance | [Governance](docs/governance.md) | PII Guard, Safety Monitor | |
-| 4 | | UI Screens | 7 screens, 1 per step |
-| 5 | Backend Governance | [Governance](docs/governance.md) | Content Safety, Explainability | |
-| 6 | Granite & RAG | [RAG Sources](docs/rag_sources.md) | 12 Sources | |
-| 7 | Jupyter Notebooks | [Notebooks](docs/notebooks.md) | Prototyping, Research | |
-| 8 | Environments |  | Development, Test | |
-| 9 | Deployment | | Make, Scripts, Terraform | |
-| 10 | Public Hosting | | GitHub Pages, OpenShift | |
-| 11 | Diagrams | [Architecture](docs/architecture.md | | | |
+| Index | Component | Document | How Bob Helped | 
+| :---: | :---:     | :---:    | | :---           | 
+| 1 | Orchestrate Agents | [Orchestrate](docs/orchestrate.md) | Orchestrate Agents | | |
+| | Orchestrate Tools | [Orchestrate](docs/orchestrate.md) | Orchestrate Tools | | |
+| 3 | Frontend Governance | [Governance](docs/governance.md) | |
+| 4 | UI Screens | | 7 screens, 1 per step |
+| 5 | Backend Governance | [Governance](docs/governance.md) | |
+| 6 | Granite & RAG | [RAG Sources](docs/rag_sources.md) | |
+| 7 | Jupyter Notebooks | [Notebooks](docs/notebooks.md) | |
+| 8 | Environments |  | |
+| 9 | Deployment | | |
+| 10 | Public Hosting |  |
+| 11 | Diagrams | [Architecture](docs/architecture.md | | |
 |    |          | [Environment](docs/environment.md | | | |
 
 ---
