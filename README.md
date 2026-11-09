@@ -20,7 +20,7 @@ Our mission is to help veterans market their genuine technical experience and im
 | 8 | Environments |  | |
 | 9 | Deployment | | |
 | 10 | Public Hosting |  |
-| 11 | Diagrams | [Architecture](docs/architecture.md) [Environment](docs/environment.md) | |
+| 11 | Diagrams | [Architecture](docs/architecture.md)<br>[Environment](docs/environment.md) | |
 
 ---
 
