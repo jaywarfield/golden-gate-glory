@@ -21,8 +21,8 @@ Our mission is to help veterans market their genuine technical experience and im
 | 7 | Jupyter Notebooks | [Notebooks](docs/notebooks.md) | IBM Bob, watsonx.ai | Created 7 notebooks. |
 | 8 | Environments | [Environment](docs/environment.md) | IBM Bob | Created separate build and test environments for parallel use. |
 | 9 | Deployment | [Deployment](docs/deployment.md) | IBM Bob, Make, Terraform | Created make files, scripts, and Terraform files to easily deploy everything. |
-| 10 | Public Hosting | [Hosting](docs/hosting.md) | IBM Bob, GitHub Pages, OpenShift | Created index.html and OpenShift processes. |
-| 11 | Diagrams | [Architecture](docs/architecture.md)<br>[Environment](docs/environment.md) | IBM Bob | Created both diagrams. |
+| 10 | Public Hosting | [Hosting](docs/hosting.md) | IBM Bob, GitHub Pages, OpenShift | Created static SPA hosted on GitHub Pages and OpenShift. |
+| 11 | Diagrams | [Architecture](docs/architecture.md)<br>[Environment](docs/environment.md) | IBM Bob | Created low-level architecture diagram and environment diagram showing layout of development and test environments.. |
 
 ---
 
