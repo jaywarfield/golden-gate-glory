@@ -10,19 +10,19 @@ Our mission is to help veterans market their genuine technical experience and im
 
 ![IBMBobUsage](./docs/images/ibmbobusage.png)
 
-| Index | Component | Document | Products Used | 
-| :---: | :---:     | :---:    | :---:          | 
-| 1 | Main Agent & Subagents | [Agents](docs/agents.md) | IBM Bob, watsonx Orchestrate |
-| 2 | Toolkits/Tools | [Tools](docs/tools.md) | IBM Bob, watsonx Orchestrate |
-| 3 | Guards & Safety | [Guards](docs/guards.md) | IBM Bob, watsonx.governance |
-| 4 | UI Screens | [Screens](docs/screens.md) | IBM Bob |  
-| 5 | Factsheets & Monitors | [Monitors](docs/monitors.md) | IBM BobR, watsonx.governance |
-| 6 | Granite & RAG | [RAG](docs/rag.md) | IBM Bob & watsonx Orchestrate |
-| 7 | Jupyter Notebooks | [Notebooks](docs/notebooks.md) | IBM Bob, watsonx.ai |
-| 8 | Environments | [Environment](docs/environment.md) | IBM Bob |
-| 9 | Deployment | [Deployment](docs/deployment.md) | IBM Bob, Make, Terraform |
-| 10 | Public Hosting | [Hosting](docs/hosting.md) | IBM Bob, GitHub Pages, OpenShift |
-| 11 | Diagrams | [Architecture](docs/architecture.md)<br>[Environment](docs/environment.md) | IBM Bob |
+| Index | Component | Document | Products Used | IBM Bob Contributions |
+| :---: | :---:     | :---:    | :---:         | :---: |
+| 1 | Main Agent & Subagents | [Agents](docs/agents.md) | IBM Bob, watsonx Orchestrate | Created coordinator agent & 4 subagents. |
+| 2 | Toolkits/Tools | [Tools](docs/tools.md) | IBM Bob, watsonx Orchestrate | Created 7 tools R& repackaged into toolkits. |
+| 3 | Guards & Safety | [Guards](docs/guards.md) | IBM Bob, watsonx.governance | Created PII guard (regex) & Content Safety Monitor. |
+| 4 | UI Screens | [Screens](docs/screens.md) | IBM Bob | Created 7 screens corresponding to each step. | 
+| 5 | Factsheets & Monitors | [Monitors](docs/monitors.md) | IBM Bob, watsonx.governance | Created AI Factsheets & monitors. |
+| 6 | Granite & RAG | [RAG](docs/rag.md) | IBM Bob & watsonx Orchestrate | Found 12 RAG sources including SkillsBuild.
+| 7 | Jupyter Notebooks | [Notebooks](docs/notebooks.md) | IBM Bob, watsonx.ai | Created 7 notebooks. |
+| 8 | Environments | [Environment](docs/environment.md) | IBM Bob | Created separate build and test environments for parallel use. |
+| 9 | Deployment | [Deployment](docs/deployment.md) | IBM Bob, Make, Terraform | Created make files, scripts, and Terraform files to easily deploy everything. |
+| 10 | Public Hosting | [Hosting](docs/hosting.md) | IBM Bob, GitHub Pages, OpenShift | Created index.html and OpenShift processes. |
+| 11 | Diagrams | [Architecture](docs/architecture.md)<br>[Environment](docs/environment.md) | IBM Bob | Created both diagrams. |
 
 ---
 
