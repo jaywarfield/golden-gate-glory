@@ -2,7 +2,7 @@
 
 #### Screen Descriptions
 
-**Screen 1: Welcome and Consent**
+##### Screen 1: Welcome and Consent
 ```
 Review Welcome.
 
@@ -13,7 +13,7 @@ Draft storage: Select Entire session
 Select Continue to Intake
 ```
 
-**Screen 2: Guided Career Intake**
+##### Screen 2: Guided Career Intake
 ```
 Select branch: Air Force, Army, Coast Guard, Marine Corps, Navy, Space Force
 
@@ -33,7 +33,7 @@ Select Continue to Job Description
 
 ```
 
-**Screen 3: Job Description Analysis**
+##### Screen 3: Job Description Analysis
 ```
 Job description text: 
 (Currently cut-and-paste but eventually drag & drop job description or select a local file to upload)
@@ -45,7 +45,7 @@ Review job analysis, make changes, select analyze again.
 Select Continue to Skill Mapping
 ```
 
-**Screen 4: Civilian Skill Profile & Gap Analysis**
+##### Screen 4: Civilian Skill Profile & Gap Analysis
 ```
 Select Map Skills & Analyze Gaps
 
@@ -54,7 +54,7 @@ Review career path coverage and civilian skill inventory
 Select Continue to Resume Draft
 ```
 
-**Screen 5: Resume Builder**
+##### Screen 5: Resume Builder
 ```
 Select Build Tagged Resume Draft
 
@@ -66,14 +66,14 @@ Review resume draft:
 Select Continue to Interview Prep
 ```
 
-**Screen 6: Interview Preparation**
+##### Screen 6: Interview Preparation
 ```
 Select Generate Interview Prep
 
 Review interview prep and go back to fix any blocks (inferred and missing must be fixed).
 ```
 
-**Screen 7: Export Gate & Final Package**
+##### Screen 7: Export Gate & Final Package
 ```
 Select Evaluate Gate
 
