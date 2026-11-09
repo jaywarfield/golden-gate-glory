@@ -1,5 +1,8 @@
 # **Mission Veteran AI** - *Made by IBM Bob*
 
+![IBMBobUsage](./docs/images/ibmbobusage.png)
+
+
 | General | Diagrams | Components |
 | :---:   | :---:    | :---       | 
 | [Overview](docs/overview.md) | [Architecture](docs/architecture.md) | [Orchestrate](docs/orchestrate.md) |  
