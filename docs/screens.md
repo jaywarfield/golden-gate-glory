@@ -33,7 +33,8 @@ Select Continue to Job Description
 
 **Screen 3: Job Description Analysis**
 ```
-Job description text: (Currently cut-and-paste but eventually drag & drop job description or select a local file to upload)
+Job description text: 
+(Currently cut-and-paste but eventually drag & drop job description or select a local file to upload)
 
 Select Analyze Job Description
 
@@ -43,7 +44,7 @@ Select Continue to Skill Mapping
 ```
 
 **Screen 4: Civilian Skill Profile & Gap Analysis**
-``
+```
 Select Map Skills & Analyze Gaps
 
 Review career path coverage and civilian skill inventory
