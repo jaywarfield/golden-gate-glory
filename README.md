@@ -10,17 +10,17 @@ Our mission is to help veterans market their genuine technical experience and im
 
 | Index | Component | Document | Products Used | 
 | :---: | :---:     | :---:    | :---:          | 
-| 1 | Main Agent & Subagents | [Orchestrate](docs/orchestrate.md) | watsonx Orchestrate |
-| 2 | Toolkits/Tools | [Orchestrate](docs/orchestrate.md) | watsonx Orchestrate |
-| 3 | Guards & Safety | [Governance](docs/governance.md) | watsonx.governance |
-| 4 | UI Screens | | | 
-| 5 | Factsheets & Monitors | [Governance](docs/governance.md) | watsonx.governance |
-| 6 | Granite & RAG | [RAG Sources](docs/rag_sources.md) | watsonx Orchestrate |
-| 7 | Jupyter Notebooks | [Notebooks](docs/notebooks.md) | watsonx.ai |
-| 8 | Environments | | |
-| 9 | Deployment | | Make & Terraform |
-| 10 | Public Hosting | | GitHub Pages & OpenShift |
-| 11 | Diagrams | [Architecture](docs/architecture.md)<br>[Environment](docs/environment.md) | |
+| 1 | Main Agent & Subagents | [Orchestrate](docs/orchestrate.md) | IBM Bob & watsonx Orchestrate |
+| 2 | Toolkits/Tools | [Orchestrate](docs/orchestrate.md) | IBM Bob & watsonx Orchestrate |
+| 3 | Guards & Safety | [Governance](docs/governance.md) | IBM Bob & watsonx.governance |
+| 4 | UI Screens | | IBM Bob |  
+| 5 | Factsheets & Monitors | [Governance](docs/governance.md) | IBM Bob & watsonx.governance |
+| 6 | Granite & RAG | [RAG Sources](docs/rag_sources.md) | IBM Bob & watsonx Orchestrate |
+| 7 | Jupyter Notebooks | [Notebooks](docs/notebooks.md) | IBM Bob & watsonx.ai |
+| 8 | Environments | | IBM Bob |
+| 9 | Deployment | | IBM Bob & Terraform |
+| 10 | Public Hosting | | IBM Bob, GitHub Pages, OpenShift |
+| 11 | Diagrams | [Architecture](docs/architecture.md)<br>[Environment](docs/environment.md) | IBM Bob |
 
 ---
 
