@@ -2,7 +2,7 @@
 
 An AI-powered career-transition chatbot made with IBM Bob for veterans and transitioning service members with military computer and IT experience.
 
-Veterans describe their responsibilities and achievements. The chatbot then identifies transferable skills in computer systems, IT support, data analysis, and cybersecurity, and drafts clear, civilian-ready résumé accomplishments, preserving measurable results, avoiding invented qualifications, and allowng veterans to review and approve each statement before use. 
+Veterans describe their responsibilities and achievements. The chatbot then identifies transferable skills in computer systems, IT support, data analysis, and cybersecurity, and drafts clear, civilian-ready résumé accomplishments, preserving measurable results and allowng veterans to review and approve each statement. 
 
 Our mission is to help veterans market their genuine technical experience and improve their opportunities to obtain civilian IT jobs.
 
