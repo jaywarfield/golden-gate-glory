@@ -8,18 +8,18 @@ Our mission is to help veterans market their genuine technical experience and im
 
 ![IBMBobUsage](./docs/images/ibmbobusage.png)
 
-| Index | Component | Document | How Bob Helped | 
+| Index | Component | Document | Products Used | 
 | :---: | :---:     | :---:    | :---:          | 
-| 1 | Orchestrate Agents | [Orchestrate](docs/orchestrate.md) | |
-| 2 | Orchestrate Tools | [Orchestrate](docs/orchestrate.md) | |
-| 3 | Frontend Governance | [Governance](docs/governance.md) | |
+| 1 | Main Agent & Subagents | [Orchestrate](docs/orchestrate.md) | watsonx Orchestrate |
+| 2 | Toolkits/Tools | [Orchestrate](docs/orchestrate.md) | watsonx Orchestrate |
+| 3 | Guards & Safety | [Governance](docs/governance.md) | watsonx.governance |
 | 4 | UI Screens | | | 
-| 5 | Backend Governance | [Governance](docs/governance.md) | |
-| 6 | Granite & RAG | [RAG Sources](docs/rag_sources.md) | |
-| 7 | Jupyter Notebooks | [Notebooks](docs/notebooks.md) | |
-| 8 | Environments |  | |
-| 9 | Deployment | | |
-| 10 | Public Hosting |  |
+| 5 | Factsheets & Monitors | [Governance](docs/governance.md) | watsonx.governance |
+| 6 | Granite & RAG | [RAG Sources](docs/rag_sources.md) | watsonx Orchestrate |
+| 7 | Jupyter Notebooks | [Notebooks](docs/notebooks.md) | watsonx.ai |
+| 8 | Environments | | |
+| 9 | Deployment | | Make, Scripts, Terraform |
+| 10 | Public Hosting | GitHub Pages & OpenShift |
 | 11 | Diagrams | [Architecture](docs/architecture.md)<br>[Environment](docs/environment.md) | |
 
 ---
