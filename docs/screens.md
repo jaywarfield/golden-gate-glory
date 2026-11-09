@@ -58,8 +58,8 @@ Select Build Tagged Resume Draft
 
 Review resume draft:
 - EVIDENCED is good.
-- INFERRED from the veteran job type that should already have this experience even if not mentioned upfront by the veteran, and if acceptable click Confirm. 
-- MISSING from the veteran’s experience but required in the job description, and if acceptable click Remove. 
+- INFERRED should already have this experience, and if acceptable click Confirm. 
+- MISSING but required in the job description, and if acceptable click Remove. 
 
 Select Continue to Interview Prep
 ```
