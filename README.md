@@ -21,7 +21,7 @@ Our mission is to help veterans market their genuine technical experience and im
 | 7 | Jupyter Notebooks | [Notebooks](docs/notebooks.md) | IBM Bob, watsonx.ai |
 | 8 | Environments | [Environment](docs/environment.md) | IBM Bob |
 | 9 | Deployment | [Deployment](docs/deployment.md) | IBM Bob, Make, Terraform |
-| 10 | Public Hosting | [Hosting](docs/hosting.md | IBM Bob, GitHub Pages, OpenShift |
+| 10 | Public Hosting | [Hosting](docs/hosting.md) | IBM Bob, GitHub Pages, OpenShift |
 | 11 | Diagrams | [Architecture](docs/architecture.md)<br>[Environment](docs/environment.md) | IBM Bob |
 
 ---
