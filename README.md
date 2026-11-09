@@ -12,9 +12,9 @@ Our mission is to help veterans market their genuine technical experience and im
 | :---: | :---:     | :---:    | :---:          | 
 | 1 | Main Agent & Subagents | [Agents](docs/agents.md) | IBM Bob & watsonx Orchestrate |
 | 2 | Toolkits/Tools | [Tools](docs/tools.md) | IBM Bob & watsonx Orchestrate |
-| 3 | Guards & Safety | [Governance](docs/governance.md) | IBM Bob & watsonx.governance |
+| 3 | Guards & Safety | [Guards](docs/guards.md) | IBM Bob & watsonx.governance |
 | 4 | UI Screens | | IBM Bob |  
-| 5 | Factsheets & Monitors | [Governance](docs/governance.md) | IBM Bob & watsonx.governance |
+| 5 | Factsheets & Monitors | [monitors](docs/monitors.md) | IBM Bob & watsonx.governance |
 | 6 | Granite & RAG | [RAG Sources](docs/rag_sources.md) | IBM Bob & watsonx Orchestrate |
 | 7 | Jupyter Notebooks | [Notebooks](docs/notebooks.md) | IBM Bob & watsonx.ai |
 | 8 | Environments | | IBM Bob |
