@@ -10,8 +10,8 @@ Our mission is to help veterans market their genuine technical experience and im
 
 | Index | Component | Document | Products Used | 
 | :---: | :---:     | :---:    | :---:          | 
-| 1 | Main Agent & Subagents | [Orchestrate](docs/orchestrate.md) | IBM Bob & watsonx Orchestrate |
-| 2 | Toolkits/Tools | [Orchestrate](docs/orchestrate.md) | IBM Bob & watsonx Orchestrate |
+| 1 | Main Agent & Subagents | [Agents](docs/agents.md) | IBM Bob & watsonx Orchestrate |
+| 2 | Toolkits/Tools | [Tools](docs/tools.md) | IBM Bob & watsonx Orchestrate |
 | 3 | Guards & Safety | [Governance](docs/governance.md) | IBM Bob & watsonx.governance |
 | 4 | UI Screens | | IBM Bob |  
 | 5 | Factsheets & Monitors | [Governance](docs/governance.md) | IBM Bob & watsonx.governance |
