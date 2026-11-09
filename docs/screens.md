@@ -1,5 +1,7 @@
 # **Mission Veteran AI** *by G3*
 
+#### Screen Descriptions
+
 **Screen 1: Welcome and Consent**
 ```
 Review Welcome.
