@@ -2,18 +2,6 @@
 
 #### IBM Products
 
-##### IBM Products Used
-
-- Map veteran technical gaps to IBM SkillsBuild courses
-- IBM Bob
-- IBM Cloud
-- IBM Granite
-- watsonx Orchestrate
-- watsonx.governance
-- watsonx.ai
-- Terraform (IBM / HashiCorp)
-- OpenShift (IBM / Red Hat)
-
 ##### Made by IBM Bob
 
 - Creating entire implementation with Orchestrate, Governance, watsonx.ai.

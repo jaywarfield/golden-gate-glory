@@ -1,5 +1,7 @@
 # **Mission Veteran AI** *by G3*
 
+Industry Focus: AI-Powered Government & Public Service
+
 An AI-powered career-transition chatbot made with IBM Bob for veterans and transitioning service members with military computer and IT experience.
 
 Veterans describe their responsibilities and achievements. The chatbot then identifies transferable skills in computer systems, IT support, data analysis, and cybersecurity, and drafts clear, civilian-ready résumé accomplishments, preserving measurable results and allowng veterans to review and approve each statement. 
@@ -10,16 +12,16 @@ Our mission is to help veterans market their genuine technical experience and im
 
 | Index | Component | Document | Products Used | 
 | :---: | :---:     | :---:    | :---:          | 
-| 1 | Main Agent & Subagents | [Agents](docs/agents.md) | IBM Bob & watsonx Orchestrate |
-| 2 | Toolkits/Tools | [Tools](docs/tools.md) | IBM Bob & watsonx Orchestrate |
-| 3 | Guards & Safety | [Guards](docs/guards.md) | IBM Bob & watsonx.governance |
-| 4 | UI Screens | | IBM Bob |  
-| 5 | Factsheets & Monitors | [Monitors](docs/monitors.md) | IBM Bob & watsonx.governance |
+| 1 | Main Agent & Subagents | [Agents](docs/agents.md) | IBM Bob, watsonx Orchestrate |
+| 2 | Toolkits/Tools | [Tools](docs/tools.md) | IBM Bob, watsonx Orchestrate |
+| 3 | Guards & Safety | [Guards](docs/guards.md) | IBM Bob, watsonx.governance |
+| 4 | UI Screens | [Screens](docs/screens.md) | IBM Bob |  
+| 5 | Factsheets & Monitors | [Monitors](docs/monitors.md) | IBM BobR, watsonx.governance |
 | 6 | Granite & RAG | [RAG](docs/rag.md) | IBM Bob & watsonx Orchestrate |
-| 7 | Jupyter Notebooks | [Notebooks](docs/notebooks.md) | IBM Bob & watsonx.ai |
+| 7 | Jupyter Notebooks | [Notebooks](docs/notebooks.md) | IBM Bob, watsonx.ai |
 | 8 | Environments | [Environment](docs/environment.md) | IBM Bob |
-| 9 | Deployment | | IBM Bob & Terraform |
-| 10 | Public Hosting | | IBM Bob, GitHub Pages, OpenShift |
+| 9 | Deployment | [Deployment](docs/deployment.md) | IBM Bob, Make, Terraform |
+| 10 | Public Hosting | [Hosting](docs/hosting.md | IBM Bob, GitHub Pages, OpenShift |
 | 11 | Diagrams | [Architecture](docs/architecture.md)<br>[Environment](docs/environment.md) | IBM Bob |
 
 ---
