@@ -10,18 +10,17 @@ Our mission is to help veterans market their genuine technical experience and im
 
 | Index | Component | Document | How Bob Helped | 
 | :---: | :---:     | :---:    | :---:          | 
-| 1 | Orchestrate Agents | [Orchestrate](docs/orchestrate.md) | Orchestrate Agents | | |
-| 2 | Orchestrate Tools | [Orchestrate](docs/orchestrate.md) | Orchestrate Tools | | |
+| 1 | Orchestrate Agents | [Orchestrate](docs/orchestrate.md) | |
+| 2 | Orchestrate Tools | [Orchestrate](docs/orchestrate.md) | |
 | 3 | Frontend Governance | [Governance](docs/governance.md) | |
-| 4 | UI Screens | | 7 screens, 1 per step |
+| 4 | UI Screens | | | 
 | 5 | Backend Governance | [Governance](docs/governance.md) | |
 | 6 | Granite & RAG | [RAG Sources](docs/rag_sources.md) | |
 | 7 | Jupyter Notebooks | [Notebooks](docs/notebooks.md) | |
 | 8 | Environments |  | |
 | 9 | Deployment | | |
 | 10 | Public Hosting |  |
-| 11 | Diagrams | [Architecture](docs/architecture.md | | |
-|    |          | [Environment](docs/environment.md | | | |
+| 11 | Diagrams | [Architecture](docs/architecture.md \ [Environment](docs/environment.md | |
 
 ---
 
