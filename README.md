@@ -9,7 +9,7 @@ Our mission is to help veterans market their genuine technical experience and im
 ![IBMBobUsage](./docs/images/ibmbobusage.png)
 
 | Index | Component | Document | How Bob Helped | 
-| :---: | :---:     | :---:    | | :---           | 
+| :---: | :---:     | :---:    | :---:          | 
 | 1 | Orchestrate Agents | [Orchestrate](docs/orchestrate.md) | Orchestrate Agents | | |
 | | Orchestrate Tools | [Orchestrate](docs/orchestrate.md) | Orchestrate Tools | | |
 | 3 | Frontend Governance | [Governance](docs/governance.md) | |
