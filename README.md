@@ -1,11 +1,13 @@
-# **Mission Veteran AI** - *Made by IBM Bob*
+# **Mission Veteran AI** - *Made with IBM Bob*
+
+An AI-powered career-transition chatbot for veterans and transitioning service members with military computer and IT experience. Veterans describe their actual responsibilities and achievements in their own words. The chatbot is designed to identify transferable skills in computer systems, IT support, data analysis, and cybersecurity, then draft clear, civilian-ready résumé accomplishments. It aims to preserve measurable results, avoid invented qualifications, and allow veterans to review and approve each statement before use. Our mission is to help veterans market their genuine technical experience and improve their opportunities to obtain civilian IT jobs.
 
 ![IBMBobUsage](./docs/images/ibmbobusage.png)
 
 
 | General | Diagrams | Components |
 | :---:   | :---:    | :---       | 
-| [Overview](docs/overview.md) | [Architecture](docs/architecture.md) | [Orchestrate](docs/orchestrate.md) |  
+| | [Architecture](docs/architecture.md) | [Orchestrate](docs/orchestrate.md) |  
 | [Products](docs/products.md) | [Environment](docs/environment.md) | [Governance](docs/governance.md) |
 | [Notebooks](docs/notebooks.md) | | [RAG Sources](docs/rag_sources.md) |
 
