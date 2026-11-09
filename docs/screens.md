@@ -2,7 +2,13 @@
 
 #### Screens
 
-##### Screens Overview
+```
+**Screen 1: Welcome and Consent**
+**Review Welcome.**
+**Consent choice:** *Select I Understand and agree*
+**Draft storage:** *Select Entire session*  
+**Select Continue to Intake**
+```
 
 ---
 
