@@ -57,7 +57,7 @@ Select Continue to Resume Draft
 Select Build Tagged Resume Draft
 
 Review resume draft:
-- EVIDENCED is good.
+- EVIDENCED is already validated.
 - INFERRED should already have this experience, and if acceptable click Confirm. 
 - MISSING but required in the job description, and if acceptable click Remove. 
 
