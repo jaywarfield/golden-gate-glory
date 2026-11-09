@@ -11,7 +11,7 @@ Our mission is to help veterans market their genuine technical experience and im
 | Index | Component | Document | How Bob Helped | 
 | :---: | :---:     | :---:    | :---:          | 
 | 1 | Orchestrate Agents | [Orchestrate](docs/orchestrate.md) | Orchestrate Agents | | |
-| | Orchestrate Tools | [Orchestrate](docs/orchestrate.md) | Orchestrate Tools | | |
+| 2 | Orchestrate Tools | [Orchestrate](docs/orchestrate.md) | Orchestrate Tools | | |
 | 3 | Frontend Governance | [Governance](docs/governance.md) | |
 | 4 | UI Screens | | 7 screens, 1 per step |
 | 5 | Backend Governance | [Governance](docs/governance.md) | |
