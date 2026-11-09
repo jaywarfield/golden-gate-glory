@@ -18,8 +18,8 @@ Our mission is to help veterans market their genuine technical experience and im
 | 6 | Granite & RAG | [RAG Sources](docs/rag_sources.md) | watsonx Orchestrate |
 | 7 | Jupyter Notebooks | [Notebooks](docs/notebooks.md) | watsonx.ai |
 | 8 | Environments | | |
-| 9 | Deployment | | Make, Scripts, Terraform |
-| 10 | Public Hosting | GitHub Pages & OpenShift |
+| 9 | Deployment | | Make & Terraform |
+| 10 | Public Hosting | | GitHub Pages & OpenShift |
 | 11 | Diagrams | [Architecture](docs/architecture.md)<br>[Environment](docs/environment.md) | |
 
 ---
