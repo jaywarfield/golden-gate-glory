@@ -2,8 +2,8 @@
 
 Industry Focus: AI-Powered Government & Public Service
 
-<img src="missionveteranlogo1.png" alt="First Image" width="49%" />
-<img src="missionveteranlogo2.png" alt="Second Image" width="49%" />
+<img src="docs/image/missionveteranlogo1.png" alt="First Image" width="49%" />
+<img src="docs/image/missionveteranlogo2.png" alt="Second Image" width="49%" />
 
 Mission Veteran AI is an AI-powered career-transition chatbot made with IBM Bob for veterans and transitioning service members with military computer and IT experience.
 
