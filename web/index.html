@@ -1101,117 +1101,31 @@
     const pii = detectPII(resumeText);
     if (pii) { showStepError('s2', `${pii} detected in service resume. Please remove it before proceeding.`); return; }
 
-    // ── Flexible resume parser ────────────────────────────────────────
-    // Works across formats: narrative, bullet-list, section-headed, mixed.
-    // 1. Strip standalone section-header lines (short label ± colon).
-    // 2. Split remaining content into blocks on blank lines.
-    // 3. Classify each block as: summary, experience, or skills.
-    //    • summary  — first prose block (avg line length > 40 chars, or multi-sentence)
-    //    • skills   — block under a skills/qualifications/certifications header,
-    //                 OR block whose lines are mostly short tokens (≤ 5 words each)
-    //    • experience — everything else
-    // 4. Merge all skill tokens into a deduplicated list on STATE.resumeSkills.
-
-    const HEADER_RE  = /^[A-Za-z0-9 &\/\-]{1,50}:?\s*$/;
-    const SKILLS_HDR = /\b(skill|qualification|certification|competenc|proficienc|technical|tool|technolog)/i;
-    const EXP_HDR    = /\b(experience|accomplishment|achievement|responsibilit|summary|objective|profile|background)/i;
-
-    // Pass 1: tag each line as header / blank / content, tracking last header seen
-    const lines = resumeText.split('\n');
-    let lastHdr = '';
-    const taggedBlocks = [];   // [{sectionHint, lines[]}]
-    let cur = null;
-
-    for (const raw of lines) {
-      const t = raw.trim();
-      if (t.length === 0) {
-        if (cur && cur.lines.length > 0) { taggedBlocks.push(cur); cur = null; }
-        continue;
-      }
-      if (HEADER_RE.test(t)) {
-        if (cur && cur.lines.length > 0) { taggedBlocks.push(cur); cur = null; }
-        lastHdr = t.replace(/:$/, '').toLowerCase();
-        continue;  // skip the header line itself
-      }
-      if (!cur) cur = { sectionHint: lastHdr, lines: [] };
-      cur.lines.push(t);
-    }
-    if (cur && cur.lines.length > 0) taggedBlocks.push(cur);
-
-    if (taggedBlocks.length === 0) {
-      showStepError('s2', 'No content found in service resume. Please check the text.'); return;
-    }
-
-    // Pass 2: classify blocks
-    const isSkillBlock = (block) => {
-      if (SKILLS_HDR.test(block.sectionHint)) return true;
-      // Lines mostly short (≤ 5 words) or comma/bullet separated tokens
-      const shortLines = block.lines.filter(l => l.split(/\s+/).length <= 5);
-      return block.lines.length > 0 && shortLines.length / block.lines.length >= 0.7;
-    };
-    const isProse = (block) => {
-      const joined = block.lines.join(' ');
-      const avgWords = joined.split(/\s+/).length / Math.max(block.lines.length, 1);
-      return avgWords > 6;
-    };
-
-    let summary = '';
-    const expBlocks = [];
-    const skillTokens = [];
-
-    for (const block of taggedBlocks) {
-      if (isSkillBlock(block)) {
-        // Flatten comma-separated tokens and individual lines into skill list
-        block.lines.forEach(l => {
-          l.split(/[,;•·\-–]\s*/).map(s => s.trim()).filter(s => s.length > 1 && s.length < 60)
-            .forEach(s => skillTokens.push(s));
-        });
-        continue;
-      }
-      const text = block.lines.join(' ');
-      if (!summary && (isProse(block) || EXP_HDR.test(block.sectionHint))) {
-        summary = text;
-      } else if (text.length > 15) {
-        expBlocks.push(text);
-      }
-    }
-
-    // Also mine skills mentioned inline in summary + experience (words followed by
-    // recognisable tech/cert signals are captured by the AI; nothing to do here)
-    // Deduplicate skill tokens case-insensitively
-    const seen = new Set();
-    STATE.resumeSkills = skillTokens.filter(s => {
-      const k = s.toLowerCase();
-      if (seen.has(k)) return false;
-      seen.add(k); return true;
-    });
-
-    if (!summary) summary = expBlocks.shift() || '';
-    const bullets = expBlocks;
-
-    if (!summary) { showStepError('s2', 'Could not identify a summary in your resume. Make sure it contains at least one narrative paragraph.'); return; }
-    if (bullets.length === 0) { showStepError('s2', 'No experience paragraphs found. The resume needs at least one accomplishment or experience block after the summary.'); return; }
-
-    // Commit intake fields to STATE before translating
-    STATE.branch = branch; STATE.specialty = specialty; STATE.summary = summary;
+    // Commit intake fields to STATE — pass the full raw resume text to the
+    // AI just like step 3 passes the full job description. The AI extracts
+    // summary, experience bullets, and skills from whatever format it receives.
+    STATE.branch = branch; STATE.specialty = specialty;
     STATE.targetRole = targetRole; STATE.careerPath = careerPath;
     setStepLoading('s2', true);
     await delay(USE_MOCK ? 1200 : 0);
     try {
+      let result;
       if (USE_MOCK) {
-        STATE.translatedBullets = bullets.map(b => mockTranslateBullet(b, STATE.targetRole));
+        result = mockTranslateResume(resumeText, STATE);
       } else {
-        // Live: call /api/translate for each bullet line
-        STATE.translatedBullets = [];
-        for (const accomplishment of bullets) {
-          const r = await apiCall({ step: 'translate_accomplishment', input: {
-            military_bullet: accomplishment,
-            target_role: STATE.targetRole,
-            resume_skills: STATE.resumeSkills || [],
-          }});
-          STATE.translatedBullets.push(r.translated_bullet || accomplishment);
-        }
+        result = await apiCall({ step: 'translate_resume', input: {
+          service_branch:  branch,
+          specialty_code:  specialty,
+          resume_text:     resumeText,
+          target_role:     STATE.targetRole,
+          career_path:     STATE.careerPath,
+        }});
       }
+      STATE.summary          = result.summary          || '';
+      STATE.translatedBullets = result.bullets          || [];
+      STATE.resumeSkills      = result.resume_skills    || [];
+      if (!STATE.summary)           { showStepError('s2', 'Could not identify a summary in the resume. Check that it contains narrative text.'); return; }
+      if (!STATE.translatedBullets.length) { showStepError('s2', 'No experience paragraphs found. The resume needs at least one accomplishment or experience block.'); return; }
       renderStep2();
     } catch (e) { showStepError('s2', `Could not translate accomplishments: ${e.message}`); }
     finally { setStepLoading('s2', false); }
@@ -1619,6 +1533,65 @@
     const verbs = ['Directed','Managed','Oversaw','Coordinated','Led'];
     const v = verbs[Math.floor(Math.random()*verbs.length)];
     return `${v} ${bullet.replace(/\b(supervised|managed|led|coordinated|oversaw)\b/gi,'').trim().toLowerCase()}, contributing to ${role||'organizational'} objectives.`;
+  }
+
+  // Mirror of mockJobAnalysis — receives full raw resume text, returns
+  // { summary, bullets[], resume_skills[] } just as the live API would.
+  function mockTranslateResume(resumeText, state) {
+    const role = state.targetRole || 'target role';
+
+    // ── Lightweight structural parse (summary / experience / skills) ──
+    // Strip header lines, group into blank-line blocks, classify by hint
+    // and content shape — identical logic to what the AI prompt would do.
+    const HEADER_RE  = /^[A-Za-z0-9 &\/\-]{1,50}:?\s*$/;
+    const SKILLS_HDR = /\b(skill|qualification|certification|competenc|proficienc|technical|tool|technolog)/i;
+
+    const rawLines = resumeText.split('\n');
+    let lastHdr = '';
+    const blocks = [];
+    let cur = null;
+    for (const raw of rawLines) {
+      const t = raw.trim();
+      if (!t) { if (cur?.lines.length) { blocks.push(cur); cur = null; } continue; }
+      if (HEADER_RE.test(t)) {
+        if (cur?.lines.length) { blocks.push(cur); cur = null; }
+        lastHdr = t.replace(/:$/, '').toLowerCase();
+        continue;
+      }
+      if (!cur) cur = { hint: lastHdr, lines: [] };
+      cur.lines.push(t);
+    }
+    if (cur?.lines.length) blocks.push(cur);
+
+    let summaryText = '';
+    const expTexts  = [];
+    const skillTokens = [];
+
+    for (const b of blocks) {
+      const isSkills = SKILLS_HDR.test(b.hint) ||
+        (b.lines.length > 0 && b.lines.filter(l => l.split(/\s+/).length <= 5).length / b.lines.length >= 0.7);
+      if (isSkills) {
+        b.lines.forEach(l =>
+          l.split(/[,;•·\-–]\s*/).map(s => s.trim()).filter(s => s.length > 1 && s.length < 60)
+           .forEach(s => skillTokens.push(s))
+        );
+        continue;
+      }
+      const text = b.lines.join(' ');
+      if (!summaryText) { summaryText = text; continue; }
+      if (text.length > 15) expTexts.push(text);
+    }
+
+    // Deduplicate skills
+    const seen = new Set();
+    const resumeSkills = skillTokens.filter(s => { const k = s.toLowerCase(); return seen.has(k) ? false : (seen.add(k), true); });
+
+    if (!summaryText && expTexts.length) summaryText = expTexts.shift();
+
+    // Translate each experience block
+    const bullets = expTexts.map(b => mockTranslateBullet(b, role));
+
+    return { summary: summaryText, bullets, resume_skills: resumeSkills };
   }
 
   // ── Mock data keyed by career path ──────────────────────────────────────────
