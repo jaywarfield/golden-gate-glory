@@ -21,9 +21,9 @@ Specialty code: (Choose specialty affiliated with selected branch)
 
 Service resume: (Drag & drop military resume or select a local file to upload)
 
-Target career path: (Choose career path suggested by speciality code or type your own)
+Target career path: (Preset according to speciality code or enter your own)
 
-Target career role: (Choose career role suggested by career path or type your own)
+Target career role: (Select from predefined list or enter your own)
 
 Select Translate Accomplishments
 
