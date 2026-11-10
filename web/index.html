@@ -1223,33 +1223,42 @@
       return '<span class="tag tag-mi">MISSING</span>';
     };
 
-    // Tag + action button — wrapped in a non-shrinking container so flex-grow on
-    // .bullet-text never squeezes the controls out of view
-    const tagAndBtn = (section, idx, tag) => {
-      const t = tag ? tag.toUpperCase() : '';
-      const badge = tagBadge(tag);
-      let btn = '';
-      if (t === 'INFERRED') btn = `<button onclick="s5Confirm('${section}',${idx})"
-          style="padding:2px 10px;font-size:12px;border:1px solid #6e7781;border-radius:4px;background:#f6f8fa;cursor:pointer;white-space:nowrap">✓ Confirm</button>`;
-      if (t === 'MISSING')  btn = `<button onclick="s5Remove('${section}',${idx})"
-          style="padding:2px 10px;font-size:12px;border:1px solid #f97583;border-radius:4px;background:#ffeef0;color:#86181d;cursor:pointer;white-space:nowrap">✕ Remove</button>`;
-      return `<span style="display:flex;align-items:center;gap:6px;flex-shrink:0">${badge}${btn}</span>`;
+    // Renders one resume item row (summary or bullet)
+    const itemRow = (section, idx, item) => {
+      const t     = (item.tag || '').toUpperCase();
+      const badge = tagBadge(item.tag);
+      const btnStyle = (border, bg, color, mt='0') =>
+        `style="padding:2px 10px;font-size:12px;border:1px solid ${border};border-radius:4px;background:${bg};color:${color};cursor:pointer;white-space:nowrap;display:block;width:100%;margin-top:${mt}"`;
+      const addBtn = `<button onclick="s5Add('${section}',${idx})" ${btnStyle('#166534','#f0fdf4','#166534')}>+ Add</button>`;
+      const delBtn = `<button onclick="s5Delete('${section}',${idx})" ${btnStyle('#f97583','#ffeef0','#86181d','4px')}>✕ Delete</button>`;
+
+      // Source note shown under INFERRED and MISSING text
+      const sourceNote = (t === 'INFERRED' || t === 'MISSING') && item.source
+        ? `<div style="font-style:italic;font-size:12px;color:#57606a;margin-top:4px">${esc(item.source)}</div>`
+        : '';
+
+      let controls = '';
+      if (t === 'INFERRED' || t === 'MISSING') {
+        controls = `<span style="display:flex;flex-direction:column;align-items:stretch;gap:0;flex-shrink:0;min-width:80px">${badge}<div style="margin-top:6px">${addBtn}${delBtn}</div></span>`;
+      } else {
+        controls = `<span style="display:flex;align-items:center;gap:6px;flex-shrink:0">${badge}</span>`;
+      }
+
+      return `
+        <div class="bullet-row" id="s5-row-${section}-${idx}" style="align-items:flex-start">
+          <div style="flex:1;min-width:0">
+            <span class="bullet-text">${esc(item.text||'')}</span>${sourceNote}
+          </div>
+          ${controls}
+        </div>`;
     };
 
     // Summary row
     const sum = rd.summary || {};
-    document.getElementById('s5-summary').innerHTML = `
-      <div class="bullet-row">
-        <span class="bullet-text">${esc(sum.text||'')}</span>
-        ${tagAndBtn('summary', 0, sum.tag)}
-      </div>`;
+    document.getElementById('s5-summary').innerHTML = itemRow('summary', 0, sum);
 
     // Experience bullets
-    document.getElementById('s5-bullets').innerHTML = (rd.bullets||[]).map((b, i) => `
-      <div class="bullet-row" id="s5-bullet-row-${i}">
-        <span class="bullet-text">${esc(b.text||'')}</span>
-        ${tagAndBtn('bullet', i, b.tag)}
-      </div>`).join('');
+    document.getElementById('s5-bullets').innerHTML = (rd.bullets||[]).map((b, i) => itemRow('bullet', i, b)).join('');
 
     // Skills (no tags — always shown as-is)
     document.getElementById('s5-skills').innerHTML = (rd.skills_section||[]).map(s=>`
@@ -1290,7 +1299,8 @@
     if (cont) cont.disabled = blocked;
   }
 
-  function s5Confirm(section, idx) {
+  // Add — promotes INFERRED or MISSING item to EVIDENCED
+  function s5Add(section, idx) {
     const rd = STATE.resumeDraft;
     if (section === 'summary') {
       rd.summary.tag = 'EVIDENCED';
@@ -1300,10 +1310,11 @@
     renderStep5();
   }
 
-  function s5Remove(section, idx) {
+  // Delete — removes the item entirely from consideration
+  function s5Delete(section, idx) {
     const rd = STATE.resumeDraft;
     if (section === 'summary') {
-      rd.summary.tag = 'EVIDENCED'; rd.summary.text = '';
+      rd.summary = { text: '', tag: 'EVIDENCED' };
     } else {
       rd.bullets.splice(idx, 1);
     }
@@ -1484,8 +1495,8 @@
       ],
       resume_summary: (branch) => `Results-driven IT professional with ${branch||'military'} communications and network operations experience, proven access control management, and a track record of securing critical infrastructure under operational pressure.`,
       resume_bullets_extra: [
-        { text: 'Applied zero-trust access principles to harden network perimeter, reducing unauthorized access attempts by 40%.', tag: 'INFERRED' },
-        { text: 'Deployed and administered SIEM platform to centralise log monitoring across all network segments.', tag: 'MISSING' },
+        { text: 'Applied zero-trust access principles to harden network perimeter, reducing unauthorized access attempts by 40%.', tag: 'INFERRED', source: 'Inferred from specialty code and mapped skill: System Hardening.' },
+        { text: 'Deployed and administered SIEM platform to centralise log monitoring across all network segments.', tag: 'MISSING', source: 'Required by job description; no evidence found in your service record.' },
       ],
       skills_section: ['Network Operations','Cybersecurity Awareness','Access Control Management','System Hardening','Incident Response'],
       interview_q1: {
@@ -1543,8 +1554,8 @@
       ],
       resume_summary: (branch) => `Results-driven project management professional with ${branch||'military'} leadership experience, proven risk management expertise, and a track record of delivering complex cross-functional projects on schedule and within budget.`,
       resume_bullets_extra: [
-        { text: 'Applied Agile sprint planning methodology to accelerate project delivery cycle by 20%.', tag: 'INFERRED' },
-        { text: 'Managed project portfolio using JIRA and MS Project to track milestones and dependencies.', tag: 'MISSING' },
+        { text: 'Applied Agile sprint planning methodology to accelerate project delivery cycle by 20%.', tag: 'INFERRED', source: 'Inferred from specialty code and mapped skill: Process Improvement.' },
+        { text: 'Managed project portfolio using JIRA and MS Project to track milestones and dependencies.', tag: 'MISSING', source: 'Required by job description; no evidence found in your service record.' },
       ],
       skills_section: ['Project Planning','Risk Management','Stakeholder Communication','Budget Oversight','Cross-functional Leadership'],
       interview_q1: {
@@ -1602,8 +1613,8 @@
       ],
       resume_summary: (branch) => `Results-driven operations professional with ${branch||'military'} leadership experience, proven process improvement expertise, and a track record of measurable operational performance gains.`,
       resume_bullets_extra: [
-        { text: 'Applied Lean Six Sigma DMAIC methodology to reduce process cycle time by 22%.', tag: 'INFERRED' },
-        { text: 'Administered ERP workforce scheduling module across three operational sites.', tag: 'MISSING' },
+        { text: 'Applied Lean Six Sigma DMAIC methodology to reduce process cycle time by 22%.', tag: 'INFERRED', source: 'Inferred from specialty code and mapped skill: Process Improvement.' },
+        { text: 'Administered ERP workforce scheduling module across three operational sites.', tag: 'MISSING', source: 'Required by job description; no evidence found in your service record.' },
       ],
       skills_section: ['Operations Management','Process Improvement','Team Leadership','Budget Oversight','KPI Tracking'],
       interview_q1: {
@@ -1661,8 +1672,8 @@
       ],
       resume_summary: (branch) => `Results-driven supply chain professional with ${branch||'military'} logistics expertise, proven team leadership, and a track record of measurable operational improvements.`,
       resume_bullets_extra: [
-        { text: 'Applied lean process improvement methodologies to reduce supply chain waste by 12%.', tag: 'INFERRED' },
-        { text: 'Managed ERP system configuration and vendor portal administration across three sites.', tag: 'MISSING' },
+        { text: 'Applied lean process improvement methodologies to reduce supply chain waste by 12%.', tag: 'INFERRED', source: 'Inferred from specialty code and mapped skill: Logistics Coordination.' },
+        { text: 'Managed ERP system configuration and vendor portal administration across three sites.', tag: 'MISSING', source: 'Required by job description; no evidence found in your service record.' },
       ],
       skills_section: ['Logistics Coordination','Inventory Management','Team Leadership','Budget Oversight','Cross-functional Collaboration'],
       interview_q1: {
