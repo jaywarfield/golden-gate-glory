@@ -71,7 +71,10 @@ Select Continue to Interview Prep
 ```
 Select Generate Interview Prep
 
-Review interview prep and fix any inferred or missing.
+Interview prep is displayed as flashcards.
+Questions are initially displayed.
+To view response select “Tap to see STAR response”.
+To return to question select “Tap to return to question”.
 ```
 
 ##### Screen 7: Export Gate & Final Package
