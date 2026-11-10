@@ -4,9 +4,7 @@
   <img src="docs/images/missionveteranlogo1.png" alt="First Image" width="50%" />
 </p>
 
-Mission Veteran AI is an AI-powered career-transition chatbot made with IBM Bob for veterans and transitioning service members with military computer and IT experience.
-
-Veterans describe their responsibilities and achievements. The chatbot then identifies transferable skills in computer systems, IT support, data analysis, and cybersecurity, and drafts clear, civilian-ready résumé accomplishments, preserving measurable results and allowng veterans to review and approve each statement, helping veterans market their technical experience and improve their opportunities to obtain civilian IT jobs.
+Mission Veteran AI is an AI-powered career-transition chatbot made with IBM Bob for veterans and transitioning service members with military computer and IT experience.  Veterans describe their responsibilities and achievements. The chatbot then identifies transferable skills in computer systems, IT support, data analysis, and cybersecurity, and drafts clear, civilian-ready résumé accomplishments, preserving measurable results and allowng veterans to review and approve each statement, helping veterans market their technical experience and improve their opportunities to obtain civilian IT jobs.
 
 <p align="center">
   <img src="docs/images/ibmbobusage.png" alt="First Image" width="85%" />
