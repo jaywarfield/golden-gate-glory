@@ -41,7 +41,7 @@
 .PHONY: all setup provision deploy deploy-live promote destroy \
         bridge-install bridge-run bridge-build bridge-push \
         bridge-deploy bridge-destroy bridge-logs bridge-url \
-        pages-secret \
+        pages-secret serve \
         test test-unit lint register-governance governance help
 
 DEPLOY_SCRIPT := ./deploy.sh
@@ -160,6 +160,13 @@ bridge-install:
 	@echo "$(BLUE)▶ Installing bridge server dependencies...$(NC)"
 	pip install -r src/requirements.txt
 	@echo "$(GREEN)✓ Bridge dependencies installed$(NC)"
+
+## serve: Serve web/index.html locally on http://localhost:8080 (mock mode, no backend needed)
+serve:
+	@echo "$(BLUE)▶ Serving web/index.html at http://localhost:8080 ...$(NC)"
+	@echo "  (Ctrl-C to stop)"
+	@open "http://localhost:8080/index.html" 2>/dev/null || true
+	python3 -m http.server 8080 --directory web
 
 ## bridge-run: Run bridge server locally on http://localhost:8080
 bridge-run:
