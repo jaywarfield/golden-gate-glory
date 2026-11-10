@@ -15,8 +15,7 @@ Select Continue to Intake
 
 ##### Screen 2: Guided Career Intake
 ```
-Select branch: 
-Air Force, Army, Coast Guard, Marine Corps, Navy, Space Force
+Select branch: Air Force, Army, Coast Guard, Marine Corps, etc
 
 Specialty code: (Choose specialty code affiliated with selected branch) 
 
