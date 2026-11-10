@@ -381,7 +381,7 @@
     <div class="field">
       <label>Service resume <span class="req">*</span></label>
       <div class="notice warn" style="margin-bottom:8px;font-size:12px">
-        <strong>PII Reminder:</strong> Remove all personally identifiable information before uploading — no full names, Social Security numbers, DoD ID numbers, phone numbers, email addresses, home addresses, birth dates, medical details, classified information, exact unit designations, deployment locations, recruiter names, or company contact details.
+        <strong>PII Reminder:</strong> Do not include full names, Social Security numbers, recruiter names, company contact details, DoD ID numbers, phone numbers, email addresses, home addresses, birth dates, medical details, classified information, exact unit designations, or deployment locations.
       </div>
       <div class="drop-zone" id="s2-drop-zone" onclick="document.getElementById('s2-file-input').click()"
            ondragover="s2DragOver(event)" ondragleave="s2DragLeave(event)" ondrop="s2Drop(event)">
@@ -441,7 +441,7 @@
 
   <div class="notice">
     <strong>User goal:</strong> Parses the job description to extract
-    required skills, ATS keywords, seniority level, and an alignment score against
+    required skills, ATS keywords, industry, and an alignment score against
     your skill inventory.
   </div>
 
@@ -450,7 +450,7 @@
     <div class="field">
       <label for="s3-jd">Job description <span class="req">*</span></label>
       <div class="notice warn" style="margin-bottom:8px;font-size:12px">
-        <strong>PII Reminder:</strong> Remove all personally identifiable information before uploading — no full names, Social Security numbers, DoD ID numbers, phone numbers, email addresses, home addresses, birth dates, medical details, classified information, exact unit designations, deployment locations, recruiter names, or company contact details.
+        <strong>PII Reminder:</strong> Do not include full names, Social Security numbers, recruiter names, company contact details, DoD ID numbers, phone numbers, email addresses, home addresses, birth dates, medical details, classified information, exact unit designations, or deployment locations.
       </div>
       <div class="drop-zone" id="s3-drop-zone" onclick="document.getElementById('s3-file-input').click()"
            ondragover="s3DragOver(event)" ondragleave="s3DragLeave(event)" ondrop="s3Drop(event)">
@@ -462,7 +462,6 @@
       <div id="s3-file-name" style="font-size:11px;color:#57606a;margin-top:5px;display:none"></div>
       <textarea id="s3-jd" rows="5" maxlength="2000" style="margin-top:10px;display:none"
         placeholder="Job description text will appear here. You can edit it before proceeding."></textarea>
-      <div class="field-hint">Maximum 2000 characters.</div>
     </div>
     <div class="btn-row">
       <button class="btn btn-primary" id="s3-btn" onclick="step3Analyze()">Analyze Job Description</button>
@@ -1174,9 +1173,8 @@
     const al = ja.alignment || {};
     body.innerHTML = `
       <div style="margin-bottom:10px"><strong style="font-size:15px">${esc(ja.role_title||'—')}</strong></div>
-      <div class="field-row" style="margin-bottom:12px">
-        <div><div class="field-hint">Seniority</div><strong>${esc(ja.seniority_level||'—')}</strong></div>
-        <div><div class="field-hint">Industry</div><strong>${esc(ja.industry||'—')}</strong></div>
+      <div style="margin-bottom:12px">
+        <div class="field-hint">Industry</div><strong>${esc(ja.industry||'—')}</strong>
       </div>
       ${al.alignment_pct !== undefined ? `<div class="field-hint" style="margin-bottom:10px">Skill alignment: <strong>${al.alignment_pct}%</strong></div>` : ''}
       <div class="skill-section-title">Required Skills</div>
