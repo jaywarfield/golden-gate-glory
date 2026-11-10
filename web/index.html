@@ -1594,26 +1594,39 @@
 
   function renderFinalPackage() {
     const rd = STATE.resumeDraft || {};
-    const summary = typeof rd.summary === 'string' ? {text:rd.summary} : (rd.summary||{});
+    const summary  = typeof rd.summary === 'string' ? {text:rd.summary} : (rd.summary||{});
     const bullets  = rd.bullets||[];
     const skills   = rd.skills_section||[];
     const target   = STATE.targetRole;
-    const lines = [
-      `${target ? target.toUpperCase() : 'RESUME DRAFT'}`,
-      '',
-      '── SUMMARY ──',
-      summary.text || '',
-      '',
-      '── EXPERIENCE HIGHLIGHTS ──',
-      ...bullets.map(b=>`• ${b.text||b}`),
-      '',
-      '── SKILLS ──',
-      ...skills.map(s=>`• ${s}`),
-      '',
-      '── INTERVIEW PREP ──',
-      ...((STATE.interviewPrep||{}).questions||[]).map((q,i)=>`Q${i+1}: ${q.question||''}`),
-    ];
-    document.getElementById('s7-final-body').innerHTML = `<div class="export-body">${esc(lines.join('\n'))}</div>`;
+
+    // Build HTML — headers are bold + centred, no hyphens; body is left-aligned prose
+    const hdr = text =>
+      `<div style="font-weight:700;text-align:center;font-size:13px;letter-spacing:0.06em;
+        margin:14px 0 6px;text-transform:uppercase">${esc(text)}</div>`;
+    const body = text => `<div style="margin-bottom:4px">${esc(text)}</div>`;
+    const divider = `<hr style="border:none;border-top:1px solid #e5e7eb;margin:4px 0">`;
+
+    let html = '';
+    html += `<div style="font-weight:700;text-align:center;font-size:15px;margin-bottom:4px">${esc(target ? target.toUpperCase() : 'RESUME DRAFT')}</div>`;
+    html += divider;
+    html += hdr('Summary');
+    html += body(summary.text || '');
+    if (bullets.length) {
+      html += hdr('Experience Highlights');
+      html += bullets.map(b => body(`• ${b.text||b}`)).join('');
+    }
+    if (skills.length) {
+      html += hdr('Skills');
+      html += body(skills.join(' · '));
+    }
+    const qs = ((STATE.interviewPrep||{}).questions||[]);
+    if (qs.length) {
+      html += hdr('Interview Prep');
+      html += qs.map((q,i) => body(`Q${i+1}: ${q.question||''}`)).join('');
+    }
+
+    document.getElementById('s7-final-body').innerHTML =
+      `<div class="export-body" style="white-space:normal">${html}</div>`;
   }
 
   function copyFinal() {
