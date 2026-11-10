@@ -1,5 +1,5 @@
 # .dockerignore
-# Keep the build context small — only the web/ sub-package is needed.
+# Exclude files not needed inside the bridge server container.
 
 .git/
 .github/
@@ -12,22 +12,22 @@ __pycache__/
 *.egg-info/
 .DS_Store
 
-# Notebooks and data not needed in the container
+# Development / docs not needed at runtime
 notebooks/
 data/
 docs/
 tests/
-src/
+terraform/
+governance/
+logs/
 
-# Agent / tool source files (not served by Flask)
+# Orchestrate deployment artifacts (not needed at runtime)
 agents/
-tools/
-toolkits/
 connections/
-knowledge-bases/
 models/
-
-# Root-level Python files are not used inside the container
-# (the Dockerfile copies only web/app.py and web/templates/)
-requirements.txt
+tools/
 workspace_config.yaml
+
+# Local env file — credentials are passed as env vars at runtime
+.env
+.env.*

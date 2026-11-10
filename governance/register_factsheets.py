@@ -83,7 +83,10 @@ try:
     if not data_marts.get("data_marts"):
         print("  (none — instance may need to be initialised in the UI first)")
 except Exception as exc:
-    print(f"  Could not list data marts: {exc}")
+    # 403 is expected on shared hackathon instances — your IAM key can
+    # authenticate but cannot read data marts owned by another account.
+    # This does not affect monitor attachment via the UI.
+    print(f"  (skipped — shared instance: {exc})")
 
 # ---------------------------------------------------------------------------
 # List service providers — shows any already-connected WML instances
@@ -99,7 +102,7 @@ try:
     if not providers.get("service_providers"):
         print("  (none)")
 except Exception as exc:
-    print(f"  Could not list service providers: {exc}")
+    print(f"  (skipped — shared instance: {exc})")
 
 # ---------------------------------------------------------------------------
 # Next steps

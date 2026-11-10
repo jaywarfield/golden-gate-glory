@@ -83,6 +83,7 @@ GITHUB_REPO      ?= $(shell git remote get-url origin 2>/dev/null | sed 's/.*git
 export WATSONX_API_KEY
 export WATSONX_URL
 export WATSONX_PROJECT_ID
+export GOVERNANCE_INSTANCE_GUID
 
 # ============================================================================
 # Top-level targets
@@ -101,11 +102,15 @@ setup: install deploy bridge-build bridge-push bridge-deploy pages-secret
 	@echo "  Push to main to trigger GitHub Pages deployment:"
 	@echo "    git push origin main"
 
-## install: Install all Python dependencies (toolkit + bridge)
+## install: Install Python deps and required IBM Cloud CLI plugins
 install:
 	@echo "$(BLUE)▶ Installing Python dependencies...$(NC)"
-	pip install -r requirements.txt -r src/requirements.txt
-	@echo "$(GREEN)✓ Dependencies installed$(NC)"
+	pip install -r src/requirements.txt
+	@echo "$(GREEN)✓ Python dependencies installed$(NC)"
+	@echo "$(BLUE)▶ Installing IBM Cloud CLI plugins (container-registry, code-engine)...$(NC)"
+	ibmcloud plugin install container-registry -f 2>/dev/null || true
+	ibmcloud plugin install code-engine -f 2>/dev/null || true
+	@echo "$(GREEN)✓ IBM Cloud CLI plugins ready$(NC)"
 
 # ============================================================================
 # Orchestrate targets (existing)
