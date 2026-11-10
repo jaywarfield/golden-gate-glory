@@ -391,7 +391,6 @@
         <div class="drop-zone-hint">Accepts .txt · .docx &nbsp;·&nbsp; Text will be extracted and shown below for editing</div>
       </div>
       <div id="s2-file-name" style="font-size:11px;color:#57606a;margin-top:5px;display:none"></div>
-      <div class="field-hint" style="margin-top:6px">Note: Summary paragraph followed by accomplishment paragraphs - any section headers will be removed.</div>
       <textarea id="s2-resume" rows="12" maxlength="8000" style="margin-top:10px;display:none"
         placeholder="Your resume text will appear here. You can edit it before proceeding."></textarea>
     </div>
@@ -449,8 +448,16 @@
   <div class="card">
     <div class="card-title">Target Job Description</div>
     <div class="field">
-      <label for="s3-jd">Job description text <span class="req">*</span></label>
-      <textarea id="s3-jd" rows="5" maxlength="2000"
+      <label for="s3-jd">Job description <span class="req">*</span></label>
+      <div class="drop-zone" id="s3-drop-zone" onclick="document.getElementById('s3-file-input').click()"
+           ondragover="s3DragOver(event)" ondragleave="s3DragLeave(event)" ondrop="s3Drop(event)">
+        <input type="file" id="s3-file-input" accept=".txt,.docx" onchange="s3FileSelected(event)">
+        <div class="drop-zone-icon">📄</div>
+        <div class="drop-zone-text"><strong>Drag &amp; drop</strong> your job description file here, or <strong>click to browse</strong></div>
+        <div class="drop-zone-hint">Accepts .txt · .docx &nbsp;·&nbsp; Or paste the text directly below</div>
+      </div>
+      <div id="s3-file-name" style="font-size:11px;color:#57606a;margin-top:5px;display:none"></div>
+      <textarea id="s3-jd" rows="5" maxlength="2000" style="margin-top:10px"
         placeholder="Paste the full job posting here. PII-free — remove recruiter names, company contacts, etc."></textarea>
       <div class="field-hint">Maximum 2000 characters.</div>
     </div>
@@ -874,6 +881,63 @@
       // ── Plain text (.txt and anything else) ───────────────────────
       const reader = new FileReader();
       reader.onload = ev => s2ShowText(ev.target.result);
+      reader.readAsText(file);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // STEP 3 — Job description file handling
+  // ═══════════════════════════════════════════════════════════════════
+  function s3DragOver(e) {
+    e.preventDefault();
+    document.getElementById('s3-drop-zone').classList.add('drag-over');
+  }
+  function s3DragLeave(e) {
+    document.getElementById('s3-drop-zone').classList.remove('drag-over');
+  }
+  function s3Drop(e) {
+    e.preventDefault();
+    document.getElementById('s3-drop-zone').classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) s3LoadFile(file);
+  }
+  function s3FileSelected(e) {
+    const file = e.target.files[0];
+    if (file) s3LoadFile(file);
+  }
+  function s3LoadFile(file) {
+    const nameEl = document.getElementById('s3-file-name');
+    const ta     = document.getElementById('s3-jd');
+    nameEl.textContent = `📎 ${file.name} (${(file.size/1024).toFixed(1)} KB) — extracting text…`;
+    nameEl.style.display = 'block';
+
+    function s3ShowText(text) {
+      ta.value = text;
+      nameEl.textContent = `📎 ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+      ta.focus();
+    }
+
+    if (file.name.match(/\.docx$/i)) {
+      const loadLib = window.mammoth
+        ? Promise.resolve()
+        : new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js';
+            s.onload = resolve; s.onerror = reject;
+            document.head.appendChild(s);
+          });
+      loadLib.then(() => {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          window.mammoth.extractRawText({ arrayBuffer: ev.target.result })
+            .then(result => s3ShowText(result.value))
+            .catch(() => s3ShowText('[DOCX extraction failed. Please paste the job description directly below.]'));
+        };
+        reader.readAsArrayBuffer(file);
+      }).catch(() => s3ShowText('[Could not load DOCX library. Please paste the job description directly below.]'));
+    } else {
+      const reader = new FileReader();
+      reader.onload = ev => s3ShowText(ev.target.result);
       reader.readAsText(file);
     }
   }
