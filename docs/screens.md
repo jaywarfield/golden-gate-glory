@@ -59,8 +59,10 @@ Select Build Tagged Resume Draft
 
 Review resume draft:
 - EVIDENCED is already validated.
-- INFERRED should already have, review note where inferred from, select Add or Delete.
-- MISSING but required in job description, review whether already have, select Add or Delete. 
+- INFERRED should already have.
+Note: Review note where inferred from and select Add or Delete.
+- MISSING but required in job description.
+Note: Review whether already have and select Add or Delete. 
 
 Select Continue to Interview Prep
 ```
@@ -69,7 +71,7 @@ Select Continue to Interview Prep
 ```
 Select Generate Interview Prep
 
-Review interview prep and go back to fix any blocks (inferred and missing must be fixed).
+Review interview prep and fix any inferred or missing.
 ```
 
 ##### Screen 7: Export Gate & Final Package
