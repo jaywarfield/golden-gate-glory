@@ -715,8 +715,8 @@
         </div>
         <div id="s7-final-body"></div>
         <div class="btn-row" style="margin-top:16px">
-          <button class="btn btn-secondary" onclick="window.print()">Save / Print</button>
-          <button class="btn btn-secondary" onclick="copyFinal()">Copy to Clipboard</button>
+          <button class="btn btn-secondary" onclick="exportTxt()">⬇ Save as .txt</button>
+          <button class="btn btn-primary"   onclick="exportDocx()">⬇ Save as .docx</button>
         </div>
       </div>
     </div>
@@ -1629,9 +1629,126 @@
       `<div class="export-body" style="white-space:normal">${html}</div>`;
   }
 
-  function copyFinal() {
-    const el = document.getElementById('s7-final-body');
-    navigator.clipboard.writeText(el.innerText||el.textContent).then(()=>alert('Copied to clipboard.'));
+  // ── Export helpers ───────────────────────────────────────────────────────
+
+  function _resumeFilename(ext) {
+    const role = (STATE.targetRole||'resume').replace(/[^a-z0-9]/gi,'_').toLowerCase();
+    return `mission_veteran_${role}.${ext}`;
+  }
+
+  function _resumePlainText() {
+    const rd      = STATE.resumeDraft || {};
+    const summary = typeof rd.summary === 'string' ? rd.summary : ((rd.summary||{}).text||'');
+    const bullets = (rd.bullets||[]).map(b=>`• ${b.text||b}`);
+    const skills  = (rd.skills_section||[]).join(', ');
+    const qs      = ((STATE.interviewPrep||{}).questions||[]).map((q,i)=>`Q${i+1}: ${q.question||''}`);
+    const target  = STATE.targetRole || 'RESUME DRAFT';
+    return [
+      target.toUpperCase(),
+      '='.repeat(target.length),
+      '',
+      'SUMMARY',
+      summary,
+      '',
+      'EXPERIENCE HIGHLIGHTS',
+      ...bullets,
+      '',
+      'SKILLS',
+      skills,
+      '',
+      'INTERVIEW PREP',
+      ...qs,
+    ].join('\n');
+  }
+
+  function exportTxt() {
+    const text = _resumePlainText();
+    const blob = new Blob([text], { type: 'text/plain' });
+    const a    = document.createElement('a');
+    a.href     = URL.createObjectURL(blob);
+    a.download = _resumeFilename('txt');
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  async function exportDocx() {
+    // Load docx.js from CDN if not already present
+    if (!window.docx) {
+      await new Promise((resolve, reject) => {
+        const s   = document.createElement('script');
+        s.src     = 'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.min.js';
+        s.onload  = resolve;
+        s.onerror = () => reject(new Error('Could not load docx library. Check your internet connection.'));
+        document.head.appendChild(s);
+      }).catch(err => { alert(err.message); throw err; });
+    }
+
+    const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle } = window.docx;
+
+    const rd      = STATE.resumeDraft || {};
+    const summary = typeof rd.summary === 'string' ? rd.summary : ((rd.summary||{}).text||'');
+    const bullets = rd.bullets||[];
+    const skills  = rd.skills_section||[];
+    const qs      = ((STATE.interviewPrep||{}).questions||[]);
+    const target  = STATE.targetRole || 'Resume Draft';
+
+    // Helper: bold centred section heading
+    const sectionHeading = text => new Paragraph({
+      children: [new TextRun({ text: text.toUpperCase(), bold: true, size: 24 })],
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 240, after: 80 },
+    });
+
+    // Helper: normal body paragraph
+    const bodyPara = text => new Paragraph({
+      children: [new TextRun({ text, size: 22 })],
+      spacing: { after: 60 },
+    });
+
+    // Helper: bullet paragraph
+    const bulletPara = text => new Paragraph({
+      children: [new TextRun({ text, size: 22 })],
+      spacing: { after: 60 },
+      bullet: { level: 0 },
+    });
+
+    const children = [
+      // Title
+      new Paragraph({
+        children: [new TextRun({ text: target.toUpperCase(), bold: true, size: 28 })],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 120 },
+      }),
+
+      sectionHeading('Summary'),
+      bodyPara(summary),
+
+      ...(bullets.length ? [
+        sectionHeading('Experience Highlights'),
+        ...bullets.map(b => bulletPara(b.text||b)),
+      ] : []),
+
+      ...(skills.length ? [
+        sectionHeading('Skills'),
+        bodyPara(skills.join(' · ')),
+      ] : []),
+
+      ...(qs.length ? [
+        sectionHeading('Interview Prep'),
+        ...qs.map((q, i) => bodyPara(`Q${i+1}: ${q.question||''}`)),
+      ] : []),
+    ];
+
+    const doc = new Document({
+      sections: [{ properties: {}, children }],
+    });
+
+    const blob = await Packer.toBlob(doc);
+    const a    = document.createElement('a');
+    a.href     = URL.createObjectURL(blob);
+    a.download = _resumeFilename('docx');
+    a.click();
+    URL.revokeObjectURL(a.href);
   }
 
   // ═══════════════════════════════════════════════════════════════════
