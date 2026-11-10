@@ -1100,7 +1100,9 @@
     const stripped = resumeText.split('\n').filter(line => {
       const t = line.trim();
       return t.length === 0 || !/^[A-Za-z0-9 &\/\-]{1,40}:?\s*$/.test(t);
-    }).join('\n');
+    }).join('\n')
+      .replace(/\n{3,}/g, '\n\n')   // collapse 3+ consecutive blank lines → 1
+      .replace(/^\n+|\n+$/g, '');   // trim leading/trailing blank lines
     const paragraphs = stripped.split(/\n\s*\n/).map(p => p.trim()).filter(p => p.length > 0);
     if (paragraphs.length === 0) { showStepError('s2', 'No content found in service resume. Please check the text.'); return; }
     const pii = detectPII(resumeText);
