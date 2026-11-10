@@ -445,14 +445,25 @@
       <label for="s1-career-path">Target career path</label>
       <input type="text" id="s1-career-path" list="career-path-list"
              placeholder="Preset according to specialty code or enter your own"
-             oninput="updateTargetRoles(this.value.trim())">
+             oninput="updateTargetRoles(this.value.trim()); checkCustomEntry('s1-career-path','cp-custom-note', Object.keys(ROLES_BY_CAREER_PATH))">
       <datalist id="career-path-list"></datalist>
+      <div id="cp-custom-note" class="notice warn" style="display:none;margin-top:6px;font-size:12px">
+        <strong>Custom entry:</strong> This career path is not in the predefined list.
+        The AI will use it as-is — verify it maps to a recognised civilian career field
+        before proceeding.
+      </div>
     </div>
     <div class="field">
       <label for="s1-target-role">Target career role <span class="req">*</span></label>
       <input type="text" id="s1-target-role" list="target-role-list"
-             placeholder="Select from predefined list or enter your own">
+             placeholder="Select from predefined list or enter your own"
+             oninput="checkCustomEntry('s1-target-role','role-custom-note', s6KnownRoles())">
       <datalist id="target-role-list"></datalist>
+      <div id="role-custom-note" class="notice warn" style="display:none;margin-top:6px;font-size:12px">
+        <strong>Custom entry:</strong> This role is not in the predefined list.
+        The AI will use it as-is — verify it matches a recognised job title before
+        proceeding.
+      </div>
     </div>
   </div>
 
@@ -1128,10 +1139,30 @@
       opt.value = role;
       dl.appendChild(opt);
     });
-    // If the current role value isn't in the new list, clear it so the user
-    // picks or types a relevant role — but only when switching paths
+    // If the current role value isn't in the new list, clear it and hide its disclaimer
     const roleField = document.getElementById('s1-target-role');
-    if (roles.length && !roles.includes(roleField.value)) roleField.value = '';
+    if (roles.length && !roles.includes(roleField.value)) {
+      roleField.value = '';
+      document.getElementById('role-custom-note').style.display = 'none';
+    }
+    // Hide career-path disclaimer if the value is now a known path
+    checkCustomEntry('s1-career-path', 'cp-custom-note', Object.keys(ROLES_BY_CAREER_PATH));
+  }
+
+  // Returns a flat deduplicated array of all known role strings across all paths
+  function s6KnownRoles() {
+    const seen = new Set();
+    Object.values(ROLES_BY_CAREER_PATH).forEach(roles => roles.forEach(r => seen.add(r)));
+    return [...seen];
+  }
+
+  // Shows or hides the custom-entry disclaimer for a free-text field.
+  // knownList is an array of the accepted values.
+  function checkCustomEntry(fieldId, noteId, knownList) {
+    const val  = document.getElementById(fieldId).value.trim();
+    const note = document.getElementById(noteId);
+    const isCustom = val.length > 0 && !knownList.includes(val);
+    note.style.display = isCustom ? 'block' : 'none';
   }
 
   // ═══════════════════════════════════════════════════════════════════
