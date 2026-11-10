@@ -22,8 +22,10 @@ Specialty code: (Choose specialty code for selected branch)
 Service resume: (Drag & drop resume or upload local file)
 
 Target career path: (Preset from speciality code or enter your own)
+Note the disclaimer if user enters their own.
 
 Target career role: (Select from predefined list or enter your own)
+Note the disclaimer if user enters their own.
 
 Select Translate Accomplishments
 
