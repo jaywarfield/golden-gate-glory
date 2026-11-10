@@ -842,14 +842,7 @@
     nameEl.style.display = 'block';
 
     function s2ShowText(text) {
-      // Strip common resume section headers — standalone lines that are just a
-      // label (e.g. "Summary:", "Accomplishment 1:", "Experience", "Skills").
-      // Matches: optional whitespace, 1–40 word/space/&/-// chars, optional
-      // trailing colon, nothing else. Empty lines are preserved.
-      text = text.split('\n').filter(line => {
-        const t = line.trim();
-        return t.length === 0 || !/^[A-Za-z0-9 &\/\-]{1,40}:?\s*$/.test(t);
-      }).join('\n');
+      // Show raw extracted text unchanged — headers are stripped at translate time
       ta.value = text;
       ta.style.display = 'block';
       nameEl.textContent = `📎 ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
@@ -1101,9 +1094,14 @@
     if (!branch || !specialty || !resumeText || !targetRole) {
       showStepError('s2', 'All service profile and career goal fields are required. Upload or paste your service resume.'); return;
     }
-    // Split into paragraphs (blank-line separated).
-    // First paragraph = summary. Remaining paragraphs = accomplishment/experience bullets.
-    const paragraphs = resumeText.split(/\n\s*\n/).map(p => p.trim()).filter(p => p.length > 0);
+    // Strip section headers (standalone short label lines, with or without trailing colon),
+    // then split into blank-line-separated paragraphs.
+    // First paragraph = summary. Remaining paragraphs = one accomplishment each.
+    const stripped = resumeText.split('\n').filter(line => {
+      const t = line.trim();
+      return t.length === 0 || !/^[A-Za-z0-9 &\/\-]{1,40}:?\s*$/.test(t);
+    }).join('\n');
+    const paragraphs = stripped.split(/\n\s*\n/).map(p => p.trim()).filter(p => p.length > 0);
     if (paragraphs.length === 0) { showStepError('s2', 'No content found in service resume. Please check the text.'); return; }
     const pii = detectPII(resumeText);
     if (pii) { showStepError('s2', `${pii} detected in service resume. Please remove it before proceeding.`); return; }
