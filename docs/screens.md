@@ -17,7 +17,7 @@ Select Continue to Intake
 ```
 Select branch: Air Force, Army, Coast Guard, Marine Corps, etc
 
-Specialty code: (Choose specialty code affiliated with selected branch) 
+Specialty code: (Choose specialty code for selected branch) 
 
 Service resume: (Drag & drop military resume or upload local file)
 
