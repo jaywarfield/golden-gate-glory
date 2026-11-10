@@ -60,7 +60,7 @@ Select Build Tagged Resume Draft
 Review resume draft:
 - EVIDENCED is already validated.
 - INFERRED should already have.
-Note: Review note where inferred from and select Add or Delete.
+Note: Review where inferred from and select Add or Delete.
 - MISSING but required in job description.
 Note: Review whether already have and select Add or Delete. 
 
