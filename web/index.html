@@ -719,6 +719,14 @@
           <button class="btn btn-primary"   onclick="exportDocx()">⬇ Save as .docx</button>
         </div>
       </div>
+      <div class="card" id="s7-interview-card" style="display:none">
+        <div class="card-title">Interview Prep</div>
+        <div id="s7-interview-body"></div>
+        <div class="btn-row" style="margin-top:16px">
+          <button class="btn btn-secondary" onclick="exportInterviewTxt()">⬇ Save as .txt</button>
+          <button class="btn btn-primary"   onclick="exportInterviewDocx()">⬇ Save as .docx</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1599,7 +1607,7 @@
     const skills   = rd.skills_section||[];
     const target   = STATE.targetRole;
 
-    // Build HTML — headers are bold + centred, no hyphens; body is left-aligned prose
+    // ── Resume section ───────────────────────────────────────────────
     const hdr = text =>
       `<div style="font-weight:700;text-align:center;font-size:13px;letter-spacing:0.06em;
         margin:14px 0 6px;text-transform:uppercase">${esc(text)}</div>`;
@@ -1619,14 +1627,31 @@
       html += hdr('Skills');
       html += body(skills.join(' · '));
     }
-    const qs = ((STATE.interviewPrep||{}).questions||[]);
-    if (qs.length) {
-      html += hdr('Interview Prep');
-      html += qs.map((q,i) => body(`Q${i+1}: ${q.question||''}`)).join('');
-    }
 
     document.getElementById('s7-final-body').innerHTML =
       `<div class="export-body" style="white-space:normal">${html}</div>`;
+
+    // ── Interview prep section ────────────────────────────────────────
+    const qs = ((STATE.interviewPrep||{}).questions||[]);
+    if (qs.length) {
+      const starKeys = ['situation','task','action','result'];
+      let ihtml = '';
+      qs.forEach((q, i) => {
+        const star = q.star_scaffold || {};
+        ihtml += `<div style="margin-bottom:18px">`;
+        ihtml += `<div style="font-weight:700;font-size:13px;margin-bottom:6px">Q${i+1}: ${esc(q.question||'')} <span style="font-weight:400;color:#57606a;font-size:12px">(${esc(q.skill_mapped||'')})</span></div>`;
+        ihtml += `<div style="display:grid;grid-template-columns:72px 1fr;gap:4px 10px;font-size:13px">`;
+        starKeys.forEach(k => {
+          const val = star[k] || '';
+          ihtml += `<div style="font-weight:700;color:#57606a;padding-top:2px;text-transform:capitalize">${k}</div>`;
+          ihtml += `<div>${esc(val)}</div>`;
+        });
+        ihtml += `</div></div>`;
+      });
+      document.getElementById('s7-interview-body').innerHTML =
+        `<div class="export-body" style="white-space:normal">${ihtml}</div>`;
+      document.getElementById('s7-interview-card').style.display = 'block';
+    }
   }
 
   // ── Export helpers ───────────────────────────────────────────────────────
@@ -1641,7 +1666,6 @@
     const summary = typeof rd.summary === 'string' ? rd.summary : ((rd.summary||{}).text||'');
     const bullets = (rd.bullets||[]).map(b=>`• ${b.text||b}`);
     const skills  = (rd.skills_section||[]).join(', ');
-    const qs      = ((STATE.interviewPrep||{}).questions||[]).map((q,i)=>`Q${i+1}: ${q.question||''}`);
     const target  = STATE.targetRole || 'RESUME DRAFT';
     return [
       target.toUpperCase(),
@@ -1655,10 +1679,23 @@
       '',
       'SKILLS',
       skills,
-      '',
-      'INTERVIEW PREP',
-      ...qs,
     ].join('\n');
+  }
+
+  function _interviewPlainText() {
+    const qs   = ((STATE.interviewPrep||{}).questions||[]);
+    const role = STATE.targetRole || 'Resume';
+    const starKeys = ['situation','task','action','result'];
+    const lines = [`INTERVIEW PREP — ${role.toUpperCase()}`, '='.repeat(40), ''];
+    qs.forEach((q, i) => {
+      lines.push(`Q${i+1}: ${q.question||''} (${q.skill_mapped||''})`);
+      const star = q.star_scaffold || {};
+      starKeys.forEach(k => {
+        lines.push(`  ${k.charAt(0).toUpperCase()+k.slice(1)}: ${star[k]||''}`);
+      });
+      lines.push('');
+    });
+    return lines.join('\n');
   }
 
   function exportTxt() {
@@ -1689,7 +1726,6 @@
     const summary = typeof rd.summary === 'string' ? rd.summary : ((rd.summary||{}).text||'');
     const bullets = rd.bullets||[];
     const skills  = rd.skills_section||[];
-    const qs      = ((STATE.interviewPrep||{}).questions||[]);
     const target  = STATE.targetRole || 'Resume Draft';
 
     // Helper: bold centred section heading
@@ -1698,14 +1734,10 @@
       alignment: AlignmentType.CENTER,
       spacing: { before: 240, after: 80 },
     });
-
-    // Helper: normal body paragraph
     const bodyPara = text => new Paragraph({
       children: [new TextRun({ text, size: 22 })],
       spacing: { after: 60 },
     });
-
-    // Helper: bullet paragraph
     const bulletPara = text => new Paragraph({
       children: [new TextRun({ text, size: 22 })],
       spacing: { after: 60 },
@@ -1713,40 +1745,101 @@
     });
 
     const children = [
-      // Title
       new Paragraph({
         children: [new TextRun({ text: target.toUpperCase(), bold: true, size: 28 })],
         alignment: AlignmentType.CENTER,
         spacing: { after: 120 },
       }),
-
       sectionHeading('Summary'),
       bodyPara(summary),
-
       ...(bullets.length ? [
         sectionHeading('Experience Highlights'),
         ...bullets.map(b => bulletPara(b.text||b)),
       ] : []),
-
       ...(skills.length ? [
         sectionHeading('Skills'),
         bodyPara(skills.join(' · ')),
       ] : []),
-
-      ...(qs.length ? [
-        sectionHeading('Interview Prep'),
-        ...qs.map((q, i) => bodyPara(`Q${i+1}: ${q.question||''}`)),
-      ] : []),
     ];
 
-    const doc = new Document({
-      sections: [{ properties: {}, children }],
-    });
-
+    const doc = new Document({ sections: [{ properties: {}, children }] });
     const blob = await Packer.toBlob(doc);
     const a    = document.createElement('a');
     a.href     = URL.createObjectURL(blob);
     a.download = _resumeFilename('docx');
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  function exportInterviewTxt() {
+    const text = _interviewPlainText();
+    const blob = new Blob([text], { type: 'text/plain' });
+    const a    = document.createElement('a');
+    a.href     = URL.createObjectURL(blob);
+    a.download = _resumeFilename('txt').replace('.txt', '_interview_prep.txt');
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  async function exportInterviewDocx() {
+    if (!window.docx) {
+      await new Promise((resolve, reject) => {
+        const s   = document.createElement('script');
+        s.src     = 'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.min.js';
+        s.onload  = resolve;
+        s.onerror = () => reject(new Error('Could not load docx library. Check your internet connection.'));
+        document.head.appendChild(s);
+      }).catch(err => { alert(err.message); throw err; });
+    }
+
+    const { Document, Packer, Paragraph, TextRun, AlignmentType } = window.docx;
+    const qs     = ((STATE.interviewPrep||{}).questions||[]);
+    const target = STATE.targetRole || 'Resume Draft';
+    const starKeys = ['situation','task','action','result'];
+
+    const sectionHeading = text => new Paragraph({
+      children: [new TextRun({ text: text.toUpperCase(), bold: true, size: 24 })],
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 240, after: 80 },
+    });
+    const labelPara = (label, text) => new Paragraph({
+      children: [
+        new TextRun({ text: `${label}: `, bold: true, size: 22 }),
+        new TextRun({ text, size: 22 }),
+      ],
+      spacing: { after: 40 },
+      indent: { left: 360 },
+    });
+
+    const children = [
+      new Paragraph({
+        children: [new TextRun({ text: `Interview Prep — ${target}`, bold: true, size: 28 })],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 120 },
+      }),
+    ];
+
+    qs.forEach((q, i) => {
+      const star = q.star_scaffold || {};
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({ text: `Q${i+1}: ${q.question||''}`, bold: true, size: 22 }),
+            new TextRun({ text: `  (${q.skill_mapped||''})`, color: '57606a', size: 20 }),
+          ],
+          spacing: { before: 200, after: 60 },
+        }),
+        ...starKeys.map(k =>
+          labelPara(k.charAt(0).toUpperCase()+k.slice(1), star[k]||'')
+        ),
+      );
+    });
+
+    const doc  = new Document({ sections: [{ properties: {}, children }] });
+    const blob = await Packer.toBlob(doc);
+    const a    = document.createElement('a');
+    a.href     = URL.createObjectURL(blob);
+    a.download = _resumeFilename('docx').replace('.docx', '_interview_prep.docx');
     a.click();
     URL.revokeObjectURL(a.href);
   }
