@@ -17,17 +17,17 @@ Select Continue to Intake
 ```
 Select branch: Air Force, Army, Coast Guard, Marine Corps, Navy, Space Force
 
-Specialty code: (Choose specialty affiliated with selected branch) 
+Specialty code: (Choose specialty code affiliated with selected branch) 
 
-Service resume: (Drag & drop military resume or select a local file to upload)
+Service resume: (Drag & drop military resume or upload local file)
 
-Target career path: (Preset according to speciality code or enter your own)
+Target career path: (Preset from speciality code or enter your own)
 
 Target career role: (Select from predefined list or enter your own)
 
 Select Translate Accomplishments
 
-Review translated accomplishments, make changes, select translate again.
+Review translated, make changed if needed, select translate again.
 
 Select Continue to Job Description
 
