@@ -842,12 +842,14 @@
     nameEl.style.display = 'block';
 
     function s2ShowText(text) {
-      // Show raw extracted text unchanged — headers are stripped at translate time
+      // Collapse runs of 3+ newlines to 2 (1 blank line) and trim ends,
+      // so the display matches what translate will process.
+      // Headers are still stripped only at translate time.
+      text = text.replace(/\n{3,}/g, '\n\n').replace(/^\n+|\n+$/g, '');
       ta.value = text;
       ta.style.display = 'block';
-      ta.scrollTop = 0;
+      setTimeout(() => { ta.scrollTop = 0; }, 0);
       nameEl.textContent = `📎 ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
-      ta.focus();
     }
 
     if (file.name.match(/\.docx$/i)) {
@@ -908,11 +910,11 @@
     nameEl.style.display = 'block';
 
     function s3ShowText(text) {
+      text = text.replace(/\n{3,}/g, '\n\n').replace(/^\n+|\n+$/g, '');
       ta.value = text;
       ta.style.display = 'block';
-      ta.scrollTop = 0;
+      setTimeout(() => { ta.scrollTop = 0; }, 0);
       nameEl.textContent = `📎 ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
-      ta.focus();
     }
 
     if (file.name.match(/\.docx$/i)) {
