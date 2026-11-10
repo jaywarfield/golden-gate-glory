@@ -189,6 +189,49 @@
     .q-text { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
     .star-grid { display: grid; grid-template-columns: 72px 1fr; gap: 4px 10px; font-size: 13px; }
     .star-label { font-weight: 700; color: #57606a; padding-top: 2px; }
+
+    /* ── Flashcard flip ─────────────────────────────────────────────── */
+    .flashcard-wrap {
+      perspective: 1200px;
+      margin-bottom: 14px;
+      cursor: pointer;
+    }
+    .flashcard {
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.45s ease;
+      border-radius: 8px;
+      min-height: 120px;
+    }
+    .flashcard.flipped { transform: rotateY(180deg); }
+    .flashcard-face {
+      position: absolute; top: 0; left: 0; right: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 18px 20px;
+    }
+    /* Front — question */
+    .flashcard-front {
+      background: #1e3a8a;
+      color: #fff;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .flashcard-front .q-num  { color: #93c5fd; }
+    .flashcard-front .q-text { color: #fff; margin-bottom: 0; }
+    .flashcard-front .flip-hint {
+      margin-top: 12px; font-size: 11px; color: #93c5fd; text-align: right;
+    }
+    /* Back — STAR scaffold */
+    .flashcard-back {
+      background: #f7f8fa;
+      transform: rotateY(180deg);
+      /* min-height must match or exceed front; set via JS */
+    }
+    .flashcard-back .flip-hint {
+      margin-top: 10px; font-size: 11px; color: #57606a; text-align: right;
+    }
     .star-val   { color: #1f2328; }
     .star-val.missing { color: #b91c1c; font-style: italic; }
 
@@ -1424,21 +1467,50 @@
     document.getElementById('s6-questions').innerHTML = qs.map((q, i) => {
       const star = q.star_scaffold || {};
       const isMissing = v => typeof v === 'string' && v.toUpperCase().includes('[MISSING');
+      const starRows = ['Situation','Task','Action','Result'].map(k => {
+        const val = star[k.toLowerCase()] || star[k] || '';
+        const miss = isMissing(val);
+        return `<div class="star-label">${k}</div>
+                <div class="star-val${miss?' missing':''}">${miss ? `⚠ ${esc(val)}` : esc(val)}</div>`;
+      }).join('');
       return `
-        <div class="q-card">
-          <div class="q-num">Question ${i+1} · ${esc(q.skill_mapped||'')}</div>
-          <div class="q-text">${esc(q.question||'')}</div>
-          <div class="star-grid">
-            ${['Situation','Task','Action','Result'].map(k=>{
-              const val = star[k.toLowerCase()] || star[k] || '';
-              const miss = isMissing(val);
-              return `<div class="star-label">${k}</div><div class="star-val${miss?' missing':''}">
-                ${miss ? `⚠ ${esc(val)}` : esc(val)}</div>`;
-            }).join('')}
+        <div class="flashcard-wrap" onclick="s6Flip(this)">
+          <div class="flashcard" id="fc-${i}">
+            <div class="flashcard-face flashcard-front">
+              <div class="q-num">Question ${i+1} &nbsp;·&nbsp; ${esc(q.skill_mapped||'')}</div>
+              <div class="q-text">${esc(q.question||'')}</div>
+              <div class="flip-hint">Tap to see STAR response scaffold →</div>
+            </div>
+            <div class="flashcard-face flashcard-back">
+              <div class="q-num" style="color:#1e3a8a">Question ${i+1} &nbsp;·&nbsp; ${esc(q.skill_mapped||'')} — STAR Scaffold</div>
+              <div class="star-grid" style="margin-top:8px">${starRows}</div>
+              <div class="flip-hint">Tap to return to question ←</div>
+            </div>
           </div>
         </div>`;
     }).join('');
+
+    // After rendering, equalise each card's height so front and back match
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.flashcard-wrap').forEach(wrap => {
+        const fc   = wrap.querySelector('.flashcard');
+        const front = wrap.querySelector('.flashcard-front');
+        const back  = wrap.querySelector('.flashcard-back');
+        // Temporarily make both visible to measure natural heights
+        back.style.position = 'relative';
+        back.style.backfaceVisibility = 'visible';
+        const h = Math.max(front.offsetHeight, back.offsetHeight);
+        back.style.position = '';
+        back.style.backfaceVisibility = '';
+        fc.style.height = h + 'px';
+      });
+    });
+
     document.getElementById('s6-output').style.display = 'block';
+  }
+
+  function s6Flip(wrap) {
+    wrap.querySelector('.flashcard').classList.toggle('flipped');
   }
 
   // ═══════════════════════════════════════════════════════════════════
