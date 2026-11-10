@@ -400,15 +400,18 @@
     <div class="card-title">Civilian Goals</div>
     <div class="field">
       <label for="s1-career-path">Target career path</label>
-      <input type="text" id="s1-career-path" readonly
-             style="background:#f7f8fa;color:#57606a;cursor:default"
-             placeholder="Set automatically by specialty code">
+      <input type="text" id="s1-career-path" list="career-path-list"
+             placeholder="Auto-set by specialty, or type your own"
+             oninput="updateTargetRoles(this.value.trim())">
+      <datalist id="career-path-list"></datalist>
+      <div class="field-hint">Suggested by specialty code — you can type your own.</div>
     </div>
     <div class="field">
       <label for="s1-target-role">Target career role <span class="req">*</span></label>
-      <select id="s1-target-role" disabled>
-        <option value="">Set career path first…</option>
-      </select>
+      <input type="text" id="s1-target-role" list="target-role-list"
+             placeholder="Select from list or type your own">
+      <datalist id="target-role-list"></datalist>
+      <div class="field-hint">Suggested by career path — you can type your own.</div>
     </div>
   </div>
 
@@ -751,7 +754,13 @@
       }
       if (STATE.specialty) {
         document.getElementById('s1-specialty').value = STATE.specialty;
-        updateCareerPath();                        // sets career path + populates role drop-down
+        updateCareerPath();                        // auto-sets career path + populates datalists
+      }
+      // Restore saved values after datalists are populated — set career path
+      // first so updateTargetRoles has the right path when restoring role
+      if (STATE.careerPath) {
+        document.getElementById('s1-career-path').value = STATE.careerPath;
+        updateTargetRoles(STATE.careerPath);       // repopulate role datalist for saved path
       }
       if (STATE.targetRole) document.getElementById('s1-target-role').value = STATE.targetRole;
       if (STATE.summary) {
@@ -1051,37 +1060,37 @@
     const branch  = document.getElementById('s1-branch').value;
     const code    = document.getElementById('s1-specialty').value;
     const cpField = document.getElementById('s1-career-path');
-    if (!code) {
-      cpField.value = '';
-      updateTargetRoles('');
-      return;
+
+    // Populate career-path datalist with all known paths
+    const cpList = document.getElementById('career-path-list');
+    cpList.innerHTML = '';
+    Object.keys(ROLES_BY_CAREER_PATH).forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p;
+      cpList.appendChild(opt);
+    });
+
+    if (code) {
+      const branchOverrides = CAREER_PATH_BRANCH_CODE[branch] || {};
+      const path = branchOverrides[code] || CAREER_PATH_BY_CODE[code] || '';
+      if (path) cpField.value = path;   // auto-set; user can still overwrite
+      updateTargetRoles(cpField.value);
     }
-    const branchOverrides = CAREER_PATH_BRANCH_CODE[branch] || {};
-    const path = branchOverrides[code] || CAREER_PATH_BY_CODE[code] || '';
-    cpField.value = path;
-    updateTargetRoles(path);
   }
 
   function updateTargetRoles(careerPath) {
-    const sel   = document.getElementById('s1-target-role');
-    const roles = ROLES_BY_CAREER_PATH[careerPath];
-    sel.innerHTML = '';
-    if (!roles) {
-      sel.disabled = true;
-      sel.innerHTML = '<option value="">Set career path first…</option>';
-      return;
-    }
-    sel.disabled = false;
-    const placeholder = document.createElement('option');
-    placeholder.value = '';
-    placeholder.textContent = 'Select role…';
-    sel.appendChild(placeholder);
+    const dl    = document.getElementById('target-role-list');
+    const roles = ROLES_BY_CAREER_PATH[careerPath] || [];
+    dl.innerHTML = '';
     roles.forEach(role => {
       const opt = document.createElement('option');
       opt.value = role;
-      opt.textContent = role;
-      sel.appendChild(opt);
+      dl.appendChild(opt);
     });
+    // If the current role value isn't in the new list, clear it so the user
+    // picks or types a relevant role — but only when switching paths
+    const roleField = document.getElementById('s1-target-role');
+    if (roles.length && !roles.includes(roleField.value)) roleField.value = '';
   }
 
   // ═══════════════════════════════════════════════════════════════════
