@@ -35,7 +35,7 @@ Select Continue to Job Description
 
 ##### Screen 3: Job Description Analysis
 ```
-Job description text: (Drag & drop job description or select a local file to upload)
+Job description text: (Drag & drop description or upload local file)
 
 Select Analyze Job Description
 
