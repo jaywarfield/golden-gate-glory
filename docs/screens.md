@@ -87,7 +87,9 @@ Review gate details
 
 Select Continue to Export Gate
 
-Save Resume draft
+Save Final Resume draft as either .txt file or .docx file.
+
+Save Interview Prep as either .txt file or .docx file.
 ```
 
 ---
