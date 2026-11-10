@@ -1,0 +1,17 @@
+# src/requirements.txt
+# Mission Veteran AI — Bridge Server
+#
+# Install with:
+#   pip install -r src/requirements.txt
+#
+# These are the additional dependencies needed by the bridge server on top of
+# the project-level requirements.txt.  Install both:
+#   pip install -r requirements.txt -r src/requirements.txt
+
+# ASGI web framework + server
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+
+# Included in project requirements.txt but listed here for standalone installs
+python-dotenv>=1.0.0
+ibm-watsonx-ai>=1.1.0

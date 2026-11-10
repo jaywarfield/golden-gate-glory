@@ -677,7 +677,7 @@
 </div>
 
 <script>
-  const USE_MOCK = true; // mock mode — no backend required
+  const USE_MOCK = false; // live mode — bridge server required (src/server.py)
 
   // ── PII guard ──────────────────────────────────────────────────────
   const PII_PATTERNS = [
@@ -1521,8 +1521,14 @@
   // ═══════════════════════════════════════════════════════════════════
   // API helper (live mode)
   // ═══════════════════════════════════════════════════════════════════
+  // API_BASE: empty string = same-origin (local dev / Docker).
+  // Override by setting window.API_BASE before this script runs, or by
+  // replacing the empty string here with your deployed bridge URL, e.g.:
+  //   const API_BASE = 'https://mission-veteran-ai.us-south.codeengine.appdomain.cloud';
+  const API_BASE = window.API_BASE || '';
+
   async function apiCall(body) {
-    const resp = await fetch('/api/translate', {
+    const resp = await fetch(API_BASE + '/api/translate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),

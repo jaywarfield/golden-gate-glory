@@ -1,0 +1,79 @@
+# .github/workflows/pages.yml
+# Mission Veteran AI — a Golden Gate Glory project
+#
+# Deploys web/index.html to GitHub Pages on every push to main.
+#
+# Setup (one-time, in your repo settings):
+#   Settings → Pages → Source → GitHub Actions
+#
+# After the bridge server is deployed (IBM Code Engine or similar):
+#   Settings → Secrets → Actions → New repository secret:
+#     Name:  API_BASE
+#     Value: https://<your-bridge-hostname>   (no trailing slash)
+#
+# If API_BASE secret is not set, the page falls back to USE_MOCK = true
+# automatically and works as a full demo without a backend.
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "web/**"
+      - ".github/workflows/pages.yml"
+
+  # Allow manual trigger from the Actions tab
+  workflow_dispatch:
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # If API_BASE secret is set, inject it into the HTML so the page calls
+      # the live bridge server.  Otherwise leave USE_MOCK=false and let the
+      # browser hit a relative /api/translate (which will 404 on Pages, so
+      # we also flip USE_MOCK back to true in that case).
+      - name: Inject API_BASE or fall back to mock mode
+        env:
+          API_BASE: ${{ secrets.API_BASE }}
+        run: |
+          mkdir -p _site
+          cp web/index.html _site/index.html
+
+          if [ -n "$API_BASE" ]; then
+            echo "API_BASE is set → injecting into index.html"
+            # Insert  <script>window.API_BASE='...';</script>  just before </head>
+            sed -i "s|</head>|<script>window.API_BASE='${API_BASE}';</script></head>|" _site/index.html
+          else
+            echo "API_BASE not set → enabling mock mode"
+            sed -i "s|const USE_MOCK = false;|const USE_MOCK = true; // no bridge configured|" _site/index.html
+          fi
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
