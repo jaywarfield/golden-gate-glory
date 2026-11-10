@@ -59,8 +59,8 @@ Select Build Tagged Resume Draft
 
 Review resume draft:
 - EVIDENCED is already validated.
-- INFERRED should already have this experience, review the note describing where this was inferred from, and if acceptable select Add otherwise select Delete.
-- MISSING but required in job description, review whether this should be in veteran skills, if should be select Add otherwise select Delete. 
+- INFERRED should already have, review note where inferred from, select Add or Delete.
+- MISSING but required in job description, review whether already have, select Add or Delete. 
 
 Select Continue to Interview Prep
 ```
