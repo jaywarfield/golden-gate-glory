@@ -289,7 +289,7 @@
     and choose how your draft is stored. No personal identifiers are collected.
   </div>
   <div class="notice warn">
-    <strong>PII Reminder:</strong> Do not include full names, Social Security numbers,
+    <strong>PII Reminder:</strong> Do not include full names, Social Security numbers, recruiter names, company contact details,
     DoD ID numbers, phone numbers, email addresses, home addresses, birth dates,
     medical details, classified information, exact unit designations, or deployment locations.
   </div>
@@ -381,14 +381,14 @@
     <div class="field">
       <label>Service resume <span class="req">*</span></label>
       <div class="notice warn" style="margin-bottom:8px;font-size:12px">
-        <strong>PII Reminder:</strong> Remove all personally identifiable information before uploading — no full names, Social Security numbers, DoD ID numbers, phone numbers, email addresses, home addresses, birth dates, medical details, classified information, exact unit designations, or deployment locations.
+        <strong>PII Reminder:</strong> Remove all personally identifiable information before uploading — no full names, Social Security numbers, DoD ID numbers, phone numbers, email addresses, home addresses, birth dates, medical details, classified information, exact unit designations, deployment locations, recruiter names, or company contact details.
       </div>
       <div class="drop-zone" id="s2-drop-zone" onclick="document.getElementById('s2-file-input').click()"
            ondragover="s2DragOver(event)" ondragleave="s2DragLeave(event)" ondrop="s2Drop(event)">
         <input type="file" id="s2-file-input" accept=".txt,.docx" onchange="s2FileSelected(event)">
         <div class="drop-zone-icon">📄</div>
         <div class="drop-zone-text"><strong>Drag &amp; drop</strong> your military resume file here, or <strong>click to browse</strong></div>
-        <div class="drop-zone-hint">Accepts .txt · .docx &nbsp;·&nbsp; Text will be extracted and shown below for editing</div>
+        <div class="drop-zone-hint">Accepts .txt · .docx &nbsp;·&nbsp; Text will be extracted and shown below</div>
       </div>
       <div id="s2-file-name" style="font-size:11px;color:#57606a;margin-top:5px;display:none"></div>
       <textarea id="s2-resume" rows="12" maxlength="8000" style="margin-top:10px;display:none"
@@ -449,16 +449,19 @@
     <div class="card-title">Target Job Description</div>
     <div class="field">
       <label for="s3-jd">Job description <span class="req">*</span></label>
+      <div class="notice warn" style="margin-bottom:8px;font-size:12px">
+        <strong>PII Reminder:</strong> Remove all personally identifiable information before uploading — no full names, Social Security numbers, DoD ID numbers, phone numbers, email addresses, home addresses, birth dates, medical details, classified information, exact unit designations, deployment locations, recruiter names, or company contact details.
+      </div>
       <div class="drop-zone" id="s3-drop-zone" onclick="document.getElementById('s3-file-input').click()"
            ondragover="s3DragOver(event)" ondragleave="s3DragLeave(event)" ondrop="s3Drop(event)">
         <input type="file" id="s3-file-input" accept=".txt,.docx" onchange="s3FileSelected(event)">
         <div class="drop-zone-icon">📄</div>
         <div class="drop-zone-text"><strong>Drag &amp; drop</strong> your job description file here, or <strong>click to browse</strong></div>
-        <div class="drop-zone-hint">Accepts .txt · .docx &nbsp;·&nbsp; Or paste the text directly below</div>
+        <div class="drop-zone-hint">Accepts .txt · .docx &nbsp;·&nbsp; Text will be extracted and shown below</div>
       </div>
       <div id="s3-file-name" style="font-size:11px;color:#57606a;margin-top:5px;display:none"></div>
-      <textarea id="s3-jd" rows="5" maxlength="2000" style="margin-top:10px"
-        placeholder="Paste the full job posting here. PII-free — remove recruiter names, company contacts, etc."></textarea>
+      <textarea id="s3-jd" rows="5" maxlength="2000" style="margin-top:10px;display:none"
+        placeholder="Job description text will appear here. You can edit it before proceeding."></textarea>
       <div class="field-hint">Maximum 2000 characters.</div>
     </div>
     <div class="btn-row">
@@ -913,6 +916,7 @@
 
     function s3ShowText(text) {
       ta.value = text;
+      ta.style.display = 'block';
       nameEl.textContent = `📎 ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
       ta.focus();
     }
