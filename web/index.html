@@ -845,6 +845,7 @@
       // Show raw extracted text unchanged — headers are stripped at translate time
       ta.value = text;
       ta.style.display = 'block';
+      ta.scrollTop = 0;
       nameEl.textContent = `📎 ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
       ta.focus();
     }
@@ -909,6 +910,7 @@
     function s3ShowText(text) {
       ta.value = text;
       ta.style.display = 'block';
+      ta.scrollTop = 0;
       nameEl.textContent = `📎 ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
       ta.focus();
     }
