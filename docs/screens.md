@@ -27,7 +27,7 @@ Target career role: (Select from predefined list or enter your own)
 
 Select Translate Accomplishments
 
-Review translated, make changes if needed, select translate again.
+Review translated, make changes as needed, select translate again.
 
 Select Continue to Job Description
 
@@ -39,7 +39,7 @@ Job description text: (Drag & drop description or upload local file)
 
 Select Analyze Job Description
 
-Review job analysis, make changes, select analyze again.
+Review job analysis, make changes as needed, select analyze again.
 
 Select Continue to Skill Mapping
 ```
