@@ -1262,7 +1262,7 @@
       </div>
       ${al.alignment_pct !== undefined ? `<div class="field-hint" style="margin-bottom:10px">Skill alignment: <strong>${al.alignment_pct}%</strong></div>` : ''}
       <div class="skill-section-title">Required Skills</div>
-      ${(ja.required_skills||[]).map(s=>`<div class="bullet-row"><span style="color:#57606a">▸</span><span class="bullet-text">${esc(s)}</span></div>`).join('')}
+      ${(ja.required_skills||[]).map(s=>`<div class="bullet-row"><span style="color:#57606a">▸</span><span class="bullet-text">${esc(s.replace(/\b\w/g, c => c.toUpperCase()))}</span></div>`).join('')}
       <div class="skill-section-title">ATS Keywords</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">${(ja.ats_keywords||[]).map(k=>`<span class="badge badge-medium">${esc(k)}</span>`).join('')}</div>
     `;
@@ -1381,9 +1381,10 @@
       } else {
         statusCell = `<span style="color:#b91c1c;font-weight:600">✗ Gap</span><div style="margin-top:4px">${courseLinks(r.gapObj)}</div>`;
       }
+      const toTitle = s => s.replace(/\b\w/g, c => c.toUpperCase());
       thtml += `<tr style="${bg}">
         <td ${tdStyle('color:#57606a')}>${esc(cat)}</td>
-        <td ${tdStyle()}>${esc(r.js)}</td>
+        <td ${tdStyle()}>${esc(toTitle(r.js))}</td>
         <td ${tdStyle()}>${esc(civName)}</td>
         <td ${tdStyle()}>${statusCell}</td>
       </tr>`;
