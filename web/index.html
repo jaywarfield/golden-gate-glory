@@ -566,10 +566,10 @@
           <div style="font-size:12px;color:#57606a;margin-top:3px" id="s4-sub"></div>
         </div>
       </div>
-      <div class="skill-section-title">✓ Covered Skills</div>
-      <div id="s4-covered"></div>
-      <div class="skill-section-title">✗ Skill Gaps — with SkillsBuild Recommendations</div>
-      <div id="s4-gaps"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Skill Comparison</div>
+      <div id="s4-comparison"></div>
     </div>
     <div class="card">
       <div class="card-title">Civilian Skill Inventory</div>
@@ -1295,32 +1295,101 @@
   }
 
   function renderStep4() {
-    const gr = STATE.gapResult;
+    const gr  = STATE.gapResult;
     const pct = gr.coverage_pct || 0;
     document.getElementById('s4-pct').textContent = `${pct}%`;
     document.getElementById('s4-bar').style.width  = `${pct}%`;
     document.getElementById('s4-sub').textContent  = `${(gr.covered_skills||[]).length} of ${(gr.covered_skills||[]).length + (gr.gap_skills||[]).length} required skills covered`;
 
-    document.getElementById('s4-covered').innerHTML = (gr.covered_skills||[]).map(s=>`
-      <div class="skill-row">
-        <span style="color:#166534;font-size:14px">✓</span>
-        <div><div class="skill-name">${esc(s.skill_name||s)}</div></div>
-        <span class="badge badge-covered" style="margin-left:auto">Covered</span>
-      </div>`).join('');
+    // ── Skill Comparison table ────────────────────────────────────────
+    // Build lookup: civilian skill name (lower) → {category, confidence}
+    const civMap = {};
+    (STATE.skills||[]).forEach(s => {
+      civMap[(s.skill_name||'').toLowerCase()] = s;
+    });
 
-    document.getElementById('s4-gaps').innerHTML = (gr.gap_skills||[]).map(g=>`
-      <div class="skill-row" style="flex-direction:column;align-items:flex-start">
-        <div style="display:flex;align-items:center;gap:8px;width:100%">
-          <span style="color:#b91c1c">✗</span>
-          <div class="skill-name" style="flex:1">${esc(g.skill_name||g.gap_skill||g)}</div>
-          <span class="badge ${g.priority==='High'?'badge-high':'badge-medium'}">${esc(g.priority||'Gap')}</span>
-        </div>
-        ${(g.courses||[]).map(c=>`
-          <div class="course-card">
-            <div class="course-title">${esc(c.title||c.course_title||c)}</div>
-            <div class="course-meta">${esc(c.credential_type||'')} · ${esc(c.hours_estimate ? c.hours_estimate+' hrs' : '')} · <a href="${esc(c.url||'https://skillsbuild.org')}" target="_blank">skillsbuild.org</a></div>
-          </div>`).join('')}
-      </div>`).join('');
+    // Build lookup: gap skill name (lower) → gap object (with courses)
+    const gapMap = {};
+    (gr.gap_skills||[]).forEach(g => {
+      const name = (g.skill_name||g.gap_skill||g||'').toString().toLowerCase();
+      gapMap[name] = g;
+    });
+
+    // Covered skill names (lower) → civilian skill object
+    const coveredNames = new Set((gr.covered_skills||[]).map(s => (s.skill_name||s||'').toString().toLowerCase()));
+
+    // All job-required skills (flat string array)
+    const jobSkills = (STATE.jobAnalysis||{}).required_skills || [];
+
+    // Build rows: one per job skill, cross-referenced to civilian inventory
+    // Group by category for display
+    const rows = jobSkills.map(js => {
+      const jsL   = js.toLowerCase();
+      // Find best-matching civilian skill: exact match first, then substring
+      const civKey = Object.keys(civMap).find(k => k === jsL) ||
+                     Object.keys(civMap).find(k => k.includes(jsL) || jsL.includes(k)) || '';
+      const civSkill = civKey ? civMap[civKey] : null;
+      const isCovered = coveredNames.has(jsL) || (civKey && coveredNames.has(civKey));
+      const gapObj    = gapMap[jsL] || (civKey ? gapMap[civKey] : null);
+      return { js, civSkill, isCovered, gapObj };
+    });
+
+    // Also add gap skills not already in jobSkills
+    (gr.gap_skills||[]).forEach(g => {
+      const name = (g.skill_name||g.gap_skill||g||'').toString();
+      if (!jobSkills.some(j => j.toLowerCase() === name.toLowerCase())) {
+        rows.push({ js: name, civSkill: civMap[name.toLowerCase()]||null, isCovered: false, gapObj: g });
+      }
+    });
+
+    // Confidence badge html
+    const confBadge = conf => {
+      const c = (conf||'').toLowerCase();
+      const cls = c==='high'?'conf-high':c==='medium'?'conf-medium':'conf-low';
+      return `<span class="${cls}" style="font-size:11px;font-weight:600">${esc(conf)}</span>`;
+    };
+
+    // Course link html for a gap object
+    const courseLinks = gapObj => {
+      if (!gapObj) return `<a href="https://skillsbuild.org" target="_blank" style="font-size:12px">skillsbuild.org</a>`;
+      const courses = gapObj.courses || [];
+      if (!courses.length) return `<a href="https://skillsbuild.org" target="_blank" style="font-size:12px">skillsbuild.org</a>`;
+      return courses.slice(0,2).map(c =>
+        `<div style="font-size:12px"><a href="${esc(c.url||'https://skillsbuild.org')}" target="_blank">${esc(c.title||c.course_title||'skillsbuild.org')}</a></div>`
+      ).join('');
+    };
+
+    const th = (w, label) => `<th style="width:${w};padding:7px 10px;background:#1e3a8a;color:#fff;font-size:11px;font-weight:700;letter-spacing:0.04em;text-align:left;border:1px solid #c8d0d9">${label}</th>`;
+    const tdStyle = (extra='') => `style="padding:8px 10px;border:1px solid #e5e7eb;vertical-align:top;font-size:13px${extra?';'+extra:''}"`;
+
+    let thtml = `<table style="width:100%;border-collapse:collapse">
+      <thead><tr>
+        ${th('16%','Category')}
+        ${th('26%','Job Skills')}
+        ${th('26%','Civilian Skills')}
+        ${th('32%','Covered / Gap')}
+      </tr></thead><tbody>`;
+
+    rows.forEach((r, i) => {
+      const bg      = i % 2 === 0 ? '' : 'background:#f7f8fa';
+      const cat     = r.civSkill ? r.civSkill.category : '';
+      const civName = r.civSkill ? r.civSkill.skill_name : '';
+      let statusCell;
+      if (r.isCovered) {
+        const conf = r.civSkill ? r.civSkill.confidence : '';
+        statusCell = `<span style="color:#166534;font-weight:600">✓ Covered</span>${conf ? ' &nbsp;' + confBadge(conf) : ''}`;
+      } else {
+        statusCell = `<span style="color:#b91c1c;font-weight:600">✗ Gap</span><div style="margin-top:4px">${courseLinks(r.gapObj)}</div>`;
+      }
+      thtml += `<tr style="${bg}">
+        <td ${tdStyle('color:#57606a')}>${esc(cat)}</td>
+        <td ${tdStyle()}>${esc(r.js)}</td>
+        <td ${tdStyle()}>${esc(civName)}</td>
+        <td ${tdStyle()}>${statusCell}</td>
+      </tr>`;
+    });
+    thtml += `</tbody></table>`;
+    document.getElementById('s4-comparison').innerHTML = thtml;
 
     document.getElementById('s4-inventory').innerHTML = STATE.skills.map(s=>{
       const conf = (s.confidence||'').toLowerCase();
