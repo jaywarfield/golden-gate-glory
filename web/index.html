@@ -1354,21 +1354,20 @@
     const tdStyle = (extra='') => `style="padding:8px 10px;border:1px solid #e5e7eb;vertical-align:top;font-size:13px${extra?';'+extra:''}"`;
     const toTitle = s => (s||'').replace(/\b\w/g, c => c.toUpperCase());
 
-    // Course cell: Name, then credential type · hours · link
+    // Course cell (column 4 for gap rows): course name, credential · hours · link
+    // No "✗ Gap" label here — that lives in column 3
     const courseCell = gapObj => {
-      if (!gapObj) return `<span style="color:#b91c1c;font-weight:600">✗ Gap</span><div style="margin-top:4px;font-size:12px"><a href="https://skillsbuild.org/students/digital-credentials" target="_blank">skillsbuild.org</a></div>`;
+      const fallback = `<div style="font-size:12px"><a href="https://skillsbuild.org" target="_blank">skillsbuild.org</a></div>`;
+      if (!gapObj) return fallback;
       const courses = gapObj.courses || [];
-      if (!courses.length) return `<span style="color:#b91c1c;font-weight:600">✗ Gap</span><div style="margin-top:4px;font-size:12px"><a href="https://skillsbuild.org/students/digital-credentials" target="_blank">skillsbuild.org</a></div>`;
-      return `<span style="color:#b91c1c;font-weight:600">✗ Gap</span>` + courses.slice(0,2).map(c => {
-        const name  = esc(c.title || c.course_title || '');
-        const cred  = esc(c.credential_type || 'Badge');
-        const hrs   = c.hours_estimate ? esc(c.hours_estimate + ' hrs') : '';
-        const url   = c.url && c.url !== 'https://skillsbuild.org'
-                      ? c.url
-                      : 'https://skillsbuild.org/students/digital-credentials';
-        return `<div style="margin-top:5px">
+      if (!courses.length) return fallback;
+      return courses.slice(0, 2).map(c => {
+        const name = esc(c.title || c.course_title || '');
+        const cred = esc(c.credential_type || 'Badge');
+        const hrs  = c.hours_estimate ? esc(String(c.hours_estimate) + ' hrs') : '';
+        return `<div>
           <div style="font-size:12px;font-weight:600">${name}</div>
-          <div style="font-size:11px;color:#57606a">${cred}${hrs ? ' · ' + hrs : ''} · <a href="${esc(url)}" target="_blank">skillsbuild.org</a></div>
+          <div style="font-size:11px;color:#57606a">${cred}${hrs ? ' · ' + hrs : ''} · <a href="https://skillsbuild.org" target="_blank">skillsbuild.org</a></div>
         </div>`;
       }).join('');
     };
@@ -1387,23 +1386,30 @@
       </tr></thead><tbody>`;
 
     sortedRows.forEach((r, i) => {
-      const bg      = i % 2 === 0 ? '' : 'background:#f7f8fa';
-      const cat     = r.civSkill ? r.civSkill.category : (r.gapObj ? (r.gapObj.category||'') : '');
-      const civName = r.civSkill ? r.civSkill.skill_name : (r.isCovered ? '' : toTitle(r.js));
-      let rightCell;
+      const bg   = i % 2 === 0 ? '' : 'background:#f7f8fa';
+      const cat  = r.civSkill ? r.civSkill.category : (r.gapObj ? (r.gapObj.category||'') : '');
+
+      // Column 3: civilian skill name (covered) OR "✗ Gap" label only (gap)
+      const col3 = r.isCovered
+        ? esc(r.civSkill ? r.civSkill.skill_name : '')
+        : `<span style="color:#b91c1c;font-weight:600">✗ Gap</span>`;
+
+      // Column 4: confidence badge (covered) OR course details (gap)
+      let col4;
       if (r.isCovered) {
         const conf = r.civSkill ? r.civSkill.confidence : '';
         const c    = (conf||'').toLowerCase();
         const cls  = c==='high'?'conf-high':c==='medium'?'conf-medium':'conf-low';
-        rightCell  = `<span style="color:#166534;font-weight:600">✓ Covered</span>${conf ? ` &nbsp;<span class="${cls}" style="font-size:11px;font-weight:600">${esc(conf)}</span>` : ''}`;
+        col4 = `<span style="color:#166534;font-weight:600">✓ Covered</span>${conf ? ` &nbsp;<span class="${cls}" style="font-size:11px;font-weight:600">${esc(conf)}</span>` : ''}`;
       } else {
-        rightCell = courseCell(r.gapObj);
+        col4 = courseCell(r.gapObj);
       }
+
       thtml += `<tr style="${bg}">
         <td ${tdStyle('color:#57606a')}>${esc(cat)}</td>
         <td ${tdStyle()}>${esc(toTitle(r.js))}</td>
-        <td ${tdStyle()}>${esc(civName)}</td>
-        <td ${tdStyle()}>${rightCell}</td>
+        <td ${tdStyle()}>${col3}</td>
+        <td ${tdStyle()}>${col4}</td>
       </tr>`;
     });
     thtml += `</tbody></table>`;
@@ -2096,8 +2102,8 @@
         { skill_name: 'Team Leadership',              category: 'Leadership',        confidence: 'High'   },
       ],
       gap_skills: [
-        { skill_name: 'SIEM Tools (e.g. Splunk)',   priority: 'High',   courses: [{ title: 'Cybersecurity Fundamentals', credential_type: 'Badge', hours_estimate: 10, url: 'https://skillsbuild.org/courses/cybersecurity-fundamentals' }] },
-        { skill_name: 'Firewall & VPN Config',       priority: 'High',   courses: [{ title: 'Network Security Essentials', credential_type: 'Badge', hours_estimate: 8,  url: 'https://skillsbuild.org/courses/network-security-essentials' }] },
+        { skill_name: 'SIEM Tools (e.g. Splunk)',   priority: 'High',   courses: [{ title: 'Cybersecurity Fundamentals',      credential_type: 'Badge', hours_estimate: 10, url: 'https://skillsbuild.org' }] },
+        { skill_name: 'Firewall & VPN Config',       priority: 'High',   courses: [{ title: 'Network Security Essentials',      credential_type: 'Badge', hours_estimate: 8,  url: 'https://skillsbuild.org' }] },
       ],
       resume_summary: (branch) => `Results-driven IT professional with ${branch||'military'} communications and network operations experience, proven access control management, and a track record of securing critical infrastructure under operational pressure.`,
       resume_bullets_extra: [
@@ -2155,8 +2161,8 @@
         { skill_name: 'Process Improvement',          category: 'Operations',    confidence: 'Medium' },
       ],
       gap_skills: [
-        { skill_name: 'Agile / Scrum',    priority: 'High',   courses: [{ title: 'Agile Explorer',                    credential_type: 'Badge', hours_estimate: 6, url: 'https://skillsbuild.org/courses/agile-explorer' }] },
-        { skill_name: 'JIRA / MS Project', priority: 'Medium', courses: [{ title: 'Project Management Fundamentals',   credential_type: 'Badge', hours_estimate: 8, url: 'https://skillsbuild.org/courses/project-management-fundamentals' }] },
+        { skill_name: 'Agile / Scrum',    priority: 'High',   courses: [{ title: 'Agile Explorer',                    credential_type: 'Badge', hours_estimate: 6,  url: 'https://skillsbuild.org' }] },
+        { skill_name: 'JIRA / MS Project', priority: 'Medium', courses: [{ title: 'Project Management Fundamentals',   credential_type: 'Badge', hours_estimate: 8,  url: 'https://skillsbuild.org' }] },
       ],
       resume_summary: (branch) => `Results-driven project management professional with ${branch||'military'} leadership experience, proven risk management expertise, and a track record of delivering complex cross-functional projects on schedule and within budget.`,
       resume_bullets_extra: [
@@ -2214,8 +2220,8 @@
         { skill_name: 'Cross-functional Coordination',category: 'Collaboration', confidence: 'High'   },
       ],
       gap_skills: [
-        { skill_name: 'Lean Six Sigma',    priority: 'High',   courses: [{ title: 'Lean and Six Sigma Principles',      credential_type: 'Badge', hours_estimate: 10, url: 'https://skillsbuild.org/courses/lean-and-six-sigma-principles' }] },
-        { skill_name: 'ERP Systems',       priority: 'Medium', courses: [{ title: 'Enterprise Technology Fundamentals', credential_type: 'Badge', hours_estimate: 6,  url: 'https://skillsbuild.org/courses/enterprise-technology-fundamentals' }] },
+        { skill_name: 'Lean Six Sigma',    priority: 'High',   courses: [{ title: 'Lean and Six Sigma Principles',      credential_type: 'Badge', hours_estimate: 10, url: 'https://skillsbuild.org' }] },
+        { skill_name: 'ERP Systems',       priority: 'Medium', courses: [{ title: 'Enterprise Technology Fundamentals', credential_type: 'Badge', hours_estimate: 6,  url: 'https://skillsbuild.org' }] },
       ],
       resume_summary: (branch) => `Results-driven operations professional with ${branch||'military'} leadership experience, proven process improvement expertise, and a track record of measurable operational performance gains.`,
       resume_bullets_extra: [
@@ -2273,8 +2279,8 @@
         { skill_name: 'Process Improvement',           category: 'Operations',    confidence: 'Medium' },
       ],
       gap_skills: [
-        { skill_name: 'Vendor Management',    priority: 'High',   courses: [{ title: 'Supply Chain Excellence',           credential_type: 'Badge', hours_estimate: 8,  url: 'https://skillsbuild.org/courses/supply-chain-excellence' }] },
-        { skill_name: 'ERP/WMS Proficiency',  priority: 'Medium', courses: [{ title: 'Enterprise Technology Fundamentals', credential_type: 'Badge', hours_estimate: 6,  url: 'https://skillsbuild.org/courses/enterprise-technology-fundamentals' }] },
+        { skill_name: 'Vendor Management',    priority: 'High',   courses: [{ title: 'Supply Chain Excellence',           credential_type: 'Badge', hours_estimate: 8,  url: 'https://skillsbuild.org' }] },
+        { skill_name: 'ERP/WMS Proficiency',  priority: 'Medium', courses: [{ title: 'Enterprise Technology Fundamentals', credential_type: 'Badge', hours_estimate: 6,  url: 'https://skillsbuild.org' }] },
       ],
       resume_summary: (branch) => `Results-driven supply chain professional with ${branch||'military'} logistics expertise, proven team leadership, and a track record of measurable operational improvements.`,
       resume_bullets_extra: [
