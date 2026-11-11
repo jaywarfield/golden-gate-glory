@@ -1631,23 +1631,37 @@
     document.getElementById('s7-final-body').innerHTML =
       `<div class="export-body" style="white-space:normal">${html}</div>`;
 
-    // ── Interview prep section ────────────────────────────────────────
+    // ── Interview prep section — 2-column table ──────────────────────
     const qs = ((STATE.interviewPrep||{}).questions||[]);
     if (qs.length) {
       const starKeys = ['situation','task','action','result'];
-      let ihtml = '';
-      qs.forEach((q, i) => {
+      // Build answer text for a question: "Situation: ...\nTask: ...\n..."
+      const starAnswer = q => {
         const star = q.star_scaffold || {};
-        ihtml += `<div style="margin-bottom:18px">`;
-        ihtml += `<div style="font-weight:700;font-size:13px;margin-bottom:6px">Q${i+1}: ${esc(q.question||'')} <span style="font-weight:400;color:#57606a;font-size:12px">(${esc(q.skill_mapped||'')})</span></div>`;
-        ihtml += `<div style="display:grid;grid-template-columns:72px 1fr;gap:4px 10px;font-size:13px">`;
-        starKeys.forEach(k => {
-          const val = star[k] || '';
-          ihtml += `<div style="font-weight:700;color:#57606a;padding-top:2px;text-transform:capitalize">${k}</div>`;
-          ihtml += `<div>${esc(val)}</div>`;
-        });
-        ihtml += `</div></div>`;
+        return starKeys.map(k => {
+          const cap = k.charAt(0).toUpperCase() + k.slice(1);
+          return `<strong>${cap}:</strong> ${esc(star[k]||'')}`;
+        }).join('<br>');
+      };
+
+      let ihtml = `<table style="width:100%;border-collapse:collapse;font-size:13px">`;
+      // Header row
+      ihtml += `<tr>
+        <th style="width:38%;padding:8px 10px;background:#1e3a8a;color:#fff;text-align:left;border:1px solid #c8d0d9;font-size:12px;letter-spacing:0.04em">QUESTION</th>
+        <th style="width:62%;padding:8px 10px;background:#1e3a8a;color:#fff;text-align:left;border:1px solid #c8d0d9;font-size:12px;letter-spacing:0.04em">ANSWER (STAR SCAFFOLD)</th>
+      </tr>`;
+      qs.forEach((q, i) => {
+        const rowBg = i % 2 === 0 ? '#ffffff' : '#f7f8fa';
+        ihtml += `<tr style="background:${rowBg}">
+          <td style="padding:10px;border:1px solid #e5e7eb;vertical-align:top">
+            <div style="font-weight:700;margin-bottom:4px">Q${i+1}: ${esc(q.question||'')}</div>
+            <div style="font-size:11px;color:#57606a">${esc(q.skill_mapped||'')}</div>
+          </td>
+          <td style="padding:10px;border:1px solid #e5e7eb;vertical-align:top;line-height:1.6">${starAnswer(q)}</td>
+        </tr>`;
       });
+      ihtml += `</table>`;
+
       document.getElementById('s7-interview-body').innerHTML =
         `<div class="export-body" style="white-space:normal">${ihtml}</div>`;
       document.getElementById('s7-interview-card').style.display = 'block';
@@ -1683,17 +1697,45 @@
   }
 
   function _interviewPlainText() {
-    const qs   = ((STATE.interviewPrep||{}).questions||[]);
-    const role = STATE.targetRole || 'Resume';
+    const qs      = ((STATE.interviewPrep||{}).questions||[]);
+    const role    = STATE.targetRole || 'Resume';
     const starKeys = ['situation','task','action','result'];
-    const lines = [`INTERVIEW PREP — ${role.toUpperCase()}`, '='.repeat(40), ''];
-    qs.forEach((q, i) => {
-      lines.push(`Q${i+1}: ${q.question||''} (${q.skill_mapped||''})`);
-      const star = q.star_scaffold || {};
-      starKeys.forEach(k => {
-        lines.push(`  ${k.charAt(0).toUpperCase()+k.slice(1)}: ${star[k]||''}`);
+
+    // Column widths for fixed-width text table
+    const COL1 = 42;
+    const COL2 = 50;
+    const pad  = (s, w) => s.length >= w ? s.slice(0, w-1) + ' ' : s + ' '.repeat(w - s.length);
+    const wrap = (s, w) => {
+      const words = s.split(' ');
+      const rows = []; let cur = '';
+      words.forEach(word => {
+        if ((cur + ' ' + word).trim().length <= w) { cur = (cur + ' ' + word).trim(); }
+        else { if (cur) rows.push(cur); cur = word; }
       });
-      lines.push('');
+      if (cur) rows.push(cur);
+      return rows.length ? rows : [''];
+    };
+
+    const divLine = '+' + '-'.repeat(COL1+2) + '+' + '-'.repeat(COL2+2) + '+';
+    const hdrLine = '| ' + pad('QUESTION', COL1) + ' | ' + pad('ANSWER (STAR SCAFFOLD)', COL2) + ' |';
+    const lines   = [`INTERVIEW PREP — ${role.toUpperCase()}`, '', divLine, hdrLine, divLine];
+
+    qs.forEach((q, i) => {
+      const star   = q.star_scaffold || {};
+      // Left column: question text wrapped
+      const qLines = wrap(`Q${i+1}: ${q.question||''} (${q.skill_mapped||''})`, COL1);
+      // Right column: each STAR key as "Key: value" wrapped
+      const aLines = [];
+      starKeys.forEach(k => {
+        const cap  = k.charAt(0).toUpperCase() + k.slice(1);
+        const full = `${cap}: ${star[k]||''}`;
+        wrap(full, COL2).forEach(l => aLines.push(l));
+      });
+      const rowH = Math.max(qLines.length, aLines.length);
+      for (let r = 0; r < rowH; r++) {
+        lines.push('| ' + pad(qLines[r]||'', COL1) + ' | ' + pad(aLines[r]||'', COL2) + ' |');
+      }
+      lines.push(divLine);
     });
     return lines.join('\n');
   }
@@ -1792,48 +1834,72 @@
       }).catch(err => { alert(err.message); throw err; });
     }
 
-    const { Document, Packer, Paragraph, TextRun, AlignmentType } = window.docx;
-    const qs     = ((STATE.interviewPrep||{}).questions||[]);
-    const target = STATE.targetRole || 'Resume Draft';
+    const { Document, Packer, Paragraph, TextRun, AlignmentType,
+            Table, TableRow, TableCell, WidthType, BorderStyle,
+            ShadingType } = window.docx;
+    const qs       = ((STATE.interviewPrep||{}).questions||[]);
+    const target   = STATE.targetRole || 'Resume Draft';
     const starKeys = ['situation','task','action','result'];
 
-    const sectionHeading = text => new Paragraph({
-      children: [new TextRun({ text: text.toUpperCase(), bold: true, size: 24 })],
-      alignment: AlignmentType.CENTER,
-      spacing: { before: 240, after: 80 },
+    // Cell helper: array of paragraphs → TableCell
+    const makeCell = (paragraphs, isHeader = false, widthPct = 50) => new TableCell({
+      width: { size: widthPct, type: WidthType.PERCENTAGE },
+      shading: isHeader ? { type: ShadingType.SOLID, color: '1e3a8a' } : undefined,
+      borders: {
+        top:    { style: BorderStyle.SINGLE, size: 4, color: 'c8d0d9' },
+        bottom: { style: BorderStyle.SINGLE, size: 4, color: 'c8d0d9' },
+        left:   { style: BorderStyle.SINGLE, size: 4, color: 'c8d0d9' },
+        right:  { style: BorderStyle.SINGLE, size: 4, color: 'c8d0d9' },
+      },
+      children: paragraphs,
     });
-    const labelPara = (label, text) => new Paragraph({
+
+    const cellPara = (runs, spacing = 60) => new Paragraph({ children: runs, spacing: { after: spacing } });
+
+    // Header row
+    const headerRow = new TableRow({
+      tableHeader: true,
       children: [
-        new TextRun({ text: `${label}: `, bold: true, size: 22 }),
-        new TextRun({ text, size: 22 }),
+        makeCell([cellPara([new TextRun({ text: 'QUESTION', bold: true, size: 22, color: 'FFFFFF' })])], true, 38),
+        makeCell([cellPara([new TextRun({ text: 'ANSWER (STAR SCAFFOLD)', bold: true, size: 22, color: 'FFFFFF' })])], true, 62),
       ],
-      spacing: { after: 40 },
-      indent: { left: 360 },
+    });
+
+    // Data rows — one per question
+    const dataRows = qs.map((q, i) => {
+      const star   = q.star_scaffold || {};
+      const qParas = [
+        cellPara([new TextRun({ text: `Q${i+1}: ${q.question||''}`, bold: true, size: 22 })], 40),
+        cellPara([new TextRun({ text: q.skill_mapped||'', color: '57606a', size: 20 })], 0),
+      ];
+      const aParas = starKeys.map(k => {
+        const cap = k.charAt(0).toUpperCase() + k.slice(1);
+        return cellPara([
+          new TextRun({ text: `${cap}: `, bold: true, size: 22 }),
+          new TextRun({ text: star[k]||'', size: 22 }),
+        ], 40);
+      });
+      return new TableRow({
+        children: [
+          makeCell(qParas, false, 38),
+          makeCell(aParas, false, 62),
+        ],
+      });
+    });
+
+    const table = new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      rows: [headerRow, ...dataRows],
     });
 
     const children = [
       new Paragraph({
         children: [new TextRun({ text: `Interview Prep — ${target}`, bold: true, size: 28 })],
         alignment: AlignmentType.CENTER,
-        spacing: { after: 120 },
+        spacing: { after: 200 },
       }),
+      table,
     ];
-
-    qs.forEach((q, i) => {
-      const star = q.star_scaffold || {};
-      children.push(
-        new Paragraph({
-          children: [
-            new TextRun({ text: `Q${i+1}: ${q.question||''}`, bold: true, size: 22 }),
-            new TextRun({ text: `  (${q.skill_mapped||''})`, color: '57606a', size: 20 }),
-          ],
-          spacing: { before: 200, after: 60 },
-        }),
-        ...starKeys.map(k =>
-          labelPara(k.charAt(0).toUpperCase()+k.slice(1), star[k]||'')
-        ),
-      );
-    });
 
     const doc  = new Document({ sections: [{ properties: {}, children }] });
     const blob = await Packer.toBlob(doc);
