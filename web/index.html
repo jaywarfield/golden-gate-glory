@@ -1331,8 +1331,22 @@
     // Also add gap skills not already represented in jobSkills
     (gr.gap_skills||[]).forEach(g => {
       const name = (g.skill_name||g.gap_skill||g||'').toString();
-      if (!jobSkills.some(j => j.toLowerCase() === name.toLowerCase())) {
-        rows.push({ js: name, civSkill: civMap[name.toLowerCase()]||null, isCovered: false, gapObj: g });
+      const nameL = name.toLowerCase();
+      if (!jobSkills.some(j => {
+        const jL = j.toLowerCase();
+        return jL === nameL || jL.includes(nameL) || nameL.includes(jL);
+      })) {
+        rows.push({ js: name, civSkill: civMap[nameL]||null, isCovered: false, gapObj: g });
+      }
+    });
+
+    // Also show veteran civilian skills that didn't match any job skill row
+    // (so all translated skills are visible in the comparison table)
+    const matchedCivKeys = new Set(rows.map(r => r.civSkill ? (r.civSkill.skill_name||'').toLowerCase() : '').filter(Boolean));
+    (STATE.skills||[]).forEach(s => {
+      const sL = (s.skill_name||'').toLowerCase();
+      if (!matchedCivKeys.has(sL)) {
+        rows.push({ js: '—', civSkill: s, isCovered: true, gapObj: null });
       }
     });
 
@@ -2110,7 +2124,7 @@
       ],
       gap_skills: [
         { skill_name: 'SIEM Tools (e.g. Splunk)',   category: 'Security',          priority: 'High',   courses: [{ title: 'Cybersecurity Fundamentals',  credential_type: 'Badge', hours_estimate: 10, url: 'https://skillsbuild.org' }] },
-        { skill_name: 'Firewall & VPN Config',       category: 'IT Infrastructure', priority: 'High',   courses: [{ title: 'Network Security Essentials',  credential_type: 'Badge', hours_estimate: 8,  url: 'https://skillsbuild.org' }] },
+        { skill_name: 'Firewall & VPN Configuration', category: 'IT Infrastructure', priority: 'High',   courses: [{ title: 'Network Security Essentials',  credential_type: 'Badge', hours_estimate: 8,  url: 'https://skillsbuild.org' }] },
       ],
       resume_summary: (branch) => `Results-driven IT professional with ${branch||'military'} communications and network operations experience, proven access control management, and a track record of securing critical infrastructure under operational pressure.`,
       resume_bullets_extra: [
