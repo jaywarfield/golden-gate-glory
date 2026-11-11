@@ -653,8 +653,8 @@
 
   <div class="notice">
     <strong>User goal:</strong> Generates 5 behavioral interview questions
-    tailored to the job description, with STAR-framework answer scaffolds grounded in
-    your service evidence. Any scaffold element that lacks evidence is flagged [MISSING].
+    tailored to the job description, with STAR-framework responses grounded in
+    your service evidence. Any response that lacks evidence is flagged [MISSING].
   </div>
 
   <div class="card">
@@ -1648,7 +1648,7 @@
       // Header row
       ihtml += `<tr>
         <th style="width:38%;padding:8px 10px;background:#1e3a8a;color:#fff;text-align:left;border:1px solid #c8d0d9;font-size:12px;letter-spacing:0.04em">QUESTION</th>
-        <th style="width:62%;padding:8px 10px;background:#1e3a8a;color:#fff;text-align:left;border:1px solid #c8d0d9;font-size:12px;letter-spacing:0.04em">ANSWER (STAR SCAFFOLD)</th>
+        <th style="width:62%;padding:8px 10px;background:#1e3a8a;color:#fff;text-align:left;border:1px solid #c8d0d9;font-size:12px;letter-spacing:0.04em">ANSWER (STAR RESPONSE)</th>
       </tr>`;
       qs.forEach((q, i) => {
         const rowBg = i % 2 === 0 ? '#ffffff' : '#f7f8fa';
@@ -1717,7 +1717,7 @@
     };
 
     const divLine = '+' + '-'.repeat(COL1+2) + '+' + '-'.repeat(COL2+2) + '+';
-    const hdrLine = '| ' + pad('QUESTION', COL1) + ' | ' + pad('ANSWER (STAR SCAFFOLD)', COL2) + ' |';
+    const hdrLine = '| ' + pad('QUESTION', COL1) + ' | ' + pad('ANSWER (STAR RESPONSE)', COL2) + ' |';
     const lines   = [`INTERVIEW PREP — ${role.toUpperCase()}`, '', divLine, hdrLine, divLine];
 
     qs.forEach((q, i) => {
@@ -1861,7 +1861,7 @@
       tableHeader: true,
       children: [
         makeCell([cellPara([new TextRun({ text: 'QUESTION', bold: true, size: 22, color: 'FFFFFF' })])], true, 38),
-        makeCell([cellPara([new TextRun({ text: 'ANSWER (STAR SCAFFOLD)', bold: true, size: 22, color: 'FFFFFF' })])], true, 62),
+        makeCell([cellPara([new TextRun({ text: 'ANSWER (STAR RESPONSE)', bold: true, size: 22, color: 'FFFFFF' })])], true, 62),
       ],
     });
 
