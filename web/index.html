@@ -1306,26 +1306,29 @@
       gapMap[name] = g;
     });
 
-    // Covered skill names (lower) → civilian skill object
+    // Covered skill names set (lower-cased)
     const coveredNames = new Set((gr.covered_skills||[]).map(s => (s.skill_name||s||'').toString().toLowerCase()));
 
-    // All job-required skills (flat string array)
+    // All job-required skills
     const jobSkills = (STATE.jobAnalysis||{}).required_skills || [];
 
-    // Build rows: one per job skill, cross-referenced to civilian inventory
-    // Group by category for display
+    // Build rows: one per job skill, cross-referenced to civilian inventory.
+    // A row is "covered" when:
+    //  (a) gap analysis says it's covered, OR
+    //  (b) a civilian skill substring-matches the job skill (veteran has it)
     const rows = jobSkills.map(js => {
       const jsL   = js.toLowerCase();
-      // Find best-matching civilian skill: exact match first, then substring
+      // Find best-matching civilian skill: exact → substring
       const civKey = Object.keys(civMap).find(k => k === jsL) ||
                      Object.keys(civMap).find(k => k.includes(jsL) || jsL.includes(k)) || '';
-      const civSkill = civKey ? civMap[civKey] : null;
-      const isCovered = coveredNames.has(jsL) || (civKey && coveredNames.has(civKey));
-      const gapObj    = gapMap[jsL] || (civKey ? gapMap[civKey] : null);
+      const civSkill  = civKey ? civMap[civKey] : null;
+      const inGapMap  = !!(gapMap[jsL] || Object.keys(gapMap).find(k => k.includes(jsL) || jsL.includes(k)));
+      const isCovered = !inGapMap && (coveredNames.has(jsL) || !!civSkill);
+      const gapObj    = inGapMap ? (gapMap[jsL] || gapMap[Object.keys(gapMap).find(k => k.includes(jsL) || jsL.includes(k))||'']) : null;
       return { js, civSkill, isCovered, gapObj };
     });
 
-    // Also add gap skills not already in jobSkills
+    // Also add gap skills not already represented in jobSkills
     (gr.gap_skills||[]).forEach(g => {
       const name = (g.skill_name||g.gap_skill||g||'').toString();
       if (!jobSkills.some(j => j.toLowerCase() === name.toLowerCase())) {
@@ -1354,20 +1357,19 @@
     const tdStyle = (extra='') => `style="padding:8px 10px;border:1px solid #e5e7eb;vertical-align:top;font-size:13px${extra?';'+extra:''}"`;
     const toTitle = s => (s||'').replace(/\b\w/g, c => c.toUpperCase());
 
-    // Course cell (column 4 for gap rows): course name, credential · hours · link
-    // No "✗ Gap" label here — that lives in column 3
+    // Course cell (column 4 for gap rows): course name · credential · hours · link
+    // Always has a name+badge+hours — never just a bare link
     const courseCell = gapObj => {
-      const fallback = `<div style="font-size:12px"><a href="https://skillsbuild.org" target="_blank">skillsbuild.org</a></div>`;
-      if (!gapObj) return fallback;
-      const courses = gapObj.courses || [];
-      if (!courses.length) return fallback;
+      const courses = (gapObj && gapObj.courses && gapObj.courses.length) ? gapObj.courses : [
+        { title: 'IBM SkillsBuild Learning', credential_type: 'Badge', hours_estimate: 8 }
+      ];
       return courses.slice(0, 2).map(c => {
-        const name = esc(c.title || c.course_title || '');
+        const name = esc(c.title || c.course_title || 'IBM SkillsBuild Learning');
         const cred = esc(c.credential_type || 'Badge');
-        const hrs  = c.hours_estimate ? esc(String(c.hours_estimate) + ' hrs') : '';
+        const hrs  = c.hours_estimate ? esc(String(c.hours_estimate) + ' hrs') : '8 hrs';
         return `<div>
           <div style="font-size:12px;font-weight:600">${name}</div>
-          <div style="font-size:11px;color:#57606a">${cred}${hrs ? ' · ' + hrs : ''} · <a href="https://skillsbuild.org" target="_blank">skillsbuild.org</a></div>
+          <div style="font-size:11px;color:#57606a">${cred} · ${hrs} · <a href="https://skillsbuild.org" target="_blank">skillsbuild.org</a></div>
         </div>`;
       }).join('');
     };
@@ -1387,7 +1389,12 @@
 
     sortedRows.forEach((r, i) => {
       const bg   = i % 2 === 0 ? '' : 'background:#f7f8fa';
-      const cat  = r.civSkill ? r.civSkill.category : (r.gapObj ? (r.gapObj.category||'') : '');
+      // Category: from civilian skill first, then gap object, then derive from job skill position
+      const cat  = (r.civSkill && r.civSkill.category)
+                 ? r.civSkill.category
+                 : (r.gapObj && r.gapObj.category)
+                 ? r.gapObj.category
+                 : 'General';
 
       // Column 3: civilian skill name (covered) OR "✗ Gap" label only (gap)
       const col3 = r.isCovered
@@ -2102,8 +2109,8 @@
         { skill_name: 'Team Leadership',              category: 'Leadership',        confidence: 'High'   },
       ],
       gap_skills: [
-        { skill_name: 'SIEM Tools (e.g. Splunk)',   priority: 'High',   courses: [{ title: 'Cybersecurity Fundamentals',      credential_type: 'Badge', hours_estimate: 10, url: 'https://skillsbuild.org' }] },
-        { skill_name: 'Firewall & VPN Config',       priority: 'High',   courses: [{ title: 'Network Security Essentials',      credential_type: 'Badge', hours_estimate: 8,  url: 'https://skillsbuild.org' }] },
+        { skill_name: 'SIEM Tools (e.g. Splunk)',   category: 'Security',          priority: 'High',   courses: [{ title: 'Cybersecurity Fundamentals',  credential_type: 'Badge', hours_estimate: 10, url: 'https://skillsbuild.org' }] },
+        { skill_name: 'Firewall & VPN Config',       category: 'IT Infrastructure', priority: 'High',   courses: [{ title: 'Network Security Essentials',  credential_type: 'Badge', hours_estimate: 8,  url: 'https://skillsbuild.org' }] },
       ],
       resume_summary: (branch) => `Results-driven IT professional with ${branch||'military'} communications and network operations experience, proven access control management, and a track record of securing critical infrastructure under operational pressure.`,
       resume_bullets_extra: [
@@ -2161,8 +2168,8 @@
         { skill_name: 'Process Improvement',          category: 'Operations',    confidence: 'Medium' },
       ],
       gap_skills: [
-        { skill_name: 'Agile / Scrum',    priority: 'High',   courses: [{ title: 'Agile Explorer',                    credential_type: 'Badge', hours_estimate: 6,  url: 'https://skillsbuild.org' }] },
-        { skill_name: 'JIRA / MS Project', priority: 'Medium', courses: [{ title: 'Project Management Fundamentals',   credential_type: 'Badge', hours_estimate: 8,  url: 'https://skillsbuild.org' }] },
+        { skill_name: 'Agile / Scrum',     category: 'Methodology',   priority: 'High',   courses: [{ title: 'Agile Explorer',                   credential_type: 'Badge', hours_estimate: 6,  url: 'https://skillsbuild.org' }] },
+        { skill_name: 'JIRA / MS Project', category: 'Tools',         priority: 'Medium', courses: [{ title: 'Project Management Fundamentals',  credential_type: 'Badge', hours_estimate: 8,  url: 'https://skillsbuild.org' }] },
       ],
       resume_summary: (branch) => `Results-driven project management professional with ${branch||'military'} leadership experience, proven risk management expertise, and a track record of delivering complex cross-functional projects on schedule and within budget.`,
       resume_bullets_extra: [
@@ -2220,8 +2227,8 @@
         { skill_name: 'Cross-functional Coordination',category: 'Collaboration', confidence: 'High'   },
       ],
       gap_skills: [
-        { skill_name: 'Lean Six Sigma',    priority: 'High',   courses: [{ title: 'Lean and Six Sigma Principles',      credential_type: 'Badge', hours_estimate: 10, url: 'https://skillsbuild.org' }] },
-        { skill_name: 'ERP Systems',       priority: 'Medium', courses: [{ title: 'Enterprise Technology Fundamentals', credential_type: 'Badge', hours_estimate: 6,  url: 'https://skillsbuild.org' }] },
+        { skill_name: 'Lean Six Sigma',    category: 'Operations',    priority: 'High',   courses: [{ title: 'Lean and Six Sigma Principles',      credential_type: 'Badge', hours_estimate: 10, url: 'https://skillsbuild.org' }] },
+        { skill_name: 'ERP Systems',       category: 'Technology',    priority: 'Medium', courses: [{ title: 'Enterprise Technology Fundamentals', credential_type: 'Badge', hours_estimate: 6,  url: 'https://skillsbuild.org' }] },
       ],
       resume_summary: (branch) => `Results-driven operations professional with ${branch||'military'} leadership experience, proven process improvement expertise, and a track record of measurable operational performance gains.`,
       resume_bullets_extra: [
@@ -2279,8 +2286,8 @@
         { skill_name: 'Process Improvement',           category: 'Operations',    confidence: 'Medium' },
       ],
       gap_skills: [
-        { skill_name: 'Vendor Management',    priority: 'High',   courses: [{ title: 'Supply Chain Excellence',           credential_type: 'Badge', hours_estimate: 8,  url: 'https://skillsbuild.org' }] },
-        { skill_name: 'ERP/WMS Proficiency',  priority: 'Medium', courses: [{ title: 'Enterprise Technology Fundamentals', credential_type: 'Badge', hours_estimate: 6,  url: 'https://skillsbuild.org' }] },
+        { skill_name: 'Vendor Management',    category: 'Procurement',   priority: 'High',   courses: [{ title: 'Supply Chain Excellence',           credential_type: 'Badge', hours_estimate: 8,  url: 'https://skillsbuild.org' }] },
+        { skill_name: 'ERP/WMS Proficiency',  category: 'Technology',    priority: 'Medium', courses: [{ title: 'Enterprise Technology Fundamentals', credential_type: 'Badge', hours_estimate: 6,  url: 'https://skillsbuild.org' }] },
       ],
       resume_summary: (branch) => `Results-driven supply chain professional with ${branch||'military'} logistics expertise, proven team leadership, and a track record of measurable operational improvements.`,
       resume_bullets_extra: [
