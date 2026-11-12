@@ -34,12 +34,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY src/requirements.txt ./src/requirements.txt
 RUN pip install --no-cache-dir -r src/requirements.txt
 
-# Install toolkit runtime deps (watsonx SDK already covered above)
-# Note: ibm-watsonx-orchestrate is NOT installed here — the bridge server calls
-# toolkit functions directly and never needs the @tool decorator.  All 4 toolkit
-# files have a try/except fallback so the import fails silently if absent.
+# Install toolkit runtime deps
+# Note: ibm-watsonx-ai SDK is NOT used — toolkits call the REST API directly
+# via llm_generate() in shared/_common.py to avoid SDK version instability.
 RUN pip install --no-cache-dir \
-    "ibm-watsonx-ai>=1.1.0,<2.0.0" \
     openpyxl>=3.1.0 \
     pandas>=2.0.0
 

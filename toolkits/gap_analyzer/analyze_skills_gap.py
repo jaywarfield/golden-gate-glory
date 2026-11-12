@@ -12,12 +12,8 @@ import json
 import os
 import time
 
-from ibm_watsonx_ai import APIClient, Credentials
-from ibm_watsonx_ai.foundation_models import ModelInference
-from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
-
 from shared._common import (
-    contains_pii, pii_warning_message, get_credentials, parse_llm_json,
+    contains_pii, pii_warning_message, parse_llm_json, llm_generate,
     lookup_skillsbuild, lookup_skillbridge,
 )
 from shared.governance import log_inference, get_subscription_ids
@@ -60,12 +56,6 @@ def analyze_skills_gap(
             "disclaimer": None, "pii_warning": pii_warning_message(), "error": None,
         }
 
-    creds = get_credentials()
-    client = APIClient(
-        credentials=Credentials(url=creds["url"], api_key=creds["api_key"]),
-        project_id=creds["project_id"],
-    )
-
     prompt = f"""You are a veteran career transition expert and skills gap analyst.
 
 Given the veteran's skill inventory and the job description below, produce a gap analysis.
@@ -87,15 +77,7 @@ JSON object:"""
 
     t0 = time.monotonic()
     try:
-        model = ModelInference(
-            model_id=_MODEL_ID,
-            api_client=client,
-            params={
-                GenParams.MAX_NEW_TOKENS: 600,
-                GenParams.TEMPERATURE: 0.2,
-            },
-        )
-        raw = model.generate(prompt=prompt)["results"][0]["generated_text"].strip()
+        raw = llm_generate(prompt, _MODEL_ID, max_tokens=600)
         latency_ms = (time.monotonic() - t0) * 1000
         result = parse_llm_json(raw, "analyze_skills_gap")
 

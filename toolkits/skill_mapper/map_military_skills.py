@@ -11,12 +11,8 @@ import json
 import os
 import time
 
-from ibm_watsonx_ai import APIClient, Credentials
-from ibm_watsonx_ai.foundation_models import ModelInference
-from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
-
 from shared._common import (
-    contains_pii, pii_warning_message, get_credentials, parse_llm_json,
+    contains_pii, pii_warning_message, parse_llm_json, llm_generate,
     lookup_crosswalk, load_onet_occupation_skills,
 )
 from shared.governance import log_inference, get_subscription_ids
@@ -120,30 +116,7 @@ JSON array:"""
 
     t0 = time.monotonic()
     try:
-        # Build client inside try so all SDK errors are caught and reported
-        creds = get_credentials()
-        client = APIClient(
-            credentials=Credentials(url=creds["url"], api_key=creds["api_key"]),
-            project_id=creds["project_id"],
-        )
-        model = ModelInference(
-            model_id=_MODEL_ID,
-            api_client=client,
-            params={
-                GenParams.MAX_NEW_TOKENS: 600,
-                GenParams.TEMPERATURE: 0.2,
-            },
-        )
-        _resp = model.generate(prompt=prompt)
-        import logging as _log; _log.getLogger(__name__).warning("generate resp type=%s keys=%s", type(_resp), list(_resp.keys()) if isinstance(_resp, dict) else "N/A")
-        # SDK response shape varies by version — handle both list and dict results
-        _results = _resp.get("results", _resp) if isinstance(_resp, dict) else _resp
-        if isinstance(_results, list):
-            raw = _results[0]["generated_text"].strip()
-        elif isinstance(_results, dict):
-            raw = _results.get("generated_text", str(_results)).strip()
-        else:
-            raw = str(_results).strip()
+        raw = llm_generate(prompt, _MODEL_ID, max_tokens=600)
         latency_ms = (time.monotonic() - t0) * 1000
         skills = parse_llm_json(raw, "map_military_skills")
 

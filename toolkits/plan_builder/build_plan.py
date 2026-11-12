@@ -11,11 +11,7 @@ import json
 import os
 import time
 
-from ibm_watsonx_ai import APIClient, Credentials
-from ibm_watsonx_ai.foundation_models import ModelInference
-from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
-
-from shared._common import contains_pii, pii_warning_message, get_credentials, parse_llm_json
+from shared._common import contains_pii, pii_warning_message, parse_llm_json, llm_generate
 from shared.governance import log_inference, get_subscription_ids
 
 try:
@@ -25,25 +21,6 @@ except ImportError:
     class ToolPermission: READ_ONLY = None       # noqa: E701
 
 _MODEL_ID = "meta-llama/llama-3-3-70b-instruct"
-
-
-def _client() -> APIClient:
-    creds = get_credentials()
-    return APIClient(
-        credentials=Credentials(url=creds["url"], api_key=creds["api_key"]),
-        project_id=creds["project_id"],
-    )
-
-
-def _model(client: APIClient) -> ModelInference:
-    return ModelInference(
-        model_id=_MODEL_ID,
-        api_client=client,
-        params={
-            GenParams.MAX_NEW_TOKENS: 800,
-            GenParams.TEMPERATURE: 0.2,
-        },
-    )
 
 
 # ---------------------------------------------------------------------------
@@ -83,7 +60,7 @@ JSON object:"""
 
     t0 = time.monotonic()
     try:
-        raw = _model(_client()).generate(prompt=prompt)["results"][0]["generated_text"].strip()
+        raw = llm_generate(prompt, _MODEL_ID, max_tokens=800)
         latency_ms = (time.monotonic() - t0) * 1000
         result = parse_llm_json(raw, "analyze_job_description")
         result["pii_warning"] = None
@@ -190,7 +167,7 @@ JSON object:"""
 
     t0_draft = time.monotonic()
     try:
-        raw = _model(_client()).generate(prompt=prompt)["results"][0]["generated_text"].strip()
+        raw = llm_generate(prompt, _MODEL_ID, max_tokens=800)
         latency_ms_draft = (time.monotonic() - t0_draft) * 1000
         sections = parse_llm_json(raw, "build_resume_draft")
 
@@ -228,7 +205,7 @@ EVIDENCED ITEMS TO CHECK:
 JSON array:"""
 
             t0_check = time.monotonic()
-            check_raw = _model(_client()).generate(prompt=check_prompt)["results"][0]["generated_text"].strip()
+            check_raw = llm_generate(check_prompt, _MODEL_ID, max_tokens=800)
             latency_ms_check = (time.monotonic() - t0_check) * 1000
 
             if check_raw.startswith("```"):

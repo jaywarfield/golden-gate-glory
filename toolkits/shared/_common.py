@@ -73,6 +73,66 @@ def get_credentials() -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Direct watsonx.ai REST helper (bypasses SDK version issues)
+# ---------------------------------------------------------------------------
+
+def _get_iam_token(api_key: str) -> str:
+    """Exchange an IBM Cloud API key for a short-lived IAM bearer token."""
+    import urllib.request, urllib.parse
+    data = urllib.parse.urlencode({
+        "grant_type": "urn:ibm:params:oauth:grant-type:apikey",
+        "apikey": api_key,
+    }).encode()
+    req = urllib.request.Request(
+        "https://iam.cloud.ibm.com/identity/token",
+        data=data,
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+    with urllib.request.urlopen(req, timeout=20) as resp:
+        return json.loads(resp.read())["access_token"]
+
+
+def llm_generate(prompt: str, model_id: str, max_tokens: int = 800, temperature: float = 0.2) -> str:
+    """
+    Call the watsonx.ai text generation REST API directly.
+    Returns the generated text string.
+    Raises RuntimeError on API errors.
+    """
+    import urllib.request
+    creds = get_credentials()
+    token = _get_iam_token(creds["api_key"])
+    url = f"{creds['url'].rstrip('/')}/ml/v1/text/generation?version=2023-05-29"
+    payload = json.dumps({
+        "model_id": model_id,
+        "input": prompt,
+        "parameters": {
+            "max_new_tokens": max_tokens,
+            "temperature": temperature,
+            "decoding_method": "greedy",
+        },
+        "project_id": creds["project_id"],
+    }).encode()
+    req = urllib.request.Request(
+        url,
+        data=payload,
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {token}",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            body = json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        body_text = e.read().decode(errors="replace")
+        raise RuntimeError(f"watsonx.ai API error {e.code}: {body_text}") from e
+    results = body.get("results", [])
+    if not results:
+        raise RuntimeError(f"watsonx.ai returned no results: {body}")
+    return results[0].get("generated_text", "")
+
+
+# ---------------------------------------------------------------------------
 # LLM JSON parser
 # ---------------------------------------------------------------------------
 
