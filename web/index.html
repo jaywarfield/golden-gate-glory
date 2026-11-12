@@ -1276,14 +1276,12 @@
         gapResult   = mockGapAnalysis(skillResult.skills, STATE.careerPath);
       } else {
         skillResult = await apiCall({ step: 'map_skills', input: { service_branch: STATE.branch, specialty_code: STATE.specialty, service_summary: STATE.summary, target_career_path: STATE.careerPath, job_description: STATE.jobDescription } });
-        console.log('s4 skillResult:', JSON.stringify(skillResult).slice(0,300));
         gapResult   = await apiCall({ step: 'gap_analysis', input: { veteran_skills_json: JSON.stringify(skillResult.skills), target_career_path: STATE.careerPath, job_description: STATE.jobDescription } });
-        console.log('s4 gapResult:', JSON.stringify(gapResult).slice(0,300));
       }
       STATE.skills = skillResult.skills || [];
       STATE.gapResult = gapResult;
       renderStep4();
-    } catch (e) { console.error('s4 catch:', e, typeof e, e?.message, e?.stack); showStepError('s4', `Skill analysis failed: ${e?.message ?? String(e)}`); }
+    } catch (e) { showStepError('s4', `Skill analysis failed: ${e?.message ?? String(e)}`); }
     finally { setStepLoading('s4', false); }
   }
 

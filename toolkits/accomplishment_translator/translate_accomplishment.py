@@ -136,9 +136,10 @@ Civilian resume bullet:"""
             subscription_id=get_subscription_ids().get("translate_accomplishment"),
             latency_ms=(time.monotonic() - t0) * 1000,
         )
+        err_msg = f"{type(exc).__name__}: {exc}" if str(exc) else repr(exc)
         return {
             "translated_bullet": None,
             "disclaimer": None,
             "pii_warning": None,
-            "error": str(exc),
+            "error": err_msg,
         }

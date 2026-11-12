@@ -204,9 +204,10 @@ JSON array:"""
             latency_ms=(time.monotonic() - t0) * 1000,
             metadata={"fairness_attribute_service_branch": service_branch},
         )
+        err_msg = f"{type(exc).__name__}: {exc}" if str(exc) else repr(exc)
         return {
             "skills": None, "skill_count": 0,
             "onet_soc": onet_soc, "civilian_title": civilian_title,
             "onet_required_skills": onet_required,
-            "disclaimer": None, "pii_warning": None, "error": str(exc),
+            "disclaimer": None, "pii_warning": None, "error": err_msg,
         }

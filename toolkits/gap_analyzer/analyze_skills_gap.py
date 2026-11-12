@@ -181,5 +181,5 @@ JSON object:"""
         return {
             "covered_skills": None, "gap_skills": None, "coverage_pct": 0,
             "skillsbuild_recommendations": None, "skillbridge_programs": None,
-            "disclaimer": None, "pii_warning": None, "error": str(exc),
+            "disclaimer": None, "pii_warning": None, "error": f"{type(exc).__name__}: {exc}" if str(exc) else repr(exc),
         }

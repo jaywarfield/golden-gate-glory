@@ -119,7 +119,8 @@ JSON object:"""
             subscription_id=get_subscription_ids().get("analyze_job_description"),
             latency_ms=(time.monotonic() - t0) * 1000,
         )
-        return {"pii_warning": None, "error": str(exc)}
+        err_msg = f"{type(exc).__name__}: {exc}" if str(exc) else repr(exc)
+        return {"pii_warning": None, "error": err_msg}
 
 
 # ---------------------------------------------------------------------------
