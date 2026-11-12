@@ -66,6 +66,22 @@ app.add_middleware(
 _WEB_DIR = _ROOT / "web"
 
 
+@app.get("/health")
+def health():
+    """Health check — returns env var status without exposing values."""
+    import sys
+    creds_ok = bool(os.environ.get("WATSONX_API_KEY")) and bool(os.environ.get("WATSONX_PROJECT_ID"))
+    return {
+        "status": "ok",
+        "python": sys.version,
+        "WATSONX_API_KEY":    "set" if os.environ.get("WATSONX_API_KEY")    else "MISSING",
+        "WATSONX_PROJECT_ID": "set" if os.environ.get("WATSONX_PROJECT_ID") else "MISSING",
+        "WATSONX_URL":        os.environ.get("WATSONX_URL", "MISSING"),
+        "API_BASE":           os.environ.get("API_BASE", "not set"),
+        "creds_ready":        creds_ok,
+    }
+
+
 @app.get("/")
 def serve_index():
     return FileResponse(_WEB_DIR / "index.html")
