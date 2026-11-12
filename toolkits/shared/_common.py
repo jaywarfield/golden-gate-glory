@@ -43,8 +43,9 @@ def pii_warning_message() -> str:
 
 def get_credentials() -> dict:
     """Return watsonx.ai credentials from environment variables."""
-    api_key = os.environ.get("WATSONX_API_KEY", "")
-    project_id = os.environ.get("WATSONX_PROJECT_ID", "")
+    api_key = os.environ.get("WATSONX_API_KEY", "").strip()
+    project_id = os.environ.get("WATSONX_PROJECT_ID", "").strip()
+    url = os.environ.get("WATSONX_URL", "https://us-south.ml.cloud.ibm.com").strip()
     if not api_key:
         raise RuntimeError(
             "WATSONX_API_KEY environment variable is not set. "
@@ -55,9 +56,15 @@ def get_credentials() -> dict:
             "WATSONX_PROJECT_ID environment variable is not set. "
             "Add it in Railway → Variables tab."
         )
+    # Validate URL looks sane before handing to SDK (avoids cryptic SDK error)
+    if not url.startswith("https://"):
+        raise RuntimeError(
+            f"WATSONX_URL looks wrong: {url!r}. "
+            "Expected: https://us-south.ml.cloud.ibm.com"
+        )
     return {
         "api_key": api_key,
-        "url": os.environ.get("WATSONX_URL", "https://us-south.ml.cloud.ibm.com"),
+        "url": url,
         "project_id": project_id,
     }
 
