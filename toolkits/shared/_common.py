@@ -6,6 +6,9 @@
 import json
 import os
 import re
+import logging
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # PII guard
@@ -67,6 +70,50 @@ def get_credentials() -> dict:
         "url": url,
         "project_id": project_id,
     }
+
+
+# ---------------------------------------------------------------------------
+# LLM JSON parser
+# ---------------------------------------------------------------------------
+
+def parse_llm_json(raw: str, tool_name: str = "") -> dict | list:
+    """
+    Parse a JSON string returned by an LLM.
+    Handles empty responses, markdown fences, and leading/trailing text.
+    Raises ValueError with a descriptive message on failure.
+    """
+    if not raw or not raw.strip():
+        raise ValueError(
+            f"LLM returned an empty response{' in ' + tool_name if tool_name else ''}. "
+            "This can happen if the job description is too short, in an unsupported language, "
+            "or if the model timed out. Please try again."
+        )
+    text = raw.strip()
+    # Strip markdown fences: ```json ... ``` or ``` ... ```
+    if text.startswith("```"):
+        lines = text.splitlines()
+        # drop first line (```json or ```) and last line (```)
+        inner = lines[1:] if lines[-1].strip() == "```" else lines[1:]
+        if inner and inner[-1].strip() == "```":
+            inner = inner[:-1]
+        text = "\n".join(inner).strip()
+    # Find first { or [ in case model added preamble text
+    for start_char, end_char in [('{', '}'), ('[', ']')]:
+        idx = text.find(start_char)
+        if idx != -1:
+            # find last matching close char
+            end_idx = text.rfind(end_char)
+            if end_idx > idx:
+                text = text[idx:end_idx + 1]
+                break
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError as exc:
+        logger.warning("parse_llm_json failed for %s: %s | raw=%r", tool_name, exc, raw[:200])
+        raise ValueError(
+            f"Model returned invalid JSON{' in ' + tool_name if tool_name else ''}: {exc}. "
+            f"Raw response started with: {raw[:100]!r}"
+        )
 
 
 # ---------------------------------------------------------------------------

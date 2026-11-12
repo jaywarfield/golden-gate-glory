@@ -15,7 +15,7 @@ from ibm_watsonx_ai import APIClient, Credentials
 from ibm_watsonx_ai.foundation_models import ModelInference
 from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
 
-from shared._common import contains_pii, pii_warning_message, get_credentials
+from shared._common import contains_pii, pii_warning_message, get_credentials, parse_llm_json
 from shared.governance import log_inference, get_subscription_ids
 
 try:
@@ -85,11 +85,7 @@ JSON object:"""
     try:
         raw = _model(_client()).generate_text(prompt=prompt).strip()
         latency_ms = (time.monotonic() - t0) * 1000
-        if raw.startswith("```"):
-            raw = raw.split("```")[1]
-            if raw.startswith("json"):
-                raw = raw[4:]
-        result = json.loads(raw.strip())
+        result = parse_llm_json(raw, "analyze_job_description")
         result["pii_warning"] = None
         result["error"] = None
 
@@ -195,11 +191,7 @@ JSON object:"""
     try:
         raw = _model(_client()).generate_text(prompt=prompt).strip()
         latency_ms_draft = (time.monotonic() - t0_draft) * 1000
-        if raw.startswith("```"):
-            raw = raw.split("```")[1]
-            if raw.startswith("json"):
-                raw = raw[4:]
-        sections = json.loads(raw.strip())
+        sections = parse_llm_json(raw, "build_resume_draft")
 
         # ── Grounding check: verify every EVIDENCED tag ────────────────────
         # Build a flat list of all EVIDENCED items for the check prompt.

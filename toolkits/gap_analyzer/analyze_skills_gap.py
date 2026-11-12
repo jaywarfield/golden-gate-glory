@@ -17,7 +17,7 @@ from ibm_watsonx_ai.foundation_models import ModelInference
 from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
 
 from shared._common import (
-    contains_pii, pii_warning_message, get_credentials,
+    contains_pii, pii_warning_message, get_credentials, parse_llm_json,
     lookup_skillsbuild, lookup_skillbridge,
 )
 from shared.governance import log_inference, get_subscription_ids
@@ -97,11 +97,7 @@ JSON object:"""
         )
         raw = model.generate_text(prompt=prompt).strip()
         latency_ms = (time.monotonic() - t0) * 1000
-        if raw.startswith("```"):
-            raw = raw.split("```")[1]
-            if raw.startswith("json"):
-                raw = raw[4:]
-        result = json.loads(raw.strip())
+        result = parse_llm_json(raw, "analyze_skills_gap")
 
         gap_skills = result.get("gap_skills", [])
         coverage_pct = result.get("coverage_pct", 0)

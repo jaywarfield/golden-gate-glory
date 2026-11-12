@@ -16,7 +16,7 @@ from ibm_watsonx_ai.foundation_models import ModelInference
 from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
 
 from shared._common import (
-    contains_pii, pii_warning_message, get_credentials,
+    contains_pii, pii_warning_message, get_credentials, parse_llm_json,
     lookup_crosswalk, load_onet_occupation_skills,
 )
 from shared.governance import log_inference, get_subscription_ids
@@ -136,11 +136,7 @@ JSON array:"""
         )
         raw = model.generate_text(prompt=prompt).strip()
         latency_ms = (time.monotonic() - t0) * 1000
-        if raw.startswith("```"):
-            raw = raw.split("```")[1]
-            if raw.startswith("json"):
-                raw = raw[4:]
-        skills = json.loads(raw.strip())
+        skills = parse_llm_json(raw, "map_military_skills")
 
         # Count how many skills have direct textual evidence vs crosswalk-only
         evidence_sourced = sum(
