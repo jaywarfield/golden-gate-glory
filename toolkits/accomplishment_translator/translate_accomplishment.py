@@ -90,7 +90,7 @@ Civilian resume bullet:"""
                 GenParams.STOP_SEQUENCES: ["\n"],
             },
         )
-        response = model.generate_text(prompt=prompt)
+        response = model.generate(prompt=prompt)["results"][0]["generated_text"]
         latency_ms = (time.monotonic() - t0) * 1000
         translated = response.strip().lstrip("•-– ").strip()
 

@@ -39,7 +39,7 @@ RUN pip install --no-cache-dir -r src/requirements.txt
 # toolkit functions directly and never needs the @tool decorator.  All 4 toolkit
 # files have a try/except fallback so the import fails silently if absent.
 RUN pip install --no-cache-dir \
-    ibm-watsonx-ai>=1.1.0 \
+    "ibm-watsonx-ai>=1.1.0,<2.0.0" \
     openpyxl>=3.1.0 \
     pandas>=2.0.0
 

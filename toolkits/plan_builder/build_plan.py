@@ -83,7 +83,7 @@ JSON object:"""
 
     t0 = time.monotonic()
     try:
-        raw = _model(_client()).generate_text(prompt=prompt).strip()
+        raw = _model(_client()).generate(prompt=prompt)["results"][0]["generated_text"].strip()
         latency_ms = (time.monotonic() - t0) * 1000
         result = parse_llm_json(raw, "analyze_job_description")
         result["pii_warning"] = None
@@ -190,7 +190,7 @@ JSON object:"""
 
     t0_draft = time.monotonic()
     try:
-        raw = _model(_client()).generate_text(prompt=prompt).strip()
+        raw = _model(_client()).generate(prompt=prompt)["results"][0]["generated_text"].strip()
         latency_ms_draft = (time.monotonic() - t0_draft) * 1000
         sections = parse_llm_json(raw, "build_resume_draft")
 
@@ -228,7 +228,7 @@ EVIDENCED ITEMS TO CHECK:
 JSON array:"""
 
             t0_check = time.monotonic()
-            check_raw = _model(_client()).generate_text(prompt=check_prompt).strip()
+            check_raw = _model(_client()).generate(prompt=check_prompt)["results"][0]["generated_text"].strip()
             latency_ms_check = (time.monotonic() - t0_check) * 1000
 
             if check_raw.startswith("```"):

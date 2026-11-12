@@ -95,7 +95,7 @@ JSON object:"""
                 GenParams.TEMPERATURE: 0.2,
             },
         )
-        raw = model.generate_text(prompt=prompt).strip()
+        raw = model.generate(prompt=prompt)["results"][0]["generated_text"].strip()
         latency_ms = (time.monotonic() - t0) * 1000
         result = parse_llm_json(raw, "analyze_skills_gap")
 

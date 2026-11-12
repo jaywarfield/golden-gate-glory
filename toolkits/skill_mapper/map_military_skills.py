@@ -134,7 +134,7 @@ JSON array:"""
                 GenParams.TEMPERATURE: 0.2,
             },
         )
-        raw = model.generate_text(prompt=prompt).strip()
+        raw = model.generate(prompt=prompt)["results"][0]["generated_text"].strip()
         latency_ms = (time.monotonic() - t0) * 1000
         skills = parse_llm_json(raw, "map_military_skills")
 
