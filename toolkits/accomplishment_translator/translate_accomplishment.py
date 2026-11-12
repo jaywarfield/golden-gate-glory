@@ -16,7 +16,11 @@ from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
 from shared._common import contains_pii, pii_warning_message, get_credentials
 from shared.governance import log_inference, get_subscription_ids
 
-from ibm_watsonx_orchestrate.agent_builder.tools import tool, ToolPermission
+try:
+    from ibm_watsonx_orchestrate.agent_builder.tools import tool, ToolPermission
+except ImportError:
+    def tool(**_kw): return lambda f: f          # no-op decorator
+    class ToolPermission: READ_ONLY = None       # noqa: E701
 
 _MODEL_ID = "ibm/granite-4-h-small"
 
