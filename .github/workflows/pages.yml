@@ -3,16 +3,29 @@
 #
 # Deploys web/index.html to GitHub Pages on every push to main.
 #
-# Setup (one-time, in your repo settings):
+# ── Two-environment strategy ─────────────────────────────────────────────────
+#
+#   TESTERS  →  https://<user>.github.io/golden-gate-glory   (this workflow)
+#               USE_MOCK=true — always works, no backend required
+#
+#   LIVE DEV →  https://<railway-app>.up.railway.app          (Railway)
+#               USE_MOCK=false — start.sh injects API_BASE at container startup
+#               using RAILWAY_PUBLIC_DOMAIN (set automatically by Railway)
+#
+#   When Railway is confirmed working:
+#     1. Set API_BASE secret (below) to the Railway URL
+#     2. Push to main → Pages redeploys with USE_MOCK=false
+#     Testers seamlessly get the live version, zero downtime.
+#
+# ── One-time GitHub setup ─────────────────────────────────────────────────────
 #   Settings → Pages → Source → GitHub Actions
 #
-# After the bridge server is deployed (IBM Code Engine or similar):
+# ── To enable live mode on Pages (after Railway is confirmed working) ─────────
 #   Settings → Secrets → Actions → New repository secret:
 #     Name:  API_BASE
-#     Value: https://<your-bridge-hostname>   (no trailing slash)
+#     Value: https://<your-railway-hostname>   (no trailing slash)
 #
-# If API_BASE secret is not set, the page falls back to USE_MOCK = true
-# automatically and works as a full demo without a backend.
+# If API_BASE secret is not set, the page stays on USE_MOCK=true automatically.
 
 name: Deploy to GitHub Pages
 

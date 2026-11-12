@@ -39,7 +39,7 @@
 #   cd terraform && terraform destroy   # (optional) destroy IBM Cloud instances
 
 .PHONY: all setup provision deploy deploy-live promote destroy \
-        bridge-install bridge-run bridge-build bridge-push \
+        bridge-install bridge-run bridge-run-live bridge-build bridge-push \
         bridge-deploy bridge-destroy bridge-logs bridge-url \
         pages-secret serve \
         test test-unit lint register-governance governance help
@@ -168,7 +168,7 @@ serve:
 	@open "http://localhost:8080/index.html" 2>/dev/null || true
 	python3 -m http.server 8080 --directory web
 
-## bridge-run: Run bridge server locally on http://localhost:8080
+## bridge-run: Run bridge server locally on http://localhost:8080 (mock mode — no injection)
 bridge-run:
 	@echo "$(BLUE)▶ Starting bridge server at http://localhost:8080 ...$(NC)"
 	@echo "  (Ctrl-C to stop)"
@@ -176,6 +176,18 @@ bridge-run:
 	  echo "$(YELLOW)⚠ WATSONX_API_KEY not set — AI calls will fail. Check your .env file.$(NC)"; \
 	fi
 	uvicorn src.server:app --reload --port $(CE_PORT)
+
+## bridge-run-live: Run bridge server locally simulating Railway (USE_MOCK=false, live watsonx.ai)
+bridge-run-live:
+	@echo "$(BLUE)▶ Starting bridge server (live mode) at http://localhost:8080 ...$(NC)"
+	@echo "  start.sh will inject API_BASE=http://localhost:8080 into web/index.html"
+	@echo "  $(YELLOW)Note: edits web/index.html in-place. Run 'git checkout web/index.html' to undo.$(NC)"
+	@echo "  (Ctrl-C to stop)"
+	@if [ -z "$$WATSONX_API_KEY" ]; then \
+	  echo "$(RED)✗ WATSONX_API_KEY not set — set it in .env before running live mode.$(NC)"; \
+	  exit 1; \
+	fi
+	API_BASE=http://localhost:8080 sh start.sh
 
 ## bridge-build: Build the Docker image for the bridge server
 bridge-build:
@@ -338,7 +350,7 @@ help:
 	@echo "$(BLUE)Orchestrate agents:$(NC)"
 	@grep -E '^## (deploy|promote|provision|destroy):' Makefile | sed 's/## /  make /' | column -t -s ':'
 	@echo ""
-	@echo "$(BLUE)Bridge server (src/server.py → IBM Code Engine):$(NC)"
+	@echo "$(BLUE)Bridge server (src/server.py):$(NC)"
 	@grep -E '^## bridge-' Makefile | sed 's/## /  make /' | column -t -s ':'
 	@echo ""
 	@echo "$(BLUE)GitHub Pages:$(NC)"

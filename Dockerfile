@@ -13,6 +13,10 @@
 #     -e WATSONX_PROJECT_ID=<id> \
 #     -e WATSONX_URL=https://us-south.ml.cloud.ibm.com \
 #     golden-gate-glory:latest
+#
+# On Railway, RAILWAY_PUBLIC_DOMAIN is injected automatically by the platform.
+# start.sh uses it to flip USE_MOCK=false in web/index.html before the server
+# starts, so the Railway-served frontend calls the correct bridge URL.
 
 FROM python:3.11-slim
 
@@ -42,8 +46,12 @@ COPY src/       ./src/
 COPY toolkits/  ./toolkits/
 COPY knowledge-bases/ ./knowledge-bases/
 COPY web/       ./web/
+COPY start.sh   ./start.sh
+RUN chmod +x start.sh
 
 EXPOSE 8080
 
-# Run the FastAPI bridge server
-CMD ["uvicorn", "src.server:app", "--host", "0.0.0.0", "--port", "8080"]
+# start.sh injects API_BASE / flips USE_MOCK, then launches uvicorn.
+# Railway sets RAILWAY_PUBLIC_DOMAIN automatically; API_BASE can also be
+# set explicitly to override (e.g. for other platforms or local testing).
+ENTRYPOINT ["sh", "start.sh"]
