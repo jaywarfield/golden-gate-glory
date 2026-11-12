@@ -332,7 +332,8 @@ def _step_gap_analysis(inp: dict) -> dict:
 
     return {
         "gap_skills":                 gap_skills_normalized,
-        "matched_skills":             covered,
+        "covered_skills":             [{"skill_name": s} if isinstance(s, str) else s for s in covered],
+        "coverage_pct":               result.get("coverage_pct", 0),
         "alignment_pct":              result.get("coverage_pct", 0),
         "skillsbuild_recommendations": result.get("skillsbuild_recommendations", []),
         "skillbridge_programs":        result.get("skillbridge_programs", []),
