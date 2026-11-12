@@ -28,7 +28,7 @@ except ImportError:
     def tool(**_kw): return lambda f: f          # no-op decorator
     class ToolPermission: READ_ONLY = None       # noqa: E701
 
-_MODEL_ID = "ibm/granite-4-h-small"
+_MODEL_ID = "ibm/granite-3-8b-instruct"
 
 
 @tool(permission=ToolPermission.READ_ONLY)
