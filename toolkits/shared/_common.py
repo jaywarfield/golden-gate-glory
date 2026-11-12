@@ -43,10 +43,22 @@ def pii_warning_message() -> str:
 
 def get_credentials() -> dict:
     """Return watsonx.ai credentials from environment variables."""
+    api_key = os.environ.get("WATSONX_API_KEY", "")
+    project_id = os.environ.get("WATSONX_PROJECT_ID", "")
+    if not api_key:
+        raise RuntimeError(
+            "WATSONX_API_KEY environment variable is not set. "
+            "Add it in Railway → Variables tab."
+        )
+    if not project_id:
+        raise RuntimeError(
+            "WATSONX_PROJECT_ID environment variable is not set. "
+            "Add it in Railway → Variables tab."
+        )
     return {
-        "api_key": os.environ["WATSONX_API_KEY"],
+        "api_key": api_key,
         "url": os.environ.get("WATSONX_URL", "https://us-south.ml.cloud.ibm.com"),
-        "project_id": os.environ["WATSONX_PROJECT_ID"],
+        "project_id": project_id,
     }
 
 
