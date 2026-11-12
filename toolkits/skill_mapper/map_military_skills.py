@@ -75,12 +75,6 @@ def map_military_skills(
     onet_activities = path_entry["work_activities"] if path_entry else []
 
     # ── Step 3: LLM expansion grounded by KB data ───────────────────────────
-    creds = get_credentials()
-    client = APIClient(
-        credentials=Credentials(url=creds["url"], api_key=creds["api_key"]),
-        project_id=creds["project_id"],
-    )
-
     crosswalk_context = (
         f"O*NET crosswalk: {specialty_code} → {civilian_title} (SOC {onet_soc})"
         if onet_soc else "No direct O*NET crosswalk match found."
@@ -126,6 +120,12 @@ JSON array:"""
 
     t0 = time.monotonic()
     try:
+        # Build client inside try so all SDK errors are caught and reported
+        creds = get_credentials()
+        client = APIClient(
+            credentials=Credentials(url=creds["url"], api_key=creds["api_key"]),
+            project_id=creds["project_id"],
+        )
         model = ModelInference(
             model_id=_MODEL_ID,
             api_client=client,
@@ -134,7 +134,16 @@ JSON array:"""
                 GenParams.TEMPERATURE: 0.2,
             },
         )
-        raw = model.generate(prompt=prompt)["results"][0]["generated_text"].strip()
+        _resp = model.generate(prompt=prompt)
+        import logging as _log; _log.getLogger(__name__).warning("generate resp type=%s keys=%s", type(_resp), list(_resp.keys()) if isinstance(_resp, dict) else "N/A")
+        # SDK response shape varies by version — handle both list and dict results
+        _results = _resp.get("results", _resp) if isinstance(_resp, dict) else _resp
+        if isinstance(_results, list):
+            raw = _results[0]["generated_text"].strip()
+        elif isinstance(_results, dict):
+            raw = _results.get("generated_text", str(_results)).strip()
+        else:
+            raw = str(_results).strip()
         latency_ms = (time.monotonic() - t0) * 1000
         skills = parse_llm_json(raw, "map_military_skills")
 
