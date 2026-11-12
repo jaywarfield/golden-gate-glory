@@ -1280,14 +1280,8 @@
       }
       STATE.skills = skillResult.skills || [];
       STATE.gapResult = gapResult;
-      try {
-        renderStep4();
-      } catch (renderErr) {
-        showStepError('s4', `Render error in step 4: ${renderErr.message} — skillResult keys: ${Object.keys(skillResult||{}).join(',')} | gapResult keys: ${Object.keys(gapResult||{}).join(',')}`);
-        console.error('renderStep4 error:', renderErr, 'skillResult:', skillResult, 'gapResult:', gapResult);
-        return;
-      }
-    } catch (e) { showStepError('s4', `Skill analysis failed: ${e.message} (${e.stack||e})`); }
+      renderStep4();
+    } catch (e) { showStepError('s4', `Skill analysis failed: ${e.message}`); }
     finally { setStepLoading('s4', false); }
   }
 
@@ -2038,7 +2032,8 @@
     // even on 500, so we can surface the real Python exception to the UI.
     let data;
     try { data = await resp.json(); } catch (_) { data = {}; }
-    if (data.error) throw new Error(data.error);
+    // Only throw if error is a non-empty string (guards against numeric 0 leaking in)
+    if (typeof data.error === 'string' && data.error.length > 0) throw new Error(data.error);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
     return data;
   }

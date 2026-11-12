@@ -295,23 +295,28 @@ def _step_gap_analysis(inp: dict) -> dict:
         job_description=inp.get("job_description", ""),
     )
 
-    if result.get("error"):
-        return {"error": result["error"]}
+    # Surface any error from the toolkit (check both truthy and explicit None)
+    if result.get("error") is not None and result.get("error") is not False:
+        err = result["error"]
+        if err:  # non-empty / non-zero
+            return {"error": str(err)}
     if result.get("pii_warning"):
         return {"error": result["pii_warning"]}
 
-    gap_skills = result.get("gap_skills") or []
-    covered    = result.get("covered_skills") or []
+    gap_skills_raw = result.get("gap_skills") or []
+    covered        = result.get("covered_skills") or []
 
-    # Normalize gap_skills to the shape the frontend renders
-    # frontend expects: [{skill_name, priority, courses[{title, credential_type, hours_estimate, url}]}]
-    sb_recs = {
-        c["course_title"]: c
-        for c in (result.get("skillsbuild_recommendations") or [])
-    }
+    # Normalize gap_skill entries — LLM may return strings OR dicts
+    def _skill_name(s: Any) -> str:
+        if isinstance(s, str):
+            return s
+        if isinstance(s, dict):
+            return s.get("skill_name") or s.get("skill") or s.get("name") or str(s)
+        return str(s)
 
     gap_skills_normalized = []
-    for skill in gap_skills:
+    for skill in gap_skills_raw:
+        sname = _skill_name(skill)
         # Find any course that tags this skill
         matching_courses = [
             {
@@ -321,11 +326,11 @@ def _step_gap_analysis(inp: dict) -> dict:
                 "url":              c.get("url", "https://skillsbuild.org"),
             }
             for c in (result.get("skillsbuild_recommendations") or [])
-            if any(skill.lower() in tag.lower() or tag.lower() in skill.lower()
+            if any(sname.lower() in tag.lower() or tag.lower() in sname.lower()
                    for tag in c.get("skill_tags", []))
         ]
         gap_skills_normalized.append({
-            "skill_name": skill,
+            "skill_name": sname,
             "priority":   "High",
             "courses":    matching_courses[:2],
         })
