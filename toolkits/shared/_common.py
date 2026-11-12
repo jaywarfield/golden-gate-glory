@@ -76,10 +76,44 @@ def get_credentials() -> dict:
 # LLM JSON parser
 # ---------------------------------------------------------------------------
 
+def _extract_json_block(text: str) -> str:
+    """
+    Extract the first balanced JSON object `{...}` or array `[...]` from text.
+    Uses brace counting so trailing model commentary is ignored.
+    """
+    for open_ch, close_ch in [('{', '}'), ('[', ']')]:
+        start = text.find(open_ch)
+        if start == -1:
+            continue
+        depth = 0
+        in_string = False
+        escape_next = False
+        for i, ch in enumerate(text[start:], start):
+            if escape_next:
+                escape_next = False
+                continue
+            if ch == '\\' and in_string:
+                escape_next = True
+                continue
+            if ch == '"':
+                in_string = not in_string
+                continue
+            if in_string:
+                continue
+            if ch == open_ch:
+                depth += 1
+            elif ch == close_ch:
+                depth -= 1
+                if depth == 0:
+                    return text[start:i + 1]
+    return text  # fallback — return as-is and let json.loads report the error
+
+
 def parse_llm_json(raw: str, tool_name: str = "") -> dict | list:
     """
     Parse a JSON string returned by an LLM.
-    Handles empty responses, markdown fences, and leading/trailing text.
+    Handles empty responses, markdown fences, preamble text, and trailing
+    model commentary after the closing brace.
     Raises ValueError with a descriptive message on failure.
     """
     if not raw or not raw.strip():
@@ -92,20 +126,12 @@ def parse_llm_json(raw: str, tool_name: str = "") -> dict | list:
     # Strip markdown fences: ```json ... ``` or ``` ... ```
     if text.startswith("```"):
         lines = text.splitlines()
-        # drop first line (```json or ```) and last line (```)
-        inner = lines[1:] if lines[-1].strip() == "```" else lines[1:]
+        inner = lines[1:]
         if inner and inner[-1].strip() == "```":
             inner = inner[:-1]
         text = "\n".join(inner).strip()
-    # Find first { or [ in case model added preamble text
-    for start_char, end_char in [('{', '}'), ('[', ']')]:
-        idx = text.find(start_char)
-        if idx != -1:
-            # find last matching close char
-            end_idx = text.rfind(end_char)
-            if end_idx > idx:
-                text = text[idx:end_idx + 1]
-                break
+    # Extract the first balanced JSON block (ignores trailing model commentary)
+    text = _extract_json_block(text)
     try:
         return json.loads(text)
     except json.JSONDecodeError as exc:
