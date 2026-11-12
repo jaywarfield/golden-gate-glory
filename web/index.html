@@ -2028,9 +2028,12 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
-    const data = await resp.json();
+    // Always try to read the JSON body — the server returns {"error": "..."}
+    // even on 500, so we can surface the real Python exception to the UI.
+    let data;
+    try { data = await resp.json(); } catch (_) { data = {}; }
     if (data.error) throw new Error(data.error);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
     return data;
   }
 
