@@ -118,10 +118,20 @@ JSON array:"""
     try:
         raw = llm_generate(prompt, _MODEL_ID, max_tokens=600)
         latency_ms = (time.monotonic() - t0) * 1000
-        skills = parse_llm_json(raw, "map_military_skills")
+        parsed = parse_llm_json(raw, "map_military_skills")
 
-        # Count how many skills have direct textual evidence vs crosswalk-only
-        # Guard: model may return plain strings instead of dicts
+        # Normalise to a list — model sometimes returns a dict wrapper like
+        # {"skills": [...]} or {"0": ...} instead of a bare array
+        if isinstance(parsed, dict):
+            # try common wrapper keys first, then fall back to values
+            skills = (parsed.get("skills") or parsed.get("skill_inventory")
+                      or list(parsed.values()))
+            if skills and isinstance(skills[0], list):
+                skills = skills[0]  # unwrap double-nested
+        else:
+            skills = parsed
+
+        # Guard: model may return plain strings instead of objects
         if skills and isinstance(skills[0], str):
             skills = [{"skill": s, "category": "", "evidence": ""} for s in skills]
         evidence_sourced = sum(

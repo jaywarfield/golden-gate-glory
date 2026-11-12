@@ -268,7 +268,11 @@ def lookup_skillsbuild(career_path: str, gap_skills: list) -> list:
     Returns up to 5 most relevant courses.
     """
     career_path_lower = career_path.lower()
-    gap_lower = [s.lower() for s in gap_skills]
+    # gap_skills may contain strings or dicts — normalise to strings
+    gap_lower = [
+        (s if isinstance(s, str) else s.get("skill_name") or s.get("skill") or str(s)).lower()
+        for s in gap_skills
+    ]
     scored = []
     for course in load_skillsbuild_courses():
         if career_path not in course.get("career_paths", []):
