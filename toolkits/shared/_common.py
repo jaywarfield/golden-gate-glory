@@ -129,7 +129,11 @@ def llm_generate(prompt: str, model_id: str, max_tokens: int = 800, temperature:
     results = body.get("results", [])
     if not results:
         raise RuntimeError(f"watsonx.ai returned no results: {body}")
-    return results[0].get("generated_text", "")
+    # results may be a list [{...}] or a single dict {...} depending on API version
+    first = results[0] if isinstance(results, list) else results
+    if not isinstance(first, dict):
+        raise RuntimeError(f"Unexpected results format from watsonx.ai: {results!r}")
+    return first.get("generated_text", "")
 
 
 # ---------------------------------------------------------------------------
