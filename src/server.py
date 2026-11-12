@@ -254,13 +254,16 @@ def _step_map_skills(inp: dict) -> dict:
 
     # Normalize skill shape: toolkit returns {skill, category, evidence}
     # frontend expects {skill_name, category, confidence}
+    # Guard: Llama sometimes returns a plain array of strings instead of objects
     raw_skills = result.get("skills") or []
     skills = [
         {
-            "skill_name": s.get("skill", s.get("skill_name", "")),
-            "category":   s.get("category", ""),
-            "confidence": "High" if not s.get("evidence", "").startswith("O*NET crosswalk") else "Medium",
-            "evidence":   s.get("evidence", ""),
+            "skill_name": s if isinstance(s, str) else s.get("skill", s.get("skill_name", "")),
+            "category":   "" if isinstance(s, str) else s.get("category", ""),
+            "confidence": "High" if isinstance(s, str) else (
+                "High" if not s.get("evidence", "").startswith("O*NET crosswalk") else "Medium"
+            ),
+            "evidence":   "" if isinstance(s, str) else s.get("evidence", ""),
         }
         for s in raw_skills
     ]

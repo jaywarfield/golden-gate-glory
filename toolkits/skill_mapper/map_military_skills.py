@@ -139,6 +139,9 @@ JSON array:"""
         skills = parse_llm_json(raw, "map_military_skills")
 
         # Count how many skills have direct textual evidence vs crosswalk-only
+        # Guard: model may return plain strings instead of dicts
+        if skills and isinstance(skills[0], str):
+            skills = [{"skill": s, "category": "", "evidence": ""} for s in skills]
         evidence_sourced = sum(
             1 for s in skills
             if isinstance(s.get("evidence"), str)
