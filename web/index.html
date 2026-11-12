@@ -1280,8 +1280,14 @@
       }
       STATE.skills = skillResult.skills || [];
       STATE.gapResult = gapResult;
-      renderStep4();
-    } catch (e) { showStepError('s4', `Skill analysis failed: ${e.message}`); }
+      try {
+        renderStep4();
+      } catch (renderErr) {
+        showStepError('s4', `Render error in step 4: ${renderErr.message} — skillResult keys: ${Object.keys(skillResult||{}).join(',')} | gapResult keys: ${Object.keys(gapResult||{}).join(',')}`);
+        console.error('renderStep4 error:', renderErr, 'skillResult:', skillResult, 'gapResult:', gapResult);
+        return;
+      }
+    } catch (e) { showStepError('s4', `Skill analysis failed: ${e.message} (${e.stack||e})`); }
     finally { setStepLoading('s4', false); }
   }
 
