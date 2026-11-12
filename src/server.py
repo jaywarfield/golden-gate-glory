@@ -491,12 +491,23 @@ def _step_gate(inp: dict) -> dict:
     except Exception:
         return {"error": "Invalid resume_draft_json"}
 
-    inferred = draft.get("inferred_count", 0)
-    missing  = draft.get("missing_count", 0)
-    warnings = draft.get("grounding_warnings", [])
+    # Prefer live tag_counts (set by s5UpdateTagCounts after any Add/Delete)
+    # over the original inferred_count/missing_count which are stale after edits
+    tag_counts = draft.get("tag_counts", {})
+    if tag_counts:
+        inferred = tag_counts.get("INFERRED", 0)
+        missing  = tag_counts.get("MISSING", 0)
+    else:
+        # Fallback: recompute from the actual bullet/summary tags
+        all_items = list(draft.get("bullets") or [])
+        if draft.get("summary"):
+            s = draft["summary"]
+            all_items.append(s if isinstance(s, dict) else {"tag": "EVIDENCED"})
+        inferred = sum(1 for x in all_items if (x.get("tag","")).upper() == "INFERRED")
+        missing  = sum(1 for x in all_items if (x.get("tag","")).upper() == "MISSING")
 
-    # Only count grounding downgrades that aren't already included in inferred_count
-    # (build_resume_draft already folds downgraded items into inferred_count)
+    warnings = draft.get("grounding_warnings", [])
+    # Only count grounding downgrades not already folded into inferred_count
     extra_downgrade = max(0, len(warnings) - inferred)
 
     result = evaluate_export_gate(
