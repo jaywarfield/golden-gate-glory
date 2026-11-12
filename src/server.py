@@ -495,21 +495,47 @@ def _step_gate(inp: dict) -> dict:
     missing  = draft.get("missing_count", 0)
     warnings = draft.get("grounding_warnings", [])
 
+    # Only count grounding downgrades that aren't already included in inferred_count
+    # (build_resume_draft already folds downgraded items into inferred_count)
+    extra_downgrade = max(0, len(warnings) - inferred)
+
     result = evaluate_export_gate(
         inferred_count=inferred,
         missing_count=missing,
-        grounding_downgrade_count=len(warnings),
+        grounding_downgrade_count=extra_downgrade,
         gate_holds_json="[]",
     )
 
     holds = result.get("holds", [])
+
+    # Build gate_holds with the fields the frontend renders:
+    # sentence, explanation, action_required, tag
+    def _hold_obj(h: str) -> dict:
+        if "INFERRED" in h or "downgraded" in h.lower():
+            return {
+                "tag": "INFERRED",
+                "sentence": h,
+                "explanation": "The AI could not confirm this claim against your service record.",
+                "action_required": "Review and confirm or correct this item before export.",
+            }
+        if "MISSING" in h:
+            return {
+                "tag": "MISSING",
+                "sentence": h,
+                "explanation": "No supporting evidence was found in your service record for a required item.",
+                "action_required": "Supply the missing information or remove the requirement before export.",
+            }
+        return {
+            "tag": "HOLD",
+            "sentence": h,
+            "explanation": "",
+            "action_required": "Resolve this issue before export.",
+        }
+
     return {
         "gate_status":     result.get("gate_status", "BLOCKED"),
         "summary_message": result.get("message", ""),
-        "gate_holds": [
-            {"tag": "INFERRED" if "INFERRED" in h else "MISSING", "text": h}
-            for h in holds
-        ],
+        "gate_holds":      [_hold_obj(h) for h in holds],
     }
 
 
