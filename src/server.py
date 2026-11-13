@@ -66,6 +66,22 @@ app.add_middleware(
 _WEB_DIR = _ROOT / "web"
 
 
+@app.get("/health")
+def health():
+    """Health check — returns env var status without exposing values."""
+    import sys
+    creds_ok = bool(os.environ.get("WATSONX_API_KEY")) and bool(os.environ.get("WATSONX_PROJECT_ID"))
+    return {
+        "status": "ok",
+        "python": sys.version,
+        "WATSONX_API_KEY":    "set" if os.environ.get("WATSONX_API_KEY")    else "MISSING",
+        "WATSONX_PROJECT_ID": "set" if os.environ.get("WATSONX_PROJECT_ID") else "MISSING",
+        "WATSONX_URL":        os.environ.get("WATSONX_URL", "MISSING"),
+        "API_BASE":           os.environ.get("API_BASE", "not set"),
+        "creds_ready":        creds_ok,
+    }
+
+
 @app.get("/")
 def serve_index():
     return FileResponse(_WEB_DIR / "index.html")
@@ -238,13 +254,16 @@ def _step_map_skills(inp: dict) -> dict:
 
     # Normalize skill shape: toolkit returns {skill, category, evidence}
     # frontend expects {skill_name, category, confidence}
+    # Guard: Llama sometimes returns a plain array of strings instead of objects
     raw_skills = result.get("skills") or []
     skills = [
         {
-            "skill_name": s.get("skill", s.get("skill_name", "")),
-            "category":   s.get("category", ""),
-            "confidence": "High" if not s.get("evidence", "").startswith("O*NET crosswalk") else "Medium",
-            "evidence":   s.get("evidence", ""),
+            "skill_name": s if isinstance(s, str) else s.get("skill", s.get("skill_name", "")),
+            "category":   "" if isinstance(s, str) else s.get("category", ""),
+            "confidence": "High" if isinstance(s, str) else (
+                "High" if not s.get("evidence", "").startswith("O*NET crosswalk") else "Medium"
+            ),
+            "evidence":   "" if isinstance(s, str) else s.get("evidence", ""),
         }
         for s in raw_skills
     ]
@@ -276,23 +295,28 @@ def _step_gap_analysis(inp: dict) -> dict:
         job_description=inp.get("job_description", ""),
     )
 
-    if result.get("error"):
-        return {"error": result["error"]}
+    # Surface any error from the toolkit (check both truthy and explicit None)
+    if result.get("error") is not None and result.get("error") is not False:
+        err = result["error"]
+        if err:  # non-empty / non-zero
+            return {"error": str(err)}
     if result.get("pii_warning"):
         return {"error": result["pii_warning"]}
 
-    gap_skills = result.get("gap_skills") or []
-    covered    = result.get("covered_skills") or []
+    gap_skills_raw = result.get("gap_skills") or []
+    covered        = result.get("covered_skills") or []
 
-    # Normalize gap_skills to the shape the frontend renders
-    # frontend expects: [{skill_name, priority, courses[{title, credential_type, hours_estimate, url}]}]
-    sb_recs = {
-        c["course_title"]: c
-        for c in (result.get("skillsbuild_recommendations") or [])
-    }
+    # Normalize gap_skill entries — LLM may return strings OR dicts
+    def _skill_name(s: Any) -> str:
+        if isinstance(s, str):
+            return s
+        if isinstance(s, dict):
+            return s.get("skill_name") or s.get("skill") or s.get("name") or str(s)
+        return str(s)
 
     gap_skills_normalized = []
-    for skill in gap_skills:
+    for skill in gap_skills_raw:
+        sname = _skill_name(skill)
         # Find any course that tags this skill
         matching_courses = [
             {
@@ -302,18 +326,19 @@ def _step_gap_analysis(inp: dict) -> dict:
                 "url":              c.get("url", "https://skillsbuild.org"),
             }
             for c in (result.get("skillsbuild_recommendations") or [])
-            if any(skill.lower() in tag.lower() or tag.lower() in skill.lower()
+            if any(sname.lower() in tag.lower() or tag.lower() in sname.lower()
                    for tag in c.get("skill_tags", []))
         ]
         gap_skills_normalized.append({
-            "skill_name": skill,
+            "skill_name": sname,
             "priority":   "High",
             "courses":    matching_courses[:2],
         })
 
     return {
         "gap_skills":                 gap_skills_normalized,
-        "matched_skills":             covered,
+        "covered_skills":             [{"skill_name": s} if isinstance(s, str) else s for s in covered],
+        "coverage_pct":               result.get("coverage_pct", 0),
         "alignment_pct":              result.get("coverage_pct", 0),
         "skillsbuild_recommendations": result.get("skillsbuild_recommendations", []),
         "skillbridge_programs":        result.get("skillbridge_programs", []),
@@ -466,25 +491,62 @@ def _step_gate(inp: dict) -> dict:
     except Exception:
         return {"error": "Invalid resume_draft_json"}
 
-    inferred = draft.get("inferred_count", 0)
-    missing  = draft.get("missing_count", 0)
+    # Prefer live tag_counts (set by s5UpdateTagCounts after any Add/Delete)
+    # over the original inferred_count/missing_count which are stale after edits
+    tag_counts = draft.get("tag_counts", {})
+    if tag_counts:
+        inferred = tag_counts.get("INFERRED", 0)
+        missing  = tag_counts.get("MISSING", 0)
+    else:
+        # Fallback: recompute from the actual bullet/summary tags
+        all_items = list(draft.get("bullets") or [])
+        if draft.get("summary"):
+            s = draft["summary"]
+            all_items.append(s if isinstance(s, dict) else {"tag": "EVIDENCED"})
+        inferred = sum(1 for x in all_items if (x.get("tag","")).upper() == "INFERRED")
+        missing  = sum(1 for x in all_items if (x.get("tag","")).upper() == "MISSING")
+
     warnings = draft.get("grounding_warnings", [])
+    # Only count grounding downgrades not already folded into inferred_count
+    extra_downgrade = max(0, len(warnings) - inferred)
 
     result = evaluate_export_gate(
         inferred_count=inferred,
         missing_count=missing,
-        grounding_downgrade_count=len(warnings),
+        grounding_downgrade_count=extra_downgrade,
         gate_holds_json="[]",
     )
 
     holds = result.get("holds", [])
+
+    # Build gate_holds with the fields the frontend renders:
+    # sentence, explanation, action_required, tag
+    def _hold_obj(h: str) -> dict:
+        if "INFERRED" in h or "downgraded" in h.lower():
+            return {
+                "tag": "INFERRED",
+                "sentence": h,
+                "explanation": "The AI could not confirm this claim against your service record.",
+                "action_required": "Review and confirm or correct this item before export.",
+            }
+        if "MISSING" in h:
+            return {
+                "tag": "MISSING",
+                "sentence": h,
+                "explanation": "No supporting evidence was found in your service record for a required item.",
+                "action_required": "Supply the missing information or remove the requirement before export.",
+            }
+        return {
+            "tag": "HOLD",
+            "sentence": h,
+            "explanation": "",
+            "action_required": "Resolve this issue before export.",
+        }
+
     return {
         "gate_status":     result.get("gate_status", "BLOCKED"),
         "summary_message": result.get("message", ""),
-        "gate_holds": [
-            {"tag": "INFERRED" if "INFERRED" in h else "MISSING", "text": h}
-            for h in holds
-        ],
+        "gate_holds":      [_hold_obj(h) for h in holds],
     }
 
 

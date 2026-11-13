@@ -9,16 +9,16 @@ import json
 import os
 import time
 
-from ibm_watsonx_ai import APIClient, Credentials
-from ibm_watsonx_ai.foundation_models import ModelInference
-from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
-
-from shared._common import contains_pii, pii_warning_message, get_credentials
+from shared._common import contains_pii, pii_warning_message, llm_generate
 from shared.governance import log_inference, get_subscription_ids
 
-from ibm_watsonx_orchestrate.agent_builder.tools import tool, ToolPermission
+try:
+    from ibm_watsonx_orchestrate.agent_builder.tools import tool, ToolPermission
+except ImportError:
+    def tool(**_kw): return lambda f: f          # no-op decorator
+    class ToolPermission: READ_ONLY = None       # noqa: E701
 
-_MODEL_ID = "ibm/granite-4-h-small"
+_MODEL_ID = "meta-llama/llama-3-3-70b-instruct"
 
 
 @tool(permission=ToolPermission.READ_ONLY)
@@ -50,12 +50,6 @@ def translate_accomplishment(
             "pii_warning": pii_warning_message(),
         }
 
-    creds = get_credentials()
-    client = APIClient(
-        credentials=Credentials(url=creds["url"], api_key=creds["api_key"]),
-        project_id=creds["project_id"],
-    )
-
     metrics_clause = f"\nAdditional metrics to incorporate: {metrics}" if metrics.strip() else ""
 
     prompt = f"""You are an expert resume writer helping a U.S. military veteran transition to civilian employment.
@@ -77,16 +71,7 @@ Civilian resume bullet:"""
 
     t0 = time.monotonic()
     try:
-        model = ModelInference(
-            model_id=_MODEL_ID,
-            api_client=client,
-            params={
-                GenParams.MAX_NEW_TOKENS: 120,
-                GenParams.TEMPERATURE: 0.3,
-                GenParams.STOP_SEQUENCES: ["\n"],
-            },
-        )
-        response = model.generate_text(prompt=prompt)
+        response = llm_generate(prompt, _MODEL_ID, max_tokens=120, temperature=0.3)
         latency_ms = (time.monotonic() - t0) * 1000
         translated = response.strip().lstrip("•-– ").strip()
 
@@ -132,9 +117,10 @@ Civilian resume bullet:"""
             subscription_id=get_subscription_ids().get("translate_accomplishment"),
             latency_ms=(time.monotonic() - t0) * 1000,
         )
+        err_msg = f"{type(exc).__name__}: {exc}" if str(exc) else repr(exc)
         return {
             "translated_bullet": None,
             "disclaimer": None,
             "pii_warning": None,
-            "error": str(exc),
+            "error": err_msg,
         }

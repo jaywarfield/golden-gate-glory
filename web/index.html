@@ -725,7 +725,7 @@
 </div>
 
 <script>
-  const USE_MOCK = true; // mock mode — set to false and run src/server.py for live AI
+  const USE_MOCK = false; // mock mode — set to false and run src/server.py for live AI
 
   // ── PII guard ──────────────────────────────────────────────────────
   const PII_PATTERNS = [
@@ -1281,7 +1281,7 @@
       STATE.skills = skillResult.skills || [];
       STATE.gapResult = gapResult;
       renderStep4();
-    } catch (e) { showStepError('s4', `Skill analysis failed: ${e.message}`); }
+    } catch (e) { showStepError('s4', `Skill analysis failed: ${e?.message ?? String(e)}`); }
     finally { setStepLoading('s4', false); }
   }
 
@@ -1342,11 +1342,12 @@
 
     // Also show veteran civilian skills that didn't match any job skill row
     // (so all translated skills are visible in the comparison table)
+    // For these rows, col2 shows the civilian skill name (not "—")
     const matchedCivKeys = new Set(rows.map(r => r.civSkill ? (r.civSkill.skill_name||'').toLowerCase() : '').filter(Boolean));
     (STATE.skills||[]).forEach(s => {
       const sL = (s.skill_name||'').toLowerCase();
       if (!matchedCivKeys.has(sL)) {
-        rows.push({ js: '—', civSkill: s, isCovered: true, gapObj: null });
+        rows.push({ js: s.skill_name||'', civSkill: s, isCovered: true, gapObj: null, veteranOnly: true });
       }
     });
 
@@ -1369,28 +1370,44 @@
 
     const th = (w, label) => `<th style="width:${w};padding:7px 10px;background:#1e3a8a;color:#fff;font-size:11px;font-weight:700;letter-spacing:0.04em;text-align:left;border:1px solid #c8d0d9">${label}</th>`;
     const tdStyle = (extra='') => `style="padding:8px 10px;border:1px solid #e5e7eb;vertical-align:top;font-size:13px${extra?';'+extra:''}"`;
-    const toTitle = s => (s||'').replace(/\b\w/g, c => c.toUpperCase());
+    const toTitle = s => (s||'').replace(/\b(\w)(\w*)/g, (_, f, r) => f.toUpperCase() + r.toLowerCase());
 
-    // Course cell (column 4 for gap rows): course name · credential · hours · link
-    // Always has a name+badge+hours — never just a bare link
+    // Course cell (column 4 for gap rows): course name as link only
     const courseCell = gapObj => {
-      const courses = (gapObj && gapObj.courses && gapObj.courses.length) ? gapObj.courses : [
-        { title: 'IBM SkillsBuild Learning', credential_type: 'Badge', hours_estimate: 8 }
-      ];
+      const courses = (gapObj && gapObj.courses && gapObj.courses.length) ? gapObj.courses : [];
+      if (!courses.length) {
+        return `<a href="https://skillsbuild.org" target="_blank" style="font-size:12px">IBM SkillsBuild</a>`;
+      }
       return courses.slice(0, 2).map(c => {
-        const name = esc(c.title || c.course_title || 'IBM SkillsBuild Learning');
-        const cred = esc(c.credential_type || 'Badge');
-        const hrs  = c.hours_estimate ? esc(String(c.hours_estimate) + ' hrs') : '8 hrs';
-        return `<div>
-          <div style="font-size:12px;font-weight:600">${name}</div>
-          <div style="font-size:11px;color:#57606a">${cred} · ${hrs} · <a href="https://skillsbuild.org" target="_blank">skillsbuild.org</a></div>
-        </div>`;
+        const name = c.title || c.course_title || 'IBM SkillsBuild';
+        const url  = c.url || 'https://skillsbuild.org';
+        return `<div style="font-size:12px"><a href="${esc(url)}" target="_blank">${esc(name)}</a></div>`;
       }).join('');
     };
 
+    // Derive a category from a skill name when the LLM didn't provide one
+    const inferCategory = skillName => {
+      const s = (skillName||'').toLowerCase();
+      if (/lead|manag|supervis|team|mentor|coach|command|direct|coordinat|personnel|staff|delegat/.test(s)) return 'Leadership';
+      if (/network|firewall|vpn|tcp|ip|routing|switch|cisco|linux|windows|server|cloud|cyber|security|siem|soc|active.direct|microsoft|azure|aws|endpoint|patch|vulnerab|penetrat|encrypt|protocol|dns|dhcp|vlan/.test(s)) return 'IT Infrastructure';
+      if (/python|java|script|code|software|develop|program|sql|database|api|devops|git|agile|scrum/.test(s)) return 'Software Engineering';
+      if (/analys|data|report|metrics|assess|research|intelligence|trend|forecast|evaluat|audit/.test(s)) return 'Analytical';
+      if (/communicat|brief|present|writ|report|document|brief|stakeholder|liaison|translat|interpersonal/.test(s)) return 'Communication';
+      if (/operat|logistics|supply|maintenance|repair|troubleshoot|diagnos|equipment|deploy|mission|plan|schedul|procurement|inventory/.test(s)) return 'Operations';
+      if (/train|instruct|educat|curricul|facilitat|onboard|develop/.test(s)) return 'Training';
+      if (/compli|regulat|policy|standard|framework|audit|risk|govern|legal/.test(s)) return 'Compliance';
+      if (/customer|client|service|support|helpdesk|ticket|resolution|satisfact/.test(s)) return 'Customer Service';
+      if (/project|program|initiat|milestone|deliverable|budget|scope|resource/.test(s)) return 'Project Management';
+      return 'Technical';  // better fallback than "General"
+    };
+
+    // Filter out standalone "Technical" skill rows (not a specific skill)
+    const isTechnicalOnly = s => /^\s*technical\s*$/i.test(s||'');
+    const filteredRows = rows.filter(r => !isTechnicalOnly(r.js) && !(r.civSkill && isTechnicalOnly(r.civSkill.skill_name)));
+
     // Sort: covered rows first, gap rows after
-    const coveredRows = rows.filter(r => r.isCovered);
-    const gapRows     = rows.filter(r => !r.isCovered);
+    const coveredRows = filteredRows.filter(r => r.isCovered);
+    const gapRows     = filteredRows.filter(r => !r.isCovered);
     const sortedRows  = [...coveredRows, ...gapRows];
 
     let thtml = `<table style="width:100%;border-collapse:collapse">
@@ -1398,37 +1415,39 @@
         ${th('16%','Category')}
         ${th('24%','Job Skills')}
         ${th('24%','Civilian Skills / Gap')}
-        ${th('36%','Covered+Confidence / Course')}
+        ${th('36%','Covered / Courses')}
       </tr></thead><tbody>`;
 
     sortedRows.forEach((r, i) => {
       const bg   = i % 2 === 0 ? '' : 'background:#f7f8fa';
-      // Category: from civilian skill first, then gap object, then derive from job skill position
-      const cat  = (r.civSkill && r.civSkill.category)
+      // Category: from civilian skill first, then gap object, then infer from skill name
+      const cat  = (r.civSkill && r.civSkill.category && r.civSkill.category !== 'General')
                  ? r.civSkill.category
-                 : (r.gapObj && r.gapObj.category)
+                 : (r.gapObj && r.gapObj.category && r.gapObj.category !== 'General')
                  ? r.gapObj.category
-                 : 'General';
+                 : inferCategory(r.civSkill ? r.civSkill.skill_name : r.js);
+
+      // Column 2: job skill name; for veteran-only rows show the skill in italics
+      const col2 = r.veteranOnly
+        ? `<span style="font-style:italic;color:#57606a">${esc(toTitle(r.js))}</span>`
+        : esc(toTitle(r.js));
 
       // Column 3: civilian skill name (covered) OR "✗ Gap" label only (gap)
       const col3 = r.isCovered
-        ? esc(r.civSkill ? r.civSkill.skill_name : '')
+        ? esc(toTitle(r.civSkill ? r.civSkill.skill_name : r.js))
         : `<span style="color:#b91c1c;font-weight:600">✗ Gap</span>`;
 
-      // Column 4: confidence badge (covered) OR course details (gap)
+      // Column 4: "✓ Covered" only (no SkillsBuild link) OR course link (gap)
       let col4;
       if (r.isCovered) {
-        const conf = r.civSkill ? r.civSkill.confidence : '';
-        const c    = (conf||'').toLowerCase();
-        const cls  = c==='high'?'conf-high':c==='medium'?'conf-medium':'conf-low';
-        col4 = `<span style="color:#166534;font-weight:600">✓ Covered</span>${conf ? ` &nbsp;<span class="${cls}" style="font-size:11px;font-weight:600">${esc(conf)}</span>` : ''}`;
+        col4 = `<span style="color:#166534;font-weight:600">✓ Covered</span>`;
       } else {
         col4 = courseCell(r.gapObj);
       }
 
       thtml += `<tr style="${bg}">
         <td ${tdStyle('color:#57606a')}>${esc(cat)}</td>
-        <td ${tdStyle()}>${esc(toTitle(r.js))}</td>
+        <td ${tdStyle()}>${col2}</td>
         <td ${tdStyle()}>${col3}</td>
         <td ${tdStyle()}>${col4}</td>
       </tr>`;
@@ -2028,9 +2047,13 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
+    // Always try to read the JSON body — the server returns {"error": "..."}
+    // even on 500, so we can surface the real Python exception to the UI.
+    let data;
+    try { data = await resp.json(); } catch (_) { data = {}; }
+    // Only throw if error is a non-empty string (guards against numeric 0 leaking in)
+    if (typeof data.error === 'string' && data.error.length > 0) throw new Error(data.error);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
-    const data = await resp.json();
-    if (data.error) throw new Error(data.error);
     return data;
   }
 

@@ -11,19 +11,19 @@ import json
 import os
 import time
 
-from ibm_watsonx_ai import APIClient, Credentials
-from ibm_watsonx_ai.foundation_models import ModelInference
-from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
-
 from shared._common import (
-    contains_pii, pii_warning_message, get_credentials,
+    contains_pii, pii_warning_message, parse_llm_json, llm_generate,
     lookup_crosswalk, load_onet_occupation_skills,
 )
 from shared.governance import log_inference, get_subscription_ids
 
-from ibm_watsonx_orchestrate.agent_builder.tools import tool, ToolPermission
+try:
+    from ibm_watsonx_orchestrate.agent_builder.tools import tool, ToolPermission
+except ImportError:
+    def tool(**_kw): return lambda f: f          # no-op decorator
+    class ToolPermission: READ_ONLY = None       # noqa: E701
 
-_MODEL_ID = "ibm/granite-4-h-small"
+_MODEL_ID = "meta-llama/llama-3-3-70b-instruct"
 
 
 @tool(permission=ToolPermission.READ_ONLY)
@@ -71,12 +71,6 @@ def map_military_skills(
     onet_activities = path_entry["work_activities"] if path_entry else []
 
     # ── Step 3: LLM expansion grounded by KB data ───────────────────────────
-    creds = get_credentials()
-    client = APIClient(
-        credentials=Credentials(url=creds["url"], api_key=creds["api_key"]),
-        project_id=creds["project_id"],
-    )
-
     crosswalk_context = (
         f"O*NET crosswalk: {specialty_code} → {civilian_title} (SOC {onet_soc})"
         if onet_soc else "No direct O*NET crosswalk match found."
@@ -122,23 +116,24 @@ JSON array:"""
 
     t0 = time.monotonic()
     try:
-        model = ModelInference(
-            model_id=_MODEL_ID,
-            api_client=client,
-            params={
-                GenParams.MAX_NEW_TOKENS: 600,
-                GenParams.TEMPERATURE: 0.2,
-            },
-        )
-        raw = model.generate_text(prompt=prompt).strip()
+        raw = llm_generate(prompt, _MODEL_ID, max_tokens=600)
         latency_ms = (time.monotonic() - t0) * 1000
-        if raw.startswith("```"):
-            raw = raw.split("```")[1]
-            if raw.startswith("json"):
-                raw = raw[4:]
-        skills = json.loads(raw.strip())
+        parsed = parse_llm_json(raw, "map_military_skills")
 
-        # Count how many skills have direct textual evidence vs crosswalk-only
+        # Normalise to a list — model sometimes returns a dict wrapper like
+        # {"skills": [...]} or {"0": ...} instead of a bare array
+        if isinstance(parsed, dict):
+            # try common wrapper keys first, then fall back to values
+            skills = (parsed.get("skills") or parsed.get("skill_inventory")
+                      or list(parsed.values()))
+            if skills and isinstance(skills[0], list):
+                skills = skills[0]  # unwrap double-nested
+        else:
+            skills = parsed
+
+        # Guard: model may return plain strings instead of objects
+        if skills and isinstance(skills[0], str):
+            skills = [{"skill": s, "category": "", "evidence": ""} for s in skills]
         evidence_sourced = sum(
             1 for s in skills
             if isinstance(s.get("evidence"), str)
@@ -201,9 +196,10 @@ JSON array:"""
             latency_ms=(time.monotonic() - t0) * 1000,
             metadata={"fairness_attribute_service_branch": service_branch},
         )
+        err_msg = f"{type(exc).__name__}: {exc}" if str(exc) else repr(exc)
         return {
             "skills": None, "skill_count": 0,
             "onet_soc": onet_soc, "civilian_title": civilian_title,
             "onet_required_skills": onet_required,
-            "disclaimer": None, "pii_warning": None, "error": str(exc),
+            "disclaimer": None, "pii_warning": None, "error": err_msg,
         }

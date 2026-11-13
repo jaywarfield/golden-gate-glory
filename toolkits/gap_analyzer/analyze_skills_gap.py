@@ -12,19 +12,19 @@ import json
 import os
 import time
 
-from ibm_watsonx_ai import APIClient, Credentials
-from ibm_watsonx_ai.foundation_models import ModelInference
-from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
-
 from shared._common import (
-    contains_pii, pii_warning_message, get_credentials,
+    contains_pii, pii_warning_message, parse_llm_json, llm_generate,
     lookup_skillsbuild, lookup_skillbridge,
 )
 from shared.governance import log_inference, get_subscription_ids
 
-from ibm_watsonx_orchestrate.agent_builder.tools import tool, ToolPermission
+try:
+    from ibm_watsonx_orchestrate.agent_builder.tools import tool, ToolPermission
+except ImportError:
+    def tool(**_kw): return lambda f: f          # no-op decorator
+    class ToolPermission: READ_ONLY = None       # noqa: E701
 
-_MODEL_ID = "ibm/granite-4-h-small"
+_MODEL_ID = "meta-llama/llama-3-3-70b-instruct"
 
 
 @tool(permission=ToolPermission.READ_ONLY)
@@ -56,12 +56,6 @@ def analyze_skills_gap(
             "disclaimer": None, "pii_warning": pii_warning_message(), "error": None,
         }
 
-    creds = get_credentials()
-    client = APIClient(
-        credentials=Credentials(url=creds["url"], api_key=creds["api_key"]),
-        project_id=creds["project_id"],
-    )
-
     prompt = f"""You are a veteran career transition expert and skills gap analyst.
 
 Given the veteran's skill inventory and the job description below, produce a gap analysis.
@@ -83,21 +77,9 @@ JSON object:"""
 
     t0 = time.monotonic()
     try:
-        model = ModelInference(
-            model_id=_MODEL_ID,
-            api_client=client,
-            params={
-                GenParams.MAX_NEW_TOKENS: 600,
-                GenParams.TEMPERATURE: 0.2,
-            },
-        )
-        raw = model.generate_text(prompt=prompt).strip()
+        raw = llm_generate(prompt, _MODEL_ID, max_tokens=600)
         latency_ms = (time.monotonic() - t0) * 1000
-        if raw.startswith("```"):
-            raw = raw.split("```")[1]
-            if raw.startswith("json"):
-                raw = raw[4:]
-        result = json.loads(raw.strip())
+        result = parse_llm_json(raw, "analyze_skills_gap")
 
         gap_skills = result.get("gap_skills", [])
         coverage_pct = result.get("coverage_pct", 0)
@@ -181,5 +163,5 @@ JSON object:"""
         return {
             "covered_skills": None, "gap_skills": None, "coverage_pct": 0,
             "skillsbuild_recommendations": None, "skillbridge_programs": None,
-            "disclaimer": None, "pii_warning": None, "error": str(exc),
+            "disclaimer": None, "pii_warning": None, "error": f"{type(exc).__name__}: {exc}" if str(exc) else repr(exc),
         }

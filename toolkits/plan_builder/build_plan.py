@@ -11,35 +11,16 @@ import json
 import os
 import time
 
-from ibm_watsonx_ai import APIClient, Credentials
-from ibm_watsonx_ai.foundation_models import ModelInference
-from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
-
-from shared._common import contains_pii, pii_warning_message, get_credentials
+from shared._common import contains_pii, pii_warning_message, parse_llm_json, llm_generate
 from shared.governance import log_inference, get_subscription_ids
 
-from ibm_watsonx_orchestrate.agent_builder.tools import tool, ToolPermission
+try:
+    from ibm_watsonx_orchestrate.agent_builder.tools import tool, ToolPermission
+except ImportError:
+    def tool(**_kw): return lambda f: f          # no-op decorator
+    class ToolPermission: READ_ONLY = None       # noqa: E701
 
-_MODEL_ID = "ibm/granite-4-h-small"
-
-
-def _client() -> APIClient:
-    creds = get_credentials()
-    return APIClient(
-        credentials=Credentials(url=creds["url"], api_key=creds["api_key"]),
-        project_id=creds["project_id"],
-    )
-
-
-def _model(client: APIClient) -> ModelInference:
-    return ModelInference(
-        model_id=_MODEL_ID,
-        api_client=client,
-        params={
-            GenParams.MAX_NEW_TOKENS: 800,
-            GenParams.TEMPERATURE: 0.2,
-        },
-    )
+_MODEL_ID = "meta-llama/llama-3-3-70b-instruct"
 
 
 # ---------------------------------------------------------------------------
@@ -79,13 +60,9 @@ JSON object:"""
 
     t0 = time.monotonic()
     try:
-        raw = _model(_client()).generate_text(prompt=prompt).strip()
+        raw = llm_generate(prompt, _MODEL_ID, max_tokens=800)
         latency_ms = (time.monotonic() - t0) * 1000
-        if raw.startswith("```"):
-            raw = raw.split("```")[1]
-            if raw.startswith("json"):
-                raw = raw[4:]
-        result = json.loads(raw.strip())
+        result = parse_llm_json(raw, "analyze_job_description")
         result["pii_warning"] = None
         result["error"] = None
 
@@ -119,7 +96,8 @@ JSON object:"""
             subscription_id=get_subscription_ids().get("analyze_job_description"),
             latency_ms=(time.monotonic() - t0) * 1000,
         )
-        return {"pii_warning": None, "error": str(exc)}
+        err_msg = f"{type(exc).__name__}: {exc}" if str(exc) else repr(exc)
+        return {"pii_warning": None, "error": err_msg}
 
 
 # ---------------------------------------------------------------------------
@@ -189,13 +167,9 @@ JSON object:"""
 
     t0_draft = time.monotonic()
     try:
-        raw = _model(_client()).generate_text(prompt=prompt).strip()
+        raw = llm_generate(prompt, _MODEL_ID, max_tokens=800)
         latency_ms_draft = (time.monotonic() - t0_draft) * 1000
-        if raw.startswith("```"):
-            raw = raw.split("```")[1]
-            if raw.startswith("json"):
-                raw = raw[4:]
-        sections = json.loads(raw.strip())
+        sections = parse_llm_json(raw, "build_resume_draft")
 
         # ── Grounding check: verify every EVIDENCED tag ────────────────────
         # Build a flat list of all EVIDENCED items for the check prompt.
@@ -231,7 +205,7 @@ EVIDENCED ITEMS TO CHECK:
 JSON array:"""
 
             t0_check = time.monotonic()
-            check_raw = _model(_client()).generate_text(prompt=check_prompt).strip()
+            check_raw = llm_generate(check_prompt, _MODEL_ID, max_tokens=800)
             latency_ms_check = (time.monotonic() - t0_check) * 1000
 
             if check_raw.startswith("```"):
