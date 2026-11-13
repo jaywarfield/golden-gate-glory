@@ -1370,7 +1370,7 @@
 
     const th = (w, label) => `<th style="width:${w};padding:7px 10px;background:#1e3a8a;color:#fff;font-size:11px;font-weight:700;letter-spacing:0.04em;text-align:left;border:1px solid #c8d0d9">${label}</th>`;
     const tdStyle = (extra='') => `style="padding:8px 10px;border:1px solid #e5e7eb;vertical-align:top;font-size:13px${extra?';'+extra:''}"`;
-    const toTitle = s => (s||'').replace(/\b\w/g, c => c.toUpperCase());
+    const toTitle = s => (s||'').replace(/\b(\w)(\w*)/g, (_, f, r) => f.toUpperCase() + r.toLowerCase());
 
     // Course cell (column 4 for gap rows): course name as link only
     const courseCell = gapObj => {
@@ -1401,9 +1401,13 @@
       return 'Technical';  // better fallback than "General"
     };
 
+    // Filter out standalone "Technical" skill rows (not a specific skill)
+    const isTechnicalOnly = s => /^\s*technical\s*$/i.test(s||'');
+    const filteredRows = rows.filter(r => !isTechnicalOnly(r.js) && !(r.civSkill && isTechnicalOnly(r.civSkill.skill_name)));
+
     // Sort: covered rows first, gap rows after
-    const coveredRows = rows.filter(r => r.isCovered);
-    const gapRows     = rows.filter(r => !r.isCovered);
+    const coveredRows = filteredRows.filter(r => r.isCovered);
+    const gapRows     = filteredRows.filter(r => !r.isCovered);
     const sortedRows  = [...coveredRows, ...gapRows];
 
     let thtml = `<table style="width:100%;border-collapse:collapse">
@@ -1411,7 +1415,7 @@
         ${th('16%','Category')}
         ${th('24%','Job Skills')}
         ${th('24%','Civilian Skills / Gap')}
-        ${th('36%','Covered+Confidence / Course')}
+        ${th('36%','Covered / Courses')}
       </tr></thead><tbody>`;
 
     sortedRows.forEach((r, i) => {
@@ -1430,13 +1434,13 @@
 
       // Column 3: civilian skill name (covered) OR "✗ Gap" label only (gap)
       const col3 = r.isCovered
-        ? esc(r.civSkill ? r.civSkill.skill_name : r.js)
+        ? esc(toTitle(r.civSkill ? r.civSkill.skill_name : r.js))
         : `<span style="color:#b91c1c;font-weight:600">✗ Gap</span>`;
 
-      // Column 4: link to skillsbuild.org (covered) OR course link (gap)
+      // Column 4: "✓ Covered" only (no SkillsBuild link) OR course link (gap)
       let col4;
       if (r.isCovered) {
-        col4 = `<span style="color:#166534;font-weight:600">✓ Covered</span> &nbsp;<a href="https://skillsbuild.org" target="_blank" style="font-size:12px">IBM SkillsBuild</a>`;
+        col4 = `<span style="color:#166534;font-weight:600">✓ Covered</span>`;
       } else {
         col4 = courseCell(r.gapObj);
       }
