@@ -333,7 +333,7 @@
   </div>
 
   <div class="notice">
-    <strong>User goal:</strong> Review welcome, give consent, and chose draft storage.
+    <strong>User goal:</strong> Review welcome, provide consent, and chose draft storage.
   </div>
 <!--
   <div class="notice warn">
@@ -1227,13 +1227,11 @@
       <span style="font-weight:600;color:#0369a1">${esc(specLabel)}</span>
     </div>`;
 
-    // ── Experience & Accomplishments ───────────────────────────────────
-    // Summary is prepended as bullet #1 so all content appears as accomplishments.
-    // No separate Summary section — no Skills badges section.
-    const allBullets = [
-      ...(STATE.summary ? [STATE.summary] : []),
-      ...(STATE.translatedBullets || []),
-    ];
+    // ── Experience & Accomplishments ──────────────────────────────────
+    // The server splits the summary into individual translated accomplishment
+    // bullets (non-overlapping) and prepends them to bullets[], so we render
+    // STATE.translatedBullets only — no manual summary prepend needed here.
+    const allBullets = STATE.translatedBullets || [];
 
     if (allBullets.length) {
       html += `<div>
