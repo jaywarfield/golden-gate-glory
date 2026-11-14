@@ -18,6 +18,7 @@
 import json
 import os
 import sys
+import httpx
 
 from pathlib import Path
 from typing import Any
@@ -110,6 +111,7 @@ async def translate(request: Request) -> JSONResponse:
         build_resume      → build_resume_draft
         interview_prep    → build_interview_prep (internal — derived from resume draft)
         gate              → evaluate_export_gate
+        search_jobs       → _step_search_jobs (USAJobs API proxy)
     """
     try:
         body = await request.json()
@@ -137,6 +139,8 @@ async def translate(request: Request) -> JSONResponse:
             return JSONResponse(_step_interview_prep(inp))
         elif step == "gate":
             return JSONResponse(_step_gate(inp))
+        elif step == "search_jobs":
+            return JSONResponse(await _step_search_jobs(inp))
         else:
             raise HTTPException(status_code=400, detail=f"Unknown step: {step!r}")
 
@@ -731,3 +735,114 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
                     exp_texts.append(fragment)
 
     return summary_text, exp_texts, skill_tokens
+
+
+# ── USAJobs job search proxy ─────────────────────────────────────────────────
+
+_USAJOBS_API_BASE = "https://data.usajobs.gov/api/search"
+
+async def _step_search_jobs(inp: dict) -> dict:
+    """
+    Proxy a job search to the USAJobs API and return a normalised list of
+    postings for the user to pick from in step 3.
+
+    Expected input:
+        target_role   (str)  — e.g. "Network Administrator"
+        career_path   (str)  — e.g. "IT Infrastructure"
+
+    Returns:
+        { jobs: [ { id, title, agency, location, grade, url, description } ] }
+        or { error: "..." } when credentials are missing or the API fails.
+    """
+    api_key    = os.environ.get("USAJOBS_API_KEY", "").strip()
+    user_agent = os.environ.get("USAJOBS_USER_AGENT", "").strip()
+
+    if not api_key or not user_agent:
+        return {
+            "error": (
+                "USAJobs API credentials are not configured. "
+                "Set USAJOBS_API_KEY and USAJOBS_USER_AGENT in your .env file "
+                "or Railway environment variables."
+            )
+        }
+
+    target_role = (inp.get("target_role") or "").strip()
+    career_path = (inp.get("career_path") or "").strip()
+
+    # Build a keyword query: prefer the specific role; fall back to career path
+    keyword = target_role or career_path or "IT"
+
+    params = {
+        "Keyword":        keyword,
+        "ResultsPerPage": "10",
+        "Fields":         "min",          # lighter payload
+        "SortField":      "OpenDate",
+        "SortDirection":  "Desc",
+    }
+
+    headers = {
+        "Host":           "data.usajobs.gov",
+        "User-Agent":     user_agent,
+        "Authorization-Key": api_key,
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(_USAJOBS_API_BASE, params=params, headers=headers)
+        resp.raise_for_status()
+        data = resp.json()
+    except httpx.HTTPStatusError as e:
+        return {"error": f"USAJobs API returned {e.response.status_code}: {e.response.text[:200]}"}
+    except Exception as e:
+        return {"error": f"USAJobs API request failed: {str(e)}"}
+
+    items = (
+        data.get("SearchResult", {})
+            .get("SearchResultItems", [])
+    )
+
+    jobs = []
+    for item in items:
+        mv = item.get("MatchedObjectDescriptor", {})
+
+        # Location: prefer first listed duty station
+        locations = mv.get("PositionLocation", [])
+        location  = locations[0].get("LocationName", "") if locations else ""
+
+        # Pay grade range (e.g. "GS-09 to GS-13")
+        grades = mv.get("JobGrade", [])
+        grade_str = ""
+        if grades:
+            codes = [g.get("Code", "") for g in grades if g.get("Code")]
+            low   = mv.get("PositionSchedule", [{}])[0].get("Code", "")
+            # UserArea has the grade range more reliably
+            ua   = mv.get("UserArea", {}).get("Details", {})
+            low  = ua.get("LowGrade", "")
+            high = ua.get("HighGrade", "")
+            if low and high and low != high:
+                grade_str = f"GS-{low} to GS-{high}"
+            elif low:
+                grade_str = f"GS-{low}"
+            elif codes:
+                grade_str = "/".join(codes)
+
+        # Full job description text — concatenate all QualificationSummary fields
+        qual = mv.get("QualificationSummary", "")
+        user_area_desc = (
+            mv.get("UserArea", {})
+              .get("Details", {})
+              .get("JobSummary", "")
+        )
+        description = (qual + "\n\n" + user_area_desc).strip() or "(No description available)"
+
+        jobs.append({
+            "id":          mv.get("PositionID", ""),
+            "title":       mv.get("PositionTitle", ""),
+            "agency":      mv.get("OrganizationName", mv.get("DepartmentName", "")),
+            "location":    location,
+            "grade":       grade_str,
+            "url":         mv.get("PositionURI", ""),
+            "description": description,
+        })
+
+    return {"jobs": jobs}
