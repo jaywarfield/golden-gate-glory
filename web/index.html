@@ -1215,12 +1215,55 @@
 
   function renderStep2() {
     const list = document.getElementById('s2-bullets-list');
-    list.innerHTML = STATE.translatedBullets.map((b, i) => `
-      <div class="bullet-row">
-        <span style="color:#57606a;font-size:12px;min-width:20px">${i+1}.</span>
-        <span class="bullet-text">${esc(b)}</span>
-        <span class="tag tag-ev">EVIDENCED</span>
-      </div>`).join('');
+
+    // ── Branch + specialty header ──────────────────────────────────────
+    // Look up the full label from the SPECIALTY_CODES table so we can show
+    // the description alongside the code (e.g. "25B – IT Specialist").
+    const branchEntries = SPECIALTY_CODES[STATE.branch] || [];
+    const specEntry = branchEntries.find(e => e[0] === STATE.specialty);
+    const specLabel = specEntry ? specEntry[1] : STATE.specialty;
+
+    let html = '';
+
+    // Branch / specialty banner
+    html += `<div style="margin-bottom:14px;padding:10px 12px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:5px;font-size:13px">
+      <span style="font-weight:600;color:#0369a1">${esc(STATE.branch)}</span>
+      <span style="color:#57606a;margin:0 6px">·</span>
+      <span style="font-weight:600;color:#0369a1">${esc(specLabel)}</span>
+    </div>`;
+
+    // ── Summary paragraph ──────────────────────────────────────────────
+    if (STATE.summary) {
+      html += `<div style="margin-bottom:14px">
+        <div class="skill-section-title">Summary</div>
+        <div style="font-size:13px;color:#1f2328;line-height:1.6;padding:8px 0">${esc(STATE.summary)}</div>
+      </div>`;
+    }
+
+    // ── Experience / accomplishment bullets ────────────────────────────
+    if (STATE.translatedBullets.length) {
+      html += `<div style="margin-bottom:14px">
+        <div class="skill-section-title">Experience &amp; Accomplishments</div>
+        ${STATE.translatedBullets.map((b, i) => `
+          <div class="bullet-row">
+            <span style="color:#57606a;font-size:12px;min-width:20px">${i+1}.</span>
+            <span class="bullet-text">${esc(b)}</span>
+            <span class="tag tag-ev">EVIDENCED</span>
+          </div>`).join('')}
+      </div>`;
+    }
+
+    // ── Skills list ────────────────────────────────────────────────────
+    if ((STATE.resumeSkills||[]).length) {
+      html += `<div>
+        <div class="skill-section-title">Skills</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
+          ${STATE.resumeSkills.map(s => `<span class="badge badge-covered">${esc(s)}</span>`).join('')}
+        </div>
+      </div>`;
+    }
+
+    list.innerHTML = html;
     document.getElementById('s2-output').style.display = 'block';
   }
 
@@ -1261,6 +1304,12 @@
       ${al.alignment_pct !== undefined ? `<div class="field-hint" style="margin-bottom:10px">Skill alignment: <strong>${al.alignment_pct}%</strong></div>` : ''}
       <div class="skill-section-title">Required Skills</div>
       ${(ja.required_skills||[]).map(s=>`<div class="bullet-row"><span style="color:#57606a">▸</span><span class="bullet-text">${esc(s.replace(/\b\w/g, c => c.toUpperCase()))}</span></div>`).join('')}
+      ${(ja.preferred_skills||[]).length ? `
+      <div class="skill-section-title">Preferred Skills</div>
+      ${(ja.preferred_skills||[]).map(s=>`<div class="bullet-row"><span style="color:#57606a">▸</span><span class="bullet-text">${esc(s.replace(/\b\w/g, c => c.toUpperCase()))}</span></div>`).join('')}` : ''}
+      ${(ja.optional_skills||[]).length ? `
+      <div class="skill-section-title">Optional Skills</div>
+      ${(ja.optional_skills||[]).map(s=>`<div class="bullet-row"><span style="color:#57606a">▸</span><span class="bullet-text">${esc(s.replace(/\b\w/g, c => c.toUpperCase()))}</span></div>`).join('')}` : ''}
       <div class="skill-section-title">ATS Keywords</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">${(ja.ats_keywords||[]).map(k=>`<span class="badge badge-medium">${esc(k)}</span>`).join('')}</div>
     `;
@@ -1316,150 +1365,101 @@
     // Covered skill names set (lower-cased)
     const coveredNames = new Set((gr.covered_skills||[]).map(s => (s.skill_name||s||'').toString().toLowerCase()));
 
-    // All job-required skills
-    const jobSkills = (STATE.jobAnalysis||{}).required_skills || [];
+    // Job skills by priority tier from jobAnalysis
+    const ja = STATE.jobAnalysis || {};
+    const requiredSkills  = ja.required_skills  || [];
+    const preferredSkills = ja.preferred_skills || [];
+    const optionalSkills  = ja.optional_skills  || [];
 
-    // Build rows: one per job skill, cross-referenced to civilian inventory.
-    // A row is "covered" when:
-    //  (a) gap analysis says it's covered, OR
-    //  (b) a civilian skill substring-matches the job skill (veteran has it)
-    const rows = jobSkills.map(js => {
-      const jsL   = js.toLowerCase();
-      // Find best-matching civilian skill: exact → substring
+    // Helper: build a row object for a given job skill + priority label
+    const makeRow = (js, priority) => {
+      const jsL = js.toLowerCase();
       const civKey = Object.keys(civMap).find(k => k === jsL) ||
                      Object.keys(civMap).find(k => k.includes(jsL) || jsL.includes(k)) || '';
       const civSkill  = civKey ? civMap[civKey] : null;
       const inGapMap  = !!(gapMap[jsL] || Object.keys(gapMap).find(k => k.includes(jsL) || jsL.includes(k)));
       const isCovered = !inGapMap && (coveredNames.has(jsL) || !!civSkill);
       const gapObj    = inGapMap ? (gapMap[jsL] || gapMap[Object.keys(gapMap).find(k => k.includes(jsL) || jsL.includes(k))||'']) : null;
-      return { js, civSkill, isCovered, gapObj };
-    });
+      return { js, priority, civSkill, isCovered, gapObj };
+    };
 
-    // Also add gap skills not already represented in jobSkills
+    const rows = [
+      ...requiredSkills.map(js  => makeRow(js, 'Required')),
+      ...preferredSkills.map(js => makeRow(js, 'Preferred')),
+      ...optionalSkills.map(js  => makeRow(js, 'Optional')),
+    ];
+
+    // Also add gap skills not already represented in the job skill tiers
+    const allJobSkills = [...requiredSkills, ...preferredSkills, ...optionalSkills];
     (gr.gap_skills||[]).forEach(g => {
-      const name = (g.skill_name||g.gap_skill||g||'').toString();
+      const name  = (g.skill_name||g.gap_skill||g||'').toString();
       const nameL = name.toLowerCase();
-      if (!jobSkills.some(j => {
+      if (!allJobSkills.some(j => {
         const jL = j.toLowerCase();
         return jL === nameL || jL.includes(nameL) || nameL.includes(jL);
       })) {
-        rows.push({ js: name, civSkill: civMap[nameL]||null, isCovered: false, gapObj: g });
+        rows.push({ js: name, priority: 'Required', civSkill: civMap[nameL]||null, isCovered: false, gapObj: g });
       }
     });
 
-    // Also show veteran civilian skills that didn't match any job skill row
-    // (so all translated skills are visible in the comparison table)
-    // For these rows, col2 shows the civilian skill name (not "—")
+    // Also show veteran skills that didn't match any job skill row
     const matchedCivKeys = new Set(rows.map(r => r.civSkill ? (r.civSkill.skill_name||'').toLowerCase() : '').filter(Boolean));
     (STATE.skills||[]).forEach(s => {
       const sL = (s.skill_name||'').toLowerCase();
       if (!matchedCivKeys.has(sL)) {
-        rows.push({ js: s.skill_name||'', civSkill: s, isCovered: true, gapObj: null, veteranOnly: true });
+        rows.push({ js: s.skill_name||'', priority: '—', civSkill: s, isCovered: true, gapObj: null, veteranOnly: true });
       }
     });
-
-    // Confidence badge html
-    const confBadge = conf => {
-      const c = (conf||'').toLowerCase();
-      const cls = c==='high'?'conf-high':c==='medium'?'conf-medium':'conf-low';
-      return `<span class="${cls}" style="font-size:11px;font-weight:600">${esc(conf)}</span>`;
-    };
-
-    // Course link html for a gap object
-    const courseLinks = gapObj => {
-      if (!gapObj) return `<a href="https://skillsbuild.org" target="_blank" style="font-size:12px">skillsbuild.org</a>`;
-      const courses = gapObj.courses || [];
-      if (!courses.length) return `<a href="https://skillsbuild.org" target="_blank" style="font-size:12px">skillsbuild.org</a>`;
-      return courses.slice(0,2).map(c =>
-        `<div style="font-size:12px"><a href="${esc(c.url||'https://skillsbuild.org')}" target="_blank">${esc(c.title||c.course_title||'skillsbuild.org')}</a></div>`
-      ).join('');
-    };
 
     const th = (w, label) => `<th style="width:${w};padding:7px 10px;background:#1e3a8a;color:#fff;font-size:11px;font-weight:700;letter-spacing:0.04em;text-align:left;border:1px solid #c8d0d9">${label}</th>`;
     const tdStyle = (extra='') => `style="padding:8px 10px;border:1px solid #e5e7eb;vertical-align:top;font-size:13px${extra?';'+extra:''}"`;
     const toTitle = s => (s||'').replace(/\b(\w)(\w*)/g, (_, f, r) => f.toUpperCase() + r.toLowerCase());
 
-    // Course cell (column 4 for gap rows): course name as link only
-    const courseCell = gapObj => {
-      const courses = (gapObj && gapObj.courses && gapObj.courses.length) ? gapObj.courses : [];
-      if (!courses.length) {
-        return `<a href="https://skillsbuild.org" target="_blank" style="font-size:12px">IBM SkillsBuild</a>`;
-      }
-      return courses.slice(0, 2).map(c => {
-        const name = c.title || c.course_title || 'IBM SkillsBuild';
-        const url  = c.url || 'https://skillsbuild.org';
-        return `<div style="font-size:12px"><a href="${esc(url)}" target="_blank">${esc(name)}</a></div>`;
-      }).join('');
-    };
-
-    // Derive a category from a skill name when the LLM didn't provide one
-    const inferCategory = skillName => {
-      const s = (skillName||'').toLowerCase();
-      if (/lead|manag|supervis|team|mentor|coach|command|direct|coordinat|personnel|staff|delegat/.test(s)) return 'Leadership';
-      if (/network|firewall|vpn|tcp|ip|routing|switch|cisco|linux|windows|server|cloud|cyber|security|siem|soc|active.direct|microsoft|azure|aws|endpoint|patch|vulnerab|penetrat|encrypt|protocol|dns|dhcp|vlan/.test(s)) return 'IT Infrastructure';
-      if (/python|java|script|code|software|develop|program|sql|database|api|devops|git|agile|scrum/.test(s)) return 'Software Engineering';
-      if (/analys|data|report|metrics|assess|research|intelligence|trend|forecast|evaluat|audit/.test(s)) return 'Analytical';
-      if (/communicat|brief|present|writ|report|document|brief|stakeholder|liaison|translat|interpersonal/.test(s)) return 'Communication';
-      if (/operat|logistics|supply|maintenance|repair|troubleshoot|diagnos|equipment|deploy|mission|plan|schedul|procurement|inventory/.test(s)) return 'Operations';
-      if (/train|instruct|educat|curricul|facilitat|onboard|develop/.test(s)) return 'Training';
-      if (/compli|regulat|policy|standard|framework|audit|risk|govern|legal/.test(s)) return 'Compliance';
-      if (/customer|client|service|support|helpdesk|ticket|resolution|satisfact/.test(s)) return 'Customer Service';
-      if (/project|program|initiat|milestone|deliverable|budget|scope|resource/.test(s)) return 'Project Management';
-      return 'Technical';  // better fallback than "General"
+    // Priority badge styling
+    const priorityCell = p => {
+      if (p === 'Required')  return `<span style="font-weight:700;color:#991b1b">Required</span>`;
+      if (p === 'Preferred') return `<span style="font-weight:700;color:#92400e">Preferred</span>`;
+      if (p === 'Optional')  return `<span style="font-weight:700;color:#166534">Optional</span>`;
+      return `<span style="color:#57606a">${esc(p)}</span>`;
     };
 
     // Filter out standalone "Technical" skill rows (not a specific skill)
     const isTechnicalOnly = s => /^\s*technical\s*$/i.test(s||'');
     const filteredRows = rows.filter(r => !isTechnicalOnly(r.js) && !(r.civSkill && isTechnicalOnly(r.civSkill.skill_name)));
 
-    // Sort: covered rows first, gap rows after
-    const coveredRows = filteredRows.filter(r => r.isCovered);
-    const gapRows     = filteredRows.filter(r => !r.isCovered);
-    const sortedRows  = [...coveredRows, ...gapRows];
-
     let thtml = `<table style="width:100%;border-collapse:collapse">
       <thead><tr>
-        ${th('16%','Category')}
-        ${th('24%','Job Skills')}
-        ${th('24%','Civilian Skills / Gap')}
-        ${th('36%','Covered / Courses')}
+        ${th('14%','Priority')}
+        ${th('43%','Job Skills')}
+        ${th('43%','Veteran Skills')}
       </tr></thead><tbody>`;
 
-    sortedRows.forEach((r, i) => {
-      const bg   = i % 2 === 0 ? '' : 'background:#f7f8fa';
-      // Category: from civilian skill first, then gap object, then infer from skill name
-      const cat  = (r.civSkill && r.civSkill.category && r.civSkill.category !== 'General')
-                 ? r.civSkill.category
-                 : (r.gapObj && r.gapObj.category && r.gapObj.category !== 'General')
-                 ? r.gapObj.category
-                 : inferCategory(r.civSkill ? r.civSkill.skill_name : r.js);
+    filteredRows.forEach((r, i) => {
+      const bg = i % 2 === 0 ? '' : 'background:#f7f8fa';
 
-      // Column 2: job skill name; for veteran-only rows show the skill in italics
+      // Col 1: priority
+      const col1 = priorityCell(r.priority);
+
+      // Col 2: job skill name; veteran-only rows shown in italics
       const col2 = r.veteranOnly
         ? `<span style="font-style:italic;color:#57606a">${esc(toTitle(r.js))}</span>`
         : esc(toTitle(r.js));
 
-      // Column 3: civilian skill name (covered) OR "✗ Gap" label only (gap)
+      // Col 3: matched veteran skill name OR "✗ Gap"
       const col3 = r.isCovered
         ? esc(toTitle(r.civSkill ? r.civSkill.skill_name : r.js))
         : `<span style="color:#b91c1c;font-weight:600">✗ Gap</span>`;
 
-      // Column 4: "✓ Covered" only (no SkillsBuild link) OR course link (gap)
-      let col4;
-      if (r.isCovered) {
-        col4 = `<span style="color:#166534;font-weight:600">✓ Covered</span>`;
-      } else {
-        col4 = courseCell(r.gapObj);
-      }
-
       thtml += `<tr style="${bg}">
-        <td ${tdStyle('color:#57606a')}>${esc(cat)}</td>
+        <td ${tdStyle()}>${col1}</td>
         <td ${tdStyle()}>${col2}</td>
         <td ${tdStyle()}>${col3}</td>
-        <td ${tdStyle()}>${col4}</td>
       </tr>`;
     });
-    thtml += `</tbody></table>`;
+    thtml += `</tbody></table>
+    <div style="margin-top:10px;font-size:12px;color:#57606a">
+      📚 Free courses to close skill gaps: <a href="https://skillsbuild.org" target="_blank" style="color:#1d4ed8">IBM SkillsBuild — skillsbuild.org</a>
+    </div>`;
     document.getElementById('s4-comparison').innerHTML = thtml;
 
     document.getElementById('s4-output').style.display = 'block';
