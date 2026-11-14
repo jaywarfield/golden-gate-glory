@@ -183,20 +183,49 @@ def _step_translate_resume(inp: dict) -> dict:
     # ── Expand summary sentences into experience blocks ───────────────────────
     # The parser puts the first narrative block into summary_text and skips it
     # during translation.  Split it into individual sentences and prepend each
-    # one that isn't already represented in exp_texts so they all get translated.
+    # one that has enough concrete content and isn't already in exp_texts.
+    def _has_concrete_content(s: str) -> bool:
+        """
+        Returns True only if the sentence contains at least one of:
+          - a number or percentage (quantifiable fact)
+          - a specific action verb followed by a direct object (not just "served as" / "responsible for")
+        Generic role-description sentences are excluded to avoid LLM hallucination.
+        """
+        # Contains a number, $, or %
+        if _re.search(r'\d', s):
+            return True
+        # Contains a strong action verb (not "served", "responsible", "assigned", "worked")
+        GENERIC = _re.compile(
+            r'^\s*(served|responsible|assigned|worked|helped|assisted|part of|member of|'
+            r'performed|completed|conducted|utilized|supported)\b',
+            _re.IGNORECASE,
+        )
+        ACTION = _re.compile(
+            r'\b(trained|led|developed|managed|built|created|designed|implemented|'
+            r'established|delivered|executed|coordinated|negotiated|reduced|increased|'
+            r'improved|achieved|ensured|maintained|analysed|analyzed|supervised|'
+            r'deployed|installed|configured|secured|automated|streamlined|'
+            r'oversaw|directed|planned|launched|resolved|prevented|saved)\b',
+            _re.IGNORECASE,
+        )
+        if GENERIC.match(s):
+            return False
+        return bool(ACTION.search(s))
+
     if summary_text:
         exp_texts_lower = [t.lower() for t in exp_texts]
         summary_sentences = _re.split(r'(?<=[.!?])\s+', summary_text.strip())
         extra: list[str] = []
         for sent in summary_sentences:
             sent = sent.strip()
-            if len(sent) < 15:
+            if len(sent) < 20:
+                continue
+            if not _has_concrete_content(sent):
                 continue
             sent_l = sent.lower()
             # Skip if the sentence is already substantially covered by an exp block
             already_covered = any(
                 sent_l in e or e in sent_l or
-                # 5-word overlap check
                 any(' '.join(sent_l.split()[i:i+5]) in e
                     for i in range(max(1, len(sent_l.split()) - 4)))
                 for e in exp_texts_lower
@@ -232,6 +261,7 @@ def _step_translate_resume(inp: dict) -> dict:
         return ' '.join(seen_sents).strip()
 
     # Translate only the experience blocks extracted from the resume — no fabrication.
+    # If the LLM returns "SKIP" (too vague to translate faithfully), drop that bullet.
     bullets: list[str] = []
     for block in exp_texts:
         result = translate_accomplishment(bullet=block, target_role=target_role)
@@ -240,7 +270,10 @@ def _step_translate_resume(inp: dict) -> dict:
         if result.get("pii_warning"):
             return {"error": result["pii_warning"]}
         raw_bullet = result.get("translated_bullet") or block
-        bullets.append(_clean_bullet(raw_bullet))
+        cleaned = _clean_bullet(raw_bullet)
+        if cleaned.strip().upper() == "SKIP":
+            continue
+        bullets.append(cleaned)
 
     # ── Merge O*NET skills for the specialty code ────────────────────────────
     # Look up the crosswalk entry for this specialty code and pull skills from
