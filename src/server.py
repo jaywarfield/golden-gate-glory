@@ -180,15 +180,6 @@ def _step_translate_resume(inp: dict) -> dict:
     if not summary_text and exp_texts:
         summary_text = exp_texts.pop(0)
 
-    # ── DEBUG: return parse result so we can see what blocks were extracted ──
-    import logging as _logging
-    _logging.warning(
-        "PARSE_DEBUG summary=%r exp_count=%d exp_texts=%r",
-        summary_text[:80] if summary_text else '',
-        len(exp_texts),
-        [t[:60] for t in exp_texts],
-    )
-
     # ── Translate each experience block ──────────────────────────────────────
     def _clean_bullet(text: str) -> str:
         """Strip markdown artefacts and deduplicate repeated sentences."""
