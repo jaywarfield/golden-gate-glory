@@ -757,12 +757,15 @@ async def _step_search_jobs(inp: dict) -> dict:
     api_key    = os.environ.get("USAJOBS_API_KEY", "").strip()
     user_agent = os.environ.get("USAJOBS_USER_AGENT", "").strip()
 
-    if not api_key or not user_agent:
+    missing = []
+    if not api_key:    missing.append("USAJOBS_API_KEY")
+    if not user_agent: missing.append("USAJOBS_USER_AGENT")
+    if missing:
         return {
             "error": (
-                "USAJobs API credentials are not configured. "
-                "Set USAJOBS_API_KEY and USAJOBS_USER_AGENT in your .env file "
-                "or Railway environment variables."
+                f"USAJobs API credentials missing: {', '.join(missing)}. "
+                "Add them to your Railway environment variables "
+                "(Settings → Variables) or your local .env file."
             )
         }
 
