@@ -572,8 +572,24 @@ def _step_gate(inp: dict) -> dict:
         missing  = sum(1 for x in all_items if (x.get("tag","")).upper() == "MISSING")
 
     warnings = draft.get("grounding_warnings", [])
-    # Only count grounding downgrades not already folded into inferred_count
-    extra_downgrade = max(0, len(warnings) - inferred)
+    # Only count grounding warnings whose item is still INFERRED in the current draft.
+    # If the user confirmed an item via "+ Add" (promoted to EVIDENCED), that warning
+    # no longer blocks the gate — don't penalise confirmed items.
+    all_items = list(draft.get("bullets") or [])
+    s = draft.get("summary")
+    if s:
+        all_items.append(s if isinstance(s, dict) else {"tag": "EVIDENCED"})
+    still_inferred_texts = {
+        (x.get("text") or "").strip()
+        for x in all_items
+        if (x.get("tag", "")).upper() == "INFERRED"
+    }
+    active_warnings = [
+        w for w in warnings
+        if (w.get("text") or "").strip() in still_inferred_texts
+    ]
+    # extra_downgrade covers grounding warnings not already folded into inferred_count
+    extra_downgrade = max(0, len(active_warnings) - inferred)
 
     result = evaluate_export_gate(
         inferred_count=inferred,
