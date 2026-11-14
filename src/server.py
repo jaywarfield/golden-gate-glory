@@ -152,7 +152,7 @@ def _step_translate_resume(inp: dict) -> dict:
     """
     Accepts the full resume text, extracts summary + experience paragraphs,
     translates each experience block into an ATS bullet, and returns all
-    extracted skill tokens.
+    extracted skill tokens merged with O*NET skills for the specialty code.
 
     Expected input:
         resume_text, service_branch, specialty_code, target_role, career_path
@@ -160,8 +160,13 @@ def _step_translate_resume(inp: dict) -> dict:
     Returns:
         { summary, bullets[], resume_skills[] }
     """
-    resume_text: str = inp.get("resume_text", "").strip()
-    target_role: str = inp.get("target_role", "general civilian")
+    import re as _re
+
+    resume_text: str    = inp.get("resume_text", "").strip()
+    target_role: str    = inp.get("target_role", "general civilian")
+    specialty_code: str = inp.get("specialty_code", "").strip()
+    service_branch: str = inp.get("service_branch", "").strip()
+    career_path: str    = inp.get("career_path", "").strip()
 
     if not resume_text:
         return {"error": "resume_text is required"}
@@ -176,6 +181,19 @@ def _step_translate_resume(inp: dict) -> dict:
         summary_text = exp_texts.pop(0)
 
     # ── Translate each experience block ──────────────────────────────────────
+    def _clean_bullet(text: str) -> str:
+        """Strip markdown artefacts the LLM sometimes emits."""
+        # Remove leading list markers: *, -, •, –
+        text = _re.sub(r'^\s*[\*\-\•\–]\s+', '', text.strip())
+        # Remove any trailing lines that start with # (markdown headings / comments)
+        lines = text.splitlines()
+        clean_lines = []
+        for line in lines:
+            if _re.match(r'^\s*#+\s*', line):
+                break  # stop at first heading-style line; discard it and everything after
+            clean_lines.append(line)
+        return ' '.join(clean_lines).strip()
+
     bullets: list[str] = []
     for block in exp_texts:
         result = translate_accomplishment(
@@ -186,8 +204,35 @@ def _step_translate_resume(inp: dict) -> dict:
             return {"error": result["error"]}
         if result.get("pii_warning"):
             return {"error": result["pii_warning"]}
-        translated = result.get("translated_bullet") or block
-        bullets.append(translated)
+        raw_bullet = result.get("translated_bullet") or block
+        bullets.append(_clean_bullet(raw_bullet))
+
+    # ── Merge O*NET skills for the specialty code ────────────────────────────
+    # Look up the crosswalk entry for this specialty code and pull skills from
+    # the matching O*NET occupation record. Deduplicate against resume_skills.
+    from shared._common import lookup_crosswalk, load_onet_occupation_skills
+
+    onet_skills: list[str] = []
+    crosswalk_hits = lookup_crosswalk(specialty_code, service_branch)
+    if crosswalk_hits:
+        onet_soc = crosswalk_hits[0].get("onet_soc")
+        civilian_title = crosswalk_hits[0].get("civilian_title", "")
+        onet_records = load_onet_occupation_skills()
+
+        # Match by onet_soc first, then by career_path as fallback
+        occ = next((r for r in onet_records if r.get("onet_soc") == onet_soc), None)
+        if not occ and career_path:
+            occ = next((r for r in onet_records if r.get("career_path") == career_path), None)
+
+        if occ:
+            onet_skills = occ.get("required_skills", [])
+
+    # Merge: resume_skills first, then O*NET skills not already present
+    seen_lower = {s.lower() for s in resume_skills}
+    for skill in onet_skills:
+        if skill.lower() not in seen_lower:
+            resume_skills.append(skill)
+            seen_lower.add(skill.lower())
 
     return {
         "summary":       summary_text,

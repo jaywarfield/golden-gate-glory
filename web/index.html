@@ -1427,11 +1427,22 @@
     const isTechnicalOnly = s => /^\s*technical\s*$/i.test(s||'');
     const filteredRows = rows.filter(r => !isTechnicalOnly(r.js) && !(r.civSkill && isTechnicalOnly(r.civSkill.skill_name)));
 
+    // Helper: render IBM SkillsBuild course link(s) for a gap row
+    const courseLinks = gapObj => {
+      const courses = (gapObj && gapObj.courses) || [];
+      if (courses.length === 0) {
+        return `<div style="margin-top:5px;font-size:11px"><a href="https://skillsbuild.org" target="_blank" style="color:#1d4ed8">📚 IBM SkillsBuild — skillsbuild.org</a></div>`;
+      }
+      return courses.map(c =>
+        `<div style="margin-top:5px;font-size:11px"><a href="${esc(c.url||'https://skillsbuild.org')}" target="_blank" style="color:#1d4ed8">📚 ${esc(c.title||'IBM SkillsBuild')}</a>${c.hours_estimate ? ` <span style="color:#57606a">(~${c.hours_estimate}h)</span>` : ''}</div>`
+      ).join('');
+    };
+
     let thtml = `<table style="width:100%;border-collapse:collapse">
       <thead><tr>
         ${th('14%','Priority')}
         ${th('43%','Job Skills')}
-        ${th('43%','Veteran Skills')}
+        ${th('43%','Covered / Courses')}
       </tr></thead><tbody>`;
 
     filteredRows.forEach((r, i) => {
@@ -1445,10 +1456,10 @@
         ? `<span style="font-style:italic;color:#57606a">${esc(toTitle(r.js))}</span>`
         : esc(toTitle(r.js));
 
-      // Col 3: matched veteran skill name OR "✗ Gap"
+      // Col 3: covered = civilian skill name only; gap = ✗ Gap + SkillsBuild course link(s)
       const col3 = r.isCovered
         ? esc(toTitle(r.civSkill ? r.civSkill.skill_name : r.js))
-        : `<span style="color:#b91c1c;font-weight:600">✗ Gap</span>`;
+        : `<span style="color:#b91c1c;font-weight:600">✗ Gap</span>${courseLinks(r.gapObj)}`;
 
       thtml += `<tr style="${bg}">
         <td ${tdStyle()}>${col1}</td>
@@ -1456,10 +1467,7 @@
         <td ${tdStyle()}>${col3}</td>
       </tr>`;
     });
-    thtml += `</tbody></table>
-    <div style="margin-top:10px;font-size:12px;color:#57606a">
-      📚 Free courses to close skill gaps: <a href="https://skillsbuild.org" target="_blank" style="color:#1d4ed8">IBM SkillsBuild — skillsbuild.org</a>
-    </div>`;
+    thtml += `</tbody></table>`;
     document.getElementById('s4-comparison').innerHTML = thtml;
 
     document.getElementById('s4-output').style.display = 'block';
