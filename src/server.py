@@ -180,6 +180,32 @@ def _step_translate_resume(inp: dict) -> dict:
     if not summary_text and exp_texts:
         summary_text = exp_texts.pop(0)
 
+    # ── Expand summary sentences into experience blocks ───────────────────────
+    # The parser puts the first narrative block into summary_text and skips it
+    # during translation.  Split it into individual sentences and prepend each
+    # one that isn't already represented in exp_texts so they all get translated.
+    if summary_text:
+        exp_texts_lower = [t.lower() for t in exp_texts]
+        summary_sentences = _re.split(r'(?<=[.!?])\s+', summary_text.strip())
+        extra: list[str] = []
+        for sent in summary_sentences:
+            sent = sent.strip()
+            if len(sent) < 15:
+                continue
+            sent_l = sent.lower()
+            # Skip if the sentence is already substantially covered by an exp block
+            already_covered = any(
+                sent_l in e or e in sent_l or
+                # 5-word overlap check
+                any(' '.join(sent_l.split()[i:i+5]) in e
+                    for i in range(max(1, len(sent_l.split()) - 4)))
+                for e in exp_texts_lower
+            )
+            if not already_covered:
+                extra.append(sent)
+        # Prepend so summary-derived bullets appear first
+        exp_texts = extra + exp_texts
+
     # ── Translate each experience block ──────────────────────────────────────
     def _clean_bullet(text: str) -> str:
         """Strip markdown artefacts and deduplicate repeated sentences."""
