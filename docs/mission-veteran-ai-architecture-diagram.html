@@ -1,0 +1,245 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mission Veteran AI — Architecture</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; background: #ffffff; color: #1f2328; font-size: 13px; line-height: 1.5; padding: 32px 24px 48px; }
+  h1 { font-size: 18px; font-weight: 700; margin-bottom: 2px; }
+  .subtitle { color: #57606a; font-size: 12px; margin-bottom: 28px; }
+  .section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #57606a; margin-bottom: 8px; }
+
+  /* ── Layout columns ── */
+  .arch { display: grid; grid-template-columns: 1fr 36px 1fr 36px 1fr 36px 1fr; gap: 0; align-items: start; max-width: 940px; margin: 0 auto; }
+  .col { display: flex; flex-direction: column; gap: 8px; }
+  .arrow { display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: 48px; color: #9ca3af; font-size: 18px; line-height: 1; user-select: none; }
+  .arrow span { font-size: 10px; color: #9ca3af; letter-spacing: 0.03em; writing-mode: vertical-rl; transform: rotate(180deg); margin-top: 4px; }
+
+  /* ── Cards ── */
+  .card { border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px 12px; background: #f7f8fa; }
+  .card.blue  { background: #eff6ff; border-color: #bfdbfe; }
+  .card.green { background: #f0fdf4; border-color: #86efac; }
+  .card.purple{ background: #faf5ff; border-color: #d8b4fe; }
+  .card.orange{ background: #fff7ed; border-color: #fed7aa; }
+  .card.slate { background: #f8fafc; border-color: #cbd5e1; }
+  .card.red   { background: #fef2f2; border-color: #fca5a5; }
+  .card-title { font-weight: 700; font-size: 12px; margin-bottom: 3px; }
+  .card-sub   { font-size: 11px; color: #57606a; }
+  .card-sub li { margin-left: 14px; margin-top: 2px; }
+  .tag { display: inline-block; font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 3px; margin-top: 4px; }
+  .tag-blue   { background: #dbeafe; color: #1d4ed8; }
+  .tag-green  { background: #dcfce7; color: #15803d; }
+  .tag-purple { background: #ede9fe; color: #6d28d9; }
+  .tag-orange { background: #ffedd5; color: #c2410c; }
+  .tag-slate  { background: #e2e8f0; color: #475569; }
+
+  /* ── Deployment band ── */
+  .deploy-row { max-width: 940px; margin: 0 auto 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .deploy-card { border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px 14px; }
+  .deploy-card.gh  { background: #f6f8fa; border-color: #d0d7de; }
+  .deploy-card.rw  { background: #fafafa; border-color: #e5e7eb; }
+  .deploy-title { font-weight: 700; font-size: 12px; margin-bottom: 2px; }
+  .deploy-sub   { font-size: 11px; color: #57606a; }
+
+  /* ── RAG sources table ── */
+  .rag-section { max-width: 940px; margin: 28px auto 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  th { background: #1e3a8a; color: #fff; padding: 6px 10px; text-align: left; font-size: 10px; font-weight: 700; letter-spacing: 0.04em; }
+  td { padding: 6px 10px; border: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #f7f8fa; }
+  .dot-green  { color: #16a34a; font-size: 14px; line-height: 1; }
+  .dot-yellow { color: #ca8a04; font-size: 14px; line-height: 1; }
+  .dot-red    { color: #dc2626; font-size: 14px; line-height: 1; }
+  .check { color: #16a34a; font-weight: 700; }
+  .pending { color: #ca8a04; }
+  .blocked { color: #dc2626; }
+
+  /* ── Flow note ── */
+  .flow-note { max-width: 940px; margin: 20px auto 0; border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px 16px; background: #f7f8fa; }
+  .flow-note-title { font-weight: 700; font-size: 12px; margin-bottom: 6px; }
+  .flow-steps { display: flex; gap: 0; flex-wrap: wrap; }
+  .flow-step { font-size: 11px; color: #1f2328; }
+  .flow-step + .flow-step::before { content: ' → '; color: #9ca3af; white-space: pre; }
+
+  /* ── Footer ── */
+  footer { max-width: 940px; margin: 36px auto 0; border-top: 1px solid #e5e7eb; padding-top: 10px; text-align: center; font-size: 11px; color: #57606a; }
+</style>
+</head>
+<body>
+
+<div style="max-width:940px;margin:0 auto 20px">
+  <h1>Mission Veteran AI <span style="font-weight:400;color:#57606a">by Golden Gate Glory</span></h1>
+  <div class="subtitle">System Architecture — current as of Nov 2026 · branch: main</div>
+</div>
+
+
+<div style="max-width:940px;margin:0 auto 6px"><div class="section-label">Hosting &amp; Deployment</div></div>
+<div class="deploy-row">
+  <div class="deploy-card gh">
+    <div class="deploy-title">GitHub Pages  <span class="tag tag-slate">Static only · GET</span></div>
+    <div class="deploy-sub">Serves <code>web/index.html</code> as a fully self-contained SPA.<br />
+    <code>USE_MOCK = false</code> + empty <code>API_BASE</code> → all <code>POST /api/translate</code> calls fail with <strong>405</strong> (Pages has no server-side runtime).<br />
+    Requires <code>window.API_BASE</code> pointing at Railway, or <code>USE_MOCK = true</code> for standalone mock mode.</div>
+  </div>
+  <div class="deploy-card rw">
+    <div class="deploy-title">Railway  <span class="tag tag-blue">Docker · live AI</span></div>
+    <div class="deploy-sub">Builds &amp; runs the <code>Dockerfile</code> on push to <strong>main</strong>.<br />
+    Injects <code>RAILWAY_PUBLIC_DOMAIN</code> → <code>start.sh</code> writes <code>window.API_BASE</code> into <code>index.html</code> and flips <code>USE_MOCK = false</code> before starting uvicorn.<br />
+    Dynamic port via <code>$PORT</code>; env vars <code>WATSONX_API_KEY</code>, <code>WATSONX_PROJECT_ID</code>, <code>WATSONX_URL</code> set in Railway dashboard.</div>
+  </div>
+</div>
+
+
+<div style="max-width:940px;margin:0 auto 6px"><div class="section-label">Request Flow</div></div>
+<div class="arch">
+
+  
+  <div class="col">
+    <div class="card blue">
+      <div class="card-title">Browser SPA</div>
+      <div class="card-sub"><code>web/index.html</code>
+        <ul>
+          <li>7-step guided wizard</li>
+          <li>PII guard (regex strip)</li>
+          <li>Mock mode (no backend)</li>
+          <li>Live mode via <code>POST /api/translate</code></li>
+        </ul>
+        <span class="tag tag-blue">Vanilla JS · no framework</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow">→<span>HTTPS POST</span></div>
+
+  
+  <div class="col">
+    <div class="card slate">
+      <div class="card-title">FastAPI Bridge Server</div>
+      <div class="card-sub"><code>src/server.py</code> · uvicorn
+        <ul>
+          <li>Single endpoint <code>POST /api/translate</code></li>
+          <li>Dispatches on <code>step</code> field</li>
+          <li>Serves <code>GET /</code> → index.html</li>
+          <li>CORS middleware (all origins)</li>
+          <li><code>GET /health</code> for diagnostics</li>
+        </ul>
+        <span class="tag tag-slate">FastAPI · Python 3.11</span>
+      </div>
+    </div>
+    <div class="card" style="font-size:11px;background:#fff;border-color:#e5e7eb">
+      <div class="card-title" style="font-size:11px">Steps dispatched</div>
+      <div class="card-sub">
+        <code>translate_resume</code><br />
+        <code>analyze_job</code><br />
+        <code>map_skills</code><br />
+        <code>gap_analysis</code><br />
+        <code>build_resume</code><br />
+        <code>interview_prep</code><br />
+        <code>gate</code>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow">→<span>Python call</span></div>
+
+  
+  <div class="col">
+    <div class="card orange">
+      <div class="card-title">Toolkits (Python)</div>
+      <div class="card-sub"><code>toolkits/</code>
+        <ul>
+          <li><code>accomplishment_translator</code><br /><span style="color:#57606a">translate_accomplishment()</span></li>
+          <li><code>skill_mapper</code><br /><span style="color:#57606a">map_military_skills()</span></li>
+          <li><code>gap_analyzer</code><br /><span style="color:#57606a">analyze_skills_gap()</span></li>
+          <li><code>plan_builder</code><br /><span style="color:#57606a">analyze_job_description()<br />build_resume_draft()<br />evaluate_export_gate()</span></li>
+        </ul>
+        <span class="tag tag-orange">@tool decorated · wxO compatible</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow">→<span>REST API</span></div>
+
+  
+  <div class="col">
+    <div class="card purple">
+      <div class="card-title">watsonx.ai</div>
+      <div class="card-sub">
+        Model: <strong>ibm/granite-4-h-small</strong><br />
+        Called via direct REST (<code>shared/_common.py</code> <code>llm_generate()</code> — no SDK)<br /><br />
+        Env vars required:<br />
+        <code>WATSONX_API_KEY</code><br />
+        <code>WATSONX_PROJECT_ID</code><br />
+        <code>WATSONX_URL</code>
+        <br /><br />
+        <span class="tag tag-purple">IBM Cloud · us-south</span>
+      </div>
+    </div>
+    <div class="card green" style="margin-top:0">
+      <div class="card-title">watsonx Orchestrate</div>
+      <div class="card-sub">
+        5 native agents (YAML):<br />
+        <span style="color:#57606a">coordinator, accomplishment_translator,<br />skill_mapper, gap_analyzer, plan_builder</span><br /><br />
+        Agent LLM: <strong>groq/openai/gpt-oss-120b</strong><br />
+        Style: <code>react_core</code>
+        <br /><br />
+        <span class="tag tag-green">Production / enterprise path</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<div class="flow-note" style="margin-top:16px">
+  <div class="flow-note-title">7-Step Pipeline</div>
+  <div class="flow-steps">
+    <span class="flow-step">Step 1 · Profile</span>
+    <span class="flow-step">Step 2 · Translate Accomplishments</span>
+    <span class="flow-step">Step 3 · Analyze Job</span>
+    <span class="flow-step">Step 4 · Map Skills &amp; Gap Analysis</span>
+    <span class="flow-step">Step 5 · Resume Draft</span>
+    <span class="flow-step">Step 6 · Interview Prep</span>
+    <span class="flow-step">Step 7 · Export Gate</span>
+  </div>
+</div>
+
+
+<div class="rag-section">
+  <div class="section-label" style="margin-bottom:8px">Data Sources &amp; Knowledge Bases (RAG)</div>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Source</th>
+        <th>Trust</th>
+        <th>Access</th>
+        <th>Status</th>
+        <th>Used By</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>RAG-001</td><td>O*NET Military Occupational Crosswalk</td><td><span class="dot-green">●</span> High · DoL</td><td>Static JSON</td><td><span class="check">✓ Integrated</span></td><td>skill_mapper</td></tr>
+      <tr><td>RAG-002</td><td>O*NET Occupation Skills</td><td><span class="dot-green">●</span> High · DoL</td><td>Static JSON</td><td><span class="check">✓ Integrated</span></td><td>skill_mapper</td></tr>
+      <tr><td>RAG-003</td><td>IBM SkillsBuild Course Catalog</td><td><span class="dot-green">●</span> High · IBM</td><td>Static JSON</td><td><span class="check">✓ Integrated</span></td><td>gap_analyzer</td></tr>
+      <tr><td>RAG-004</td><td>DoD SkillBridge Program List</td><td><span class="dot-green">●</span> High · DoD</td><td>Static JSON</td><td><span class="check">✓ Integrated</span></td><td>gap_analyzer</td></tr>
+      <tr><td>RAG-005</td><td>BLS Occupational Outlook Handbook</td><td><span class="dot-green">●</span> High · BLS</td><td>Embedded in RAG-002</td><td><span class="check">✓ Integrated (embedded)</span></td><td>skill_mapper</td></tr>
+      <tr><td>RAG-008</td><td>O*NET Work Activities</td><td><span class="dot-green">●</span> High · DoL</td><td>Partial embed in RAG-002</td><td><span class="check">✓ Integrated (partial)</span></td><td>skill_mapper</td></tr>
+      <tr><td>RAG-009</td><td>Civilian Job Postings (user-provided)</td><td><span class="dot-yellow">●</span> User-provided</td><td>User paste</td><td><span class="check">✓ Integrated</span></td><td>gap_analyzer, plan_builder</td></tr>
+      <tr><td>RAG-010</td><td>Hire Heroes USA</td><td><span class="dot-green">●</span> High · 501(c)(3)</td><td>Referral only</td><td><span class="check">✓ Integrated (referral)</span></td><td>coordinator, gap_analyzer</td></tr>
+      <tr><td>RAG-006</td><td>USAJobs API</td><td><span class="dot-green">●</span> High · OPM</td><td>Live API</td><td><span class="pending">⏳ Pending (needs API key)</span></td><td>—</td></tr>
+      <tr><td>RAG-007</td><td>CareerOneStop Occupation Profile</td><td><span class="dot-green">●</span> High · DoL</td><td>Live API</td><td><span class="pending">⏳ Pending (needs API key)</span></td><td>—</td></tr>
+      <tr><td>RAG-011</td><td>LinkedIn Jobs</td><td><span class="dot-yellow">●</span> Medium</td><td>User paste only</td><td><span class="blocked">✗ No live integration (ToS)</span></td><td>—</td></tr>
+      <tr><td>RAG-012</td><td>Indeed Job Postings</td><td><span class="dot-yellow">●</span> Medium</td><td>User paste only</td><td><span class="blocked">✗ No live integration (API deprecated)</span></td><td>—</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<footer>
+  Mission Veteran AI by Golden Gate Glory  ·  Made with IBM Bob
+</footer>
+
+</body>
+</html>

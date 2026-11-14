@@ -331,10 +331,15 @@
     <strong>User goal:</strong> Review how your information is used, give consent,
     and choose how your draft is stored. No personal identifiers are collected.
   </div>
+<!--
   <div class="notice warn">
     <strong>PII Reminder:</strong> Do not include full names, Social Security numbers, recruiter names, company contact details,
     DoD ID numbers, phone numbers, email addresses, home addresses, birth dates,
     medical details, classified information, exact unit designations, or deployment locations.
+  </div>
+-->
+  <div class="notice warn">
+    <strong>PII Reminder:</strong> No name, email, phone, SSN, ID, location, unit, dates, etc.
   </div>
 
   <div class="card">
@@ -419,7 +424,7 @@
     <div class="field">
       <label>Service resume <span class="req">*</span></label>
       <div class="notice warn" style="margin-bottom:8px;font-size:12px">
-        <strong>PII Reminder:</strong> Do not include full names, Social Security numbers, recruiter names, company contact details, DoD ID numbers, phone numbers, email addresses, home addresses, birth dates, medical details, classified information, exact unit designations, or deployment locations.
+        <strong>PII Reminder:</strong> No name, email, phone, SSN, ID, location, unit, dates, etc.
       </div>
       <div class="drop-zone" id="s2-drop-zone" onclick="document.getElementById('s2-file-input').click()"
            ondragover="s2DragOver(event)" ondragleave="s2DragLeave(event)" ondrop="s2Drop(event)">
@@ -463,7 +468,7 @@
   </div>
 
   <div class="btn-row">
-    <button class="btn btn-primary" id="s2-btn" onclick="step2Translate()">Translate Accomplishments</button>
+    <button class="btn btn-primary" id="s2-btn" onclick="step2Translate()">Analyze Service Resume</button>
   </div>
   <div class="spinner" id="s2-spinner"><div class="spinner-ring"></div><span>Translating accomplishments with IBM Granite…</span></div>
   <div class="notice pii" id="s2-error" style="display:none"><strong>Error:</strong> <span id="s2-error-text"></span></div>
@@ -500,7 +505,7 @@
     <div class="field">
       <label for="s3-jd">Job description <span class="req">*</span></label>
       <div class="notice warn" style="margin-bottom:8px;font-size:12px">
-        <strong>PII Reminder:</strong> Do not include full names, Social Security numbers, recruiter names, company contact details, DoD ID numbers, phone numbers, email addresses, home addresses, birth dates, medical details, classified information, exact unit designations, or deployment locations.
+        <strong>PII Reminder:</strong> No name, email, phone, SSN, ID, location, unit, dates, etc.
       </div>
       <div class="drop-zone" id="s3-drop-zone" onclick="document.getElementById('s3-file-input').click()"
            ondragover="s3DragOver(event)" ondragleave="s3DragLeave(event)" ondrop="s3Drop(event)">
