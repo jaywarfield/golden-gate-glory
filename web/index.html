@@ -1231,6 +1231,14 @@
       <span style="font-weight:600;color:#0369a1">${esc(specLabel)}</span>
     </div>`;
 
+    // ── Summary ────────────────────────────────────────────────────────
+    if (STATE.summary) {
+      html += `<div style="margin-bottom:14px">
+        <div class="skill-section-title">Summary</div>
+        <div style="font-size:13px;color:#1f2328;line-height:1.6;padding:8px 0">${esc(STATE.summary)}</div>
+      </div>`;
+    }
+
     // ── Accomplishments ────────────────────────────────────────────────
     const allBullets = STATE.translatedBullets || [];
 
