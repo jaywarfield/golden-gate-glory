@@ -7,26 +7,22 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;background:#fff;color:#1f2328;font-size:12px;line-height:1.5;padding:28px 24px 48px}
-.page{max-width:1020px;margin:0 auto}
+.page{max-width:1060px;margin:0 auto}
 h1{font-size:17px;font-weight:700;margin-bottom:2px}
 .sub{font-size:11px;color:#57606a;margin-bottom:14px}
 
-/* legend */
 .legend{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:18px}
 .leg{display:flex;align-items:center;gap:5px;font-size:10px;color:#57606a}
 .lb{width:14px;height:10px;border-radius:2px;border:1px solid}
 
-/* main layout: left sidebar + right content */
 .layout{display:grid;grid-template-columns:188px 1fr;gap:12px;align-items:start}
 
-/* ── Sidebar ── */
 .sidebar{display:flex;flex-direction:column;gap:9px}
 .sb-section{border-radius:5px;padding:9px 10px;border:1px solid}
 .sb-title{font-size:9px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;margin-bottom:6px}
 .cmd{display:block;border-radius:3px;padding:3px 7px;margin-bottom:3px;font-family:monospace;font-size:11px;font-weight:700;cursor:default;border:1px solid transparent}
 .cmd-sub{font-size:10px;color:#57606a;margin-bottom:5px;padding-left:2px;display:block}
 
-/* sidebar colour groups */
 .s-infra {border-color:#c4b5fd;background:#faf5ff} .s-infra .sb-title{color:#6d28d9}
 .s-dev   {border-color:#93c5fd;background:#eff6ff} .s-dev   .sb-title{color:#1d4ed8}
 .s-bridge{border-color:#fdba74;background:#fff7ed} .s-bridge .sb-title{color:#c2410c}
@@ -43,7 +39,6 @@ h1{font-size:17px;font-weight:700;margin-bottom:2px}
 .c-qual  {background:#bbf7d0;border-color:#4ade80;color:#14532d}
 .c-gov   {background:#fce7f3;border-color:#f472b6;color:#831843}
 
-/* ── Right: Terraform band ── */
 .tf-band{border:2px solid #a78bfa;border-radius:7px;padding:10px 12px;background:#faf5ff;margin-bottom:10px}
 .tf-title{font-size:12px;font-weight:700;color:#6d28d9;margin-bottom:2px}
 .tf-sub{font-size:10px;color:#7c3aed;margin-bottom:8px}
@@ -51,12 +46,10 @@ h1{font-size:17px;font-weight:700;margin-bottom:2px}
 .tf-card{border-radius:5px;padding:8px 10px;border:1px solid #c4b5fd;background:#ede9fe;font-size:11px}
 .tf-card-title{font-weight:700;font-size:11px;color:#4c1d95;margin-bottom:2px}
 
-/* ── Orchestrate instance band ── */
 .orch-band{border:2px solid #93c5fd;border-radius:7px;padding:10px 12px;background:#f0f9ff}
 .orch-title{font-size:12px;font-weight:700;color:#0369a1;margin-bottom:8px}
 .orch-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
-/* Draft / Live columns */
 .env-col{border-radius:6px;padding:10px 11px;border:2px solid}
 .draft-col{border-color:#60a5fa;background:#eff6ff}
 .live-col {border-color:#fbbf24;background:#fffbeb}
@@ -65,11 +58,9 @@ h1{font-size:17px;font-weight:700;margin-bottom:2px}
 .draft-col .env-title{color:#1d4ed8} .draft-col .env-sub{color:#3b82f6}
 .live-col  .env-title{color:#b45309} .live-col  .env-sub{color:#d97706}
 
-/* env inner cards */
 .env-card{border-radius:4px;padding:7px 9px;border:1px solid;margin-bottom:6px;font-size:11px}
 .ec-blue  {border-color:#93c5fd;background:#dbeafe}
 .ec-indigo{border-color:#818cf8;background:#e0e7ff}
-.ec-orange{border-color:#fdba74;background:#ffedd5}
 .ec-green {border-color:#86efac;background:#dcfce7}
 .ec-yellow{border-color:#fcd34d;background:#fef9c3}
 .ec-slate {border-color:#cbd5e1;background:#f1f5f9}
@@ -77,21 +68,22 @@ h1{font-size:17px;font-weight:700;margin-bottom:2px}
 .env-card-title{font-weight:700;margin-bottom:2px;font-size:11px}
 .mono{font-family:monospace;font-size:10px;color:#374151}
 
-/* bridge + pages band */
-.host-band{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+/* host band — 4 columns */
+.host-band{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:9px;margin-top:10px}
 .host-card{border-radius:6px;padding:10px 11px;border:2px solid;font-size:11px}
-.h-railway{border-color:#fdba74;background:#fff7ed}
-.h-pages  {border-color:#94a3b8;background:#f8fafc}
+.h-ce        {border-color:#93c5fd;background:#eff6ff}
+.h-railway   {border-color:#fdba74;background:#fff7ed}
+.h-openshift {border-color:#86efac;background:#f0fdf4}
+.h-pages     {border-color:#94a3b8;background:#f8fafc}
 .host-title{font-weight:700;font-size:12px;margin-bottom:4px}
-.h-railway .host-title{color:#c2410c}
-.h-pages   .host-title{color:#475569}
+.h-ce        .host-title{color:#1d4ed8}
+.h-railway   .host-title{color:#c2410c}
+.h-openshift .host-title{color:#166534}
+.h-pages     .host-title{color:#475569}
 
-/* promote arrow */
 .promote-row{text-align:center;margin:8px 0;font-size:11px;color:#b45309;font-weight:700}
 
-/* tags */
 .tag{display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;margin:2px 2px 0 0}
-.t-tf    {background:#ede9fe;color:#6d28d9}
 .t-orange{background:#ffedd5;color:#c2410c}
 .t-blue  {background:#dbeafe;color:#1d4ed8}
 .t-green {background:#dcfce7;color:#15803d}
@@ -106,16 +98,18 @@ footer{border-top:1px solid #e5e7eb;padding-top:10px;text-align:center;font-size
 <div class="page">
 
 <h1>Mission Veteran AI — Environment Architecture</h1>
-<div class="sub">Development (Draft) vs Test (Live) · IBM Cloud / watsonx Orchestrate · Railway · GitHub Pages</div>
+<div class="sub">Development (Draft) vs Test (Live) · IBM Cloud / watsonx Orchestrate · Code Engine · Railway · OpenShift · GitHub Pages</div>
 
 <div class="legend">
   <div class="leg"><div class="lb" style="background:#faf5ff;border-color:#a78bfa"></div> Terraform layer</div>
   <div class="leg"><div class="lb" style="background:#eff6ff;border-color:#60a5fa"></div> Draft — development</div>
   <div class="leg"><div class="lb" style="background:#fffbeb;border-color:#fbbf24"></div> Live — test / tester-facing</div>
   <div class="leg"><div class="lb" style="background:#fdf4ff;border-color:#f472b6"></div> Governance / QA</div>
+  <div class="leg"><div class="lb" style="background:#eff6ff;border-color:#93c5fd"></div> Code Engine deployment</div>
   <div class="leg"><div class="lb" style="background:#fff7ed;border-color:#fdba74"></div> Railway deployment</div>
+  <div class="leg"><div class="lb" style="background:#f0fdf4;border-color:#86efac"></div> OpenShift deployment</div>
   <div class="leg"><div class="lb" style="background:#f8fafc;border-color:#94a3b8"></div> GitHub Pages deployment</div>
-  <div class="leg"><div class="lb" style="background:#f0fdf4;border-color:#86efac"></div> Infrastructure commands</div>
+  <div class="leg"><div class="lb" style="background:#f0fdf4;border-color:#4ade80"></div> Infrastructure commands</div>
 </div>
 
 <div class="layout">
@@ -146,7 +140,7 @@ footer{border-top:1px solid #e5e7eb;padding-top:10px;text-align:center;font-size
       <span class="cmd c-bridge">make bridge-run</span><span class="cmd-sub">uvicorn locally on :8080 (mock mode)</span>
       <span class="cmd c-bridge">make bridge-run-live</span><span class="cmd-sub">local live mode · start.sh injects API_BASE</span>
       <span class="cmd c-bridge">make bridge-build</span><span class="cmd-sub">docker build → ICR image</span>
-      <span class="cmd c-bridge">make bridge-push</span><span class="cmd-sub">ibmcloud cr login + docker push</span>
+      <span class="cmd c-bridge">make bridge-push</span><span class="cmd-sub">ibmcloud cr login + docker push to ICR</span>
       <span class="cmd c-bridge">make bridge-deploy</span><span class="cmd-sub">create/update Code Engine app</span>
       <span class="cmd c-bridge">make bridge-logs</span><span class="cmd-sub">tail Code Engine live logs</span>
       <span class="cmd c-bridge">make bridge-url</span><span class="cmd-sub">print Code Engine public URL</span>
@@ -204,14 +198,12 @@ footer{border-top:1px solid #e5e7eb;padding-top:10px;text-align:center;font-size
     
     <div class="orch-band">
       <div class="orch-title">🔵 IBM Cloud — watsonx Orchestrate instance</div>
-
       <div class="orch-grid">
 
         
         <div class="env-col draft-col">
           <div class="env-title">DRAFT</div>
           <div class="env-sub">development environment</div>
-
           <div class="env-card ec-blue">
             <div class="env-card-title">Step 1 — Import Tools (Python)</div>
             <span class="mono">translate_accomplishment.py</span><br />
@@ -220,7 +212,6 @@ footer{border-top:1px solid #e5e7eb;padding-top:10px;text-align:center;font-size
             <span class="mono">build_plan.py</span> (3 tools)<br />
             <span style="color:#57606a;font-size:10px">orchestrate tools import --kind python --package-root toolkits --app-id watsonx_credentials</span>
           </div>
-
           <div class="env-card ec-indigo">
             <div class="env-card-title">Step 2 — Import Sub-agents</div>
             <span class="mono">accomplishment_translator_agent</span><br />
@@ -229,24 +220,20 @@ footer{border-top:1px solid #e5e7eb;padding-top:10px;text-align:center;font-size
             <span class="mono">plan_builder_agent</span><br />
             <span style="color:#57606a;font-size:10px">orchestrate agents import -f agents/*_agent.yaml</span>
           </div>
-
           <div class="env-card ec-blue" style="border-color:#3b82f6;background:#1d4ed8;color:#fff">
             <div class="env-card-title" style="color:#fff">Step 3 — coordinator_agent</div>
             <span style="font-size:10px;opacity:0.85">orchestrate agents import -f agents/coordinator_agent.yaml</span>
           </div>
-
           <div class="env-card ec-green" style="border-color:#f472b6;background:#fdf4ff">
             <div class="env-card-title" style="color:#86198f">Step 4 — Governance (optional)</div>
             <span class="mono" style="color:#86198f">register_factsheets.py</span><br />
             <span style="color:#57606a;font-size:10px">Skipped if GOVERNANCE_INSTANCE_GUID not set</span>
           </div>
-
           <div class="env-card ec-slate">
             <div class="env-card-title">Connections</div>
             <span class="mono">watsonx_credentials</span><br />
             <span style="color:#57606a;font-size:10px">WATSONX_API_KEY · WATSONX_URL · WATSONX_PROJECT_ID</span>
           </div>
-
           <div class="env-card ec-green">
             <div class="env-card-title">Unit Tests</div>
             <span class="mono">pytest tests/ -v</span> — mocked, no live API calls<br />
@@ -258,7 +245,6 @@ footer{border-top:1px solid #e5e7eb;padding-top:10px;text-align:center;font-size
         <div class="env-col live-col">
           <div class="env-title">LIVE</div>
           <div class="env-sub">test / tester-facing environment</div>
-
           <div class="env-card ec-yellow">
             <div class="env-card-title">Sub-agents (promoted snapshot)</div>
             <span class="mono">accomplishment_translator</span><br />
@@ -267,24 +253,20 @@ footer{border-top:1px solid #e5e7eb;padding-top:10px;text-align:center;font-size
             <span class="mono">plan_builder</span><br />
             <span style="color:#57606a;font-size:10px">orchestrate agents deploy --name &lt;agent&gt;</span>
           </div>
-
           <div class="env-card" style="border-color:#f59e0b;background:#b45309;color:#fff">
             <div class="env-card-title" style="color:#fff">coordinator (promoted snapshot)</div>
             <span style="font-size:10px;opacity:0.85">orchestrate agents deploy --name coordinator</span>
           </div>
-
           <div class="env-card ec-yellow">
             <div class="env-card-title">Connections</div>
             <span class="mono">watsonx_credentials</span><br />
             <span style="color:#57606a;font-size:10px">WATSONX_API_KEY · WATSONX_URL · WATSONX_PROJECT_ID</span>
           </div>
-
           <div class="env-card ec-yellow">
             <div class="env-card-title">Tester / Reviewer</div>
             accesses via <span class="mono">dashboard_url</span><br />
             notified after <span class="mono">make promote</span>
           </div>
-
           <div class="env-card ec-red">
             <div class="env-card-title">⚠ Immutable once promoted</div>
             re-run <span class="mono">make deploy</span>, then <span class="mono">make promote</span> to update
@@ -292,14 +274,37 @@ footer{border-top:1px solid #e5e7eb;padding-top:10px;text-align:center;font-size
         </div>
 
       </div>
-
-      <div class="promote-row">make promote  ·  Draft → Live</div>
-
+      <div class="promote-row">make promote  ·  Draft → Live</div>
     </div>
 
     
     <div class="host-band">
 
+      
+      <div class="host-card h-ce">
+        <div class="host-title">☁ Code Engine — Live Bridge Server</div>
+        <div style="color:#57606a;font-size:10px;margin-bottom:6px">IBM Cloud managed container · <span class="mono">make bridge-deploy</span></div>
+        <div style="font-size:11px">
+          <strong>Makefile targets:</strong><br />
+          1. <span class="mono">make bridge-build</span> → Docker → ICR<br />
+          2. <span class="mono">make bridge-push</span> → push to ICR<br />
+          3. <span class="mono">make bridge-deploy</span> → <span class="mono">ibmcloud ce app create/update</span><br />
+          4. <span class="mono">start.sh</span> injects <span class="mono">window.API_BASE</span><br />
+          5. Flips <span class="mono">USE_MOCK=false</span>
+        </div>
+        <div style="margin-top:7px;font-size:10px;color:#57606a">
+          Config: <span class="mono">CE_PROJECT · CE_APP · CE_REGION</span><br />
+          <span class="mono">min-scale=0 · max-scale=3 · 0.5 CPU · 1G</span><br />
+          Env: <span class="mono">WATSONX_API_KEY · WATSONX_PROJECT_ID · WATSONX_URL · ALLOWED_ORIGINS</span>
+        </div>
+        <div style="margin-top:5px">
+          <span class="tag t-blue">POST /api/translate</span>
+          <span class="tag t-blue">GET / → index.html</span>
+          <span class="tag t-blue">GET /health</span>
+        </div>
+      </div>
+
+      
       <div class="host-card h-railway">
         <div class="host-title">🚂 Railway — Live Bridge Server</div>
         <div style="color:#57606a;font-size:10px;margin-bottom:6px">Dockerfile · push to main → auto-redeploy</div>
@@ -323,6 +328,31 @@ footer{border-top:1px solid #e5e7eb;padding-top:10px;text-align:center;font-size
         </div>
       </div>
 
+      
+      <div class="host-card h-openshift">
+        <div class="host-title">☁ OpenShift — Live Bridge Server</div>
+        <div style="color:#57606a;font-size:10px;margin-bottom:6px">Ingress pod + route · <span class="mono">oc apply -f openshift/</span></div>
+        <div style="font-size:11px">
+          <strong>Deployment config:</strong><br />
+          1. Build image → push to ICR or Quay<br />
+          2. <span class="mono">Deployment</span> + <span class="mono">Service</span> + <span class="mono">Route</span> YAMLs<br />
+          3. <span class="mono">ConfigMap</span> or env injects <span class="mono">window.API_BASE</span><br />
+          4. <span class="mono">USE_MOCK=false</span> set in env<br />
+          5. <span class="mono">uvicorn src.server:app --port 8080</span>
+        </div>
+        <div style="margin-top:7px;font-size:10px;color:#57606a">
+          Env vars in OpenShift secret / ConfigMap:<br />
+          <span class="mono">WATSONX_API_KEY · WATSONX_PROJECT_ID · WATSONX_URL</span><br />
+          <span class="mono">ALLOWED_ORIGINS · API_BASE</span>
+        </div>
+        <div style="margin-top:5px">
+          <span class="tag t-green">POST /api/translate</span>
+          <span class="tag t-green">GET / → index.html</span>
+          <span class="tag t-green">GET /health</span>
+        </div>
+      </div>
+
+      
       <div class="host-card h-pages">
         <div class="host-title">📄 GitHub Pages — Static SPA</div>
         <div style="color:#57606a;font-size:10px;margin-bottom:6px">.github/workflows/pages.yml · triggers on push to main (web/** changes)</div>
@@ -331,7 +361,7 @@ footer{border-top:1px solid #e5e7eb;padding-top:10px;text-align:center;font-size
           · If <span class="mono">API_BASE</span> secret set → inject <span class="mono">window.API_BASE</span> + <span class="mono">USE_MOCK=false</span> (live mode)<br />
           · If <span class="mono">API_BASE</span> secret absent → <span class="mono">USE_MOCK=true</span> (mock mode — always works)<br /><br />
           <strong>Current state:</strong> <span class="mono">USE_MOCK=false</span> + no <span class="mono">API_BASE</span> → <strong style="color:#991b1b">405 on POST</strong> (Pages has no server runtime)<br /><br />
-          <strong>Fix:</strong> Set <span class="mono">API_BASE</span> repo secret → Railway URL, then push to main
+          <strong>Fix:</strong> Set <span class="mono">API_BASE</span> repo secret → Code Engine URL, OpenShift URL, or Railway URL, then push to main
         </div>
         <div style="margin-top:5px">
           <span class="tag t-slate">Static GET only</span>
@@ -345,6 +375,6 @@ footer{border-top:1px solid #e5e7eb;padding-top:10px;text-align:center;font-size
 </div>
 
 </div>
-<footer>Mission Veteran AI by Golden Gate Glory  ·  Made with IBM Bob</footer>
+<footer>Mission Veteran AI by Golden Gate Glory  ·  Made with IBM Bob</footer>
 </body>
 </html>

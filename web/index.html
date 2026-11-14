@@ -1351,10 +1351,11 @@
     // — computed after requiredSkills is built below; placeholder for now.
 
     // ── Helpers ───────────────────────────────────────────────────────
-    // Preserve original casing (CompTIA, TCP/IP) — only uppercase first letter
-    // of each word, leave the rest unchanged (same as Step 3).
-    const capWords = s => (s||'').replace(/\b\w/g, c => c.toUpperCase());
+    // Title-case: uppercase first char of each word, lowercase the rest.
+    const capWords = s => (s||'').split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
     const isTechnicalOnly = s => /^\s*technical\s*$/i.test(s||'');
+    // Strip a leading "Technical" word from a skill name (e.g. "Technical Network Administration" → "Network Administration")
+    const stripTechnical = s => (s||'').replace(/^\s*technical\s+/i, '').trim() || s;
 
     // Tier colour palette
     const TIER = {
@@ -1367,7 +1368,7 @@
     const civMap = {};
     (STATE.skills||[]).forEach(s => {
       if (!isTechnicalOnly(s.skill_name))
-        civMap[(s.skill_name||'').toLowerCase()] = s;
+        civMap[stripTechnical((s.skill_name||'').toLowerCase())] = s;
     });
 
     // Build lookup: gap skill name (lower) → gap object
@@ -1454,9 +1455,10 @@
     // ── Skill Mapping table ───────────────────────────────────────────
     let html = `<table style="width:100%;border-collapse:collapse">
       <thead><tr>
-        ${th('14%','Type')}
-        ${th('43%','Job Skills')}
-        ${th('43%','Veteran Skills')}
+        ${th('12%','Type')}
+        ${th('30%','Job Skills')}
+        ${th('30%','Civilian Skills')}
+        ${th('28%','Covered / Courses')}
       </tr></thead><tbody>`;
 
     allRows.forEach((r, i) => {
@@ -1466,29 +1468,28 @@
       // Col 1: type label in tier colour
       const typeCell = `<span style="font-weight:700;color:${tier.color}">${tier.label}</span>`;
 
-      // Col 2: job skill name — preserve original casing (CompTIA, TCP/IP, etc.)
-      const jobCell = r.tierKey === 'Veteran' ? '' : esc(capWords(r.js));
+      // Col 2: job skill name — strip leading "Technical", then title-case
+      const jobCell = r.tierKey === 'Veteran' ? '' : esc(capWords(stripTechnical(r.js)));
 
-      // Col 3: matched veteran skill name, or N/A if no match
+      // Col 3: matched civilian skill name — strip leading "Technical", title-case; or N/A
       const vetCell = r.covered
-        ? esc(capWords(r.civ ? r.civ.skill_name : r.js))
+        ? esc(capWords(stripTechnical(r.civ ? r.civ.skill_name : r.js)))
         : `<span style="color:#57606a">N/A</span>`;
+
+      // Col 4: "✓ Covered" when matched; IBM SkillsBuild link when NOT covered
+      const courseCell = r.covered
+        ? `<span style="color:#166534;font-weight:600">✓ Covered</span>`
+        : `<a href="https://skillsbuild.org" target="_blank" style="color:#1d4ed8;text-decoration:none;font-weight:600;font-size:12px">IBM SkillsBuild</a>`;
 
       html += `<tr style="background:${bg}">
         ${td(typeCell)}
         ${td(jobCell)}
         ${td(vetCell)}
+        ${td(courseCell)}
       </tr>`;
     });
 
     html += `</tbody></table>`;
-
-    // SkillsBuild note if any gaps exist
-    if (allRows.some(r => !r.covered)) {
-      html += `<div style="margin-top:10px;font-size:12px;color:#57606a;padding:6px 2px">
-        📚 Close skill gaps with free courses at <a href="https://skillsbuild.org" target="_blank" style="color:#1d4ed8;text-decoration:none;font-weight:600">IBM SkillsBuild — skillsbuild.org</a>
-      </div>`;
-    }
 
 
     document.getElementById('s4-comparison').innerHTML = html;
@@ -1759,12 +1760,25 @@
     document.getElementById('s7-output').style.display = 'block';
   }
 
+  // Returns skills_section filtered to veteran-only skills (from STATE.skills),
+  // excluding any standalone "Technical" entry.
+  function _veteranSkills() {
+    const rd = STATE.resumeDraft || {};
+    const vetNames = new Set(
+      (STATE.skills||[]).map(s => (s.skill_name||'').trim().toLowerCase())
+    );
+    return (rd.skills_section||[]).filter(s => {
+      const lc = (s||'').trim().toLowerCase();
+      if (/^\s*technical\s*$/i.test(s)) return false;   // bare "Technical"
+      return vetNames.size === 0 || vetNames.has(lc);   // only veteran skills
+    });
+  }
+
   function renderFinalPackage() {
     const rd = STATE.resumeDraft || {};
     const summary  = typeof rd.summary === 'string' ? {text:rd.summary} : (rd.summary||{});
     const bullets  = rd.bullets||[];
-    const skills   = rd.skills_section||[];
-    const target   = STATE.targetRole;
+    const skills   = _veteranSkills();
 
     // ── Resume section ───────────────────────────────────────────────
     const hdr = text =>
@@ -1774,7 +1788,6 @@
     const divider = `<hr style="border:none;border-top:1px solid #e5e7eb;margin:4px 0">`;
 
     let html = '';
-    html += `<div style="font-weight:700;text-align:center;font-size:15px;margin-bottom:4px">${esc(target ? target.toUpperCase() : 'RESUME DRAFT')}</div>`;
     html += divider;
     html += hdr('Summary');
     html += body(summary.text || '');
@@ -1838,12 +1851,8 @@
     const rd      = STATE.resumeDraft || {};
     const summary = typeof rd.summary === 'string' ? rd.summary : ((rd.summary||{}).text||'');
     const bullets = (rd.bullets||[]).map(b=>`• ${b.text||b}`);
-    const skills  = (rd.skills_section||[]).join(', ');
-    const target  = STATE.targetRole || 'RESUME DRAFT';
+    const skills  = _veteranSkills().join(', ');
     return [
-      target.toUpperCase(),
-      '='.repeat(target.length),
-      '',
       'SUMMARY',
       summary,
       '',
@@ -1926,8 +1935,7 @@
     const rd      = STATE.resumeDraft || {};
     const summary = typeof rd.summary === 'string' ? rd.summary : ((rd.summary||{}).text||'');
     const bullets = rd.bullets||[];
-    const skills  = rd.skills_section||[];
-    const target  = STATE.targetRole || 'Resume Draft';
+    const skills  = _veteranSkills();
 
     // Helper: bold centred section heading
     const sectionHeading = text => new Paragraph({
@@ -1946,11 +1954,6 @@
     });
 
     const children = [
-      new Paragraph({
-        children: [new TextRun({ text: target.toUpperCase(), bold: true, size: 28 })],
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 120 },
-      }),
       sectionHeading('Summary'),
       bodyPara(summary),
       ...(bullets.length ? [
