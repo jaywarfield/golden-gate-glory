@@ -1408,13 +1408,14 @@
         <span style="font-size:12px;font-weight:600;color:#16a34a;border:1.5px solid #16a34a;border-radius:999px;padding:1px 10px">Covered</span>
       </div>`;
 
-    // Gap skill row: ✗  Skill Name  ·····  Priority badge  +  course card below
+    // Gap skill row: ✗  Skill Name  ·····  Priority badge (always shown)
     const priorityBadge = p => {
-      const col = p === 'High' ? '#b91c1c' : p === 'Medium' ? '#92400e' : '#57606a';
+      const col = p === 'High' ? '#b91c1c' : p === 'Medium' ? '#92400e' : '#166534';
       return `<span style="font-size:12px;font-weight:600;color:${col};border:1.5px solid ${col};border-radius:999px;padding:1px 10px">${esc(p)}</span>`;
     };
-    const gapRow = (name, gapObj) => {
-      const p = (gapObj && (gapObj.priority || gapObj.gap_priority)) || '';
+    // tierPriority: the default badge label derived from the job skill tier
+    const gapRow = (name, gapObj, tierPriority) => {
+      const p = (gapObj && (gapObj.priority || gapObj.gap_priority)) || tierPriority || '';
       return `<div style="padding:9px 2px;border-bottom:1px solid #f0f0f0">
         <div style="display:flex;align-items:center;justify-content:space-between">
           <div style="display:flex;align-items:center;gap:10px">
@@ -1444,12 +1445,13 @@
     }
 
     // ── Build Skill Gaps section (grouped by tier) ────────────────────
-    const renderTierGaps = (skills, tierLabel) => {
+    // tierPriority is the guaranteed badge label for the tier: Required=High, Preferred=Medium, Optional=Low
+    const renderTierGaps = (skills, tierLabel, tierPriority) => {
       const gaps = skills.filter(js => { const r = classifyJobSkill(js); return !r.isCovered; });
       if (gaps.length === 0) return '';
       return tierHdr(tierLabel) + gaps.map(js => {
         const r = classifyJobSkill(js);
-        return gapRow(js, r.gapObj);
+        return gapRow(js, r.gapObj, tierPriority);
       }).join('');
     };
 
@@ -1460,10 +1462,10 @@
       return !isTechnicalOnly(nL) && !allJobSkillsL.some(j => looseMatch(j, nL));
     });
 
-    const gapReq  = renderTierGaps(requiredSkills,  'Required Skills');
-    const gapPref = renderTierGaps(preferredSkills, 'Preferred Skills');
-    const gapOpt  = renderTierGaps(optionalSkills,  'Optional Skills');
-    const gapExtra = extraGaps.map(g => gapRow((g.skill_name||g.gap_skill||g||'').toString(), g)).join('');
+    const gapReq  = renderTierGaps(requiredSkills,  'Required Skills',  'High');
+    const gapPref = renderTierGaps(preferredSkills, 'Preferred Skills', 'Medium');
+    const gapOpt  = renderTierGaps(optionalSkills,  'Optional Skills',  'Low');
+    const gapExtra = extraGaps.map(g => gapRow((g.skill_name||g.gap_skill||g||'').toString(), g, 'High')).join('');
 
     if (gapReq || gapPref || gapOpt || gapExtra) {
       html += sectionHdr('✗', 'Skill Gaps — With SkillsBuild Recommendations', '#b91c1c');
