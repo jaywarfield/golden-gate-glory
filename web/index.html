@@ -566,7 +566,6 @@
         </div>
       </div>
       <div id="s4-pref-row" style="display:none;margin-top:10px">
-        <div style="font-size:11px;font-weight:600;color:#57606a;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em">Preferred Skills</div>
         <div style="display:flex;align-items:center;gap:10px">
           <div style="font-size:18px;font-weight:700;color:#1f2328;min-width:36px" id="s4-pref-pct">–</div>
           <div style="flex:1">
@@ -1413,11 +1412,17 @@
       `<td style="padding:8px 10px;border:1px solid #e5e7eb;vertical-align:middle;font-size:13px${extra ? ';'+extra : ''}">${content}</td>`;
 
     // Build all rows: each job skill → { tierKey, js (original casing), civ, covered }
+    // coveredNames (from gr.covered_skills) is the authoritative source — if the gap
+    // analysis says a skill is covered, trust it even if names differ slightly.
     const buildRows = (skills, tierKey) => skills.map(js => {
       const jsL = js.toLowerCase();
-      const gap = inGap(jsL);
       const civ = getCiv(jsL);
-      const covered = !gap && (coveredNames.has(jsL) || !!civ);
+      // A skill is covered if coveredNames says so OR a vet skill loosely matches.
+      // A skill is a gap only if it's explicitly in gapMap AND NOT in coveredNames.
+      const explicitlyCovered = coveredNames.has(jsL) ||
+        [...coveredNames].some(c => looseMatch(c, jsL));
+      const explicitlyGap = !explicitlyCovered && inGap(jsL);
+      const covered = explicitlyCovered || (!explicitlyGap && !!civ);
       return { tierKey, js, civ, covered };
     });
 
@@ -1426,24 +1431,6 @@
       ...buildRows(preferredSkills, 'Preferred'),
       ...buildRows(optionalSkills,  'Optional'),
     ];
-
-    // Append veteran skills that have no matching job skill row so they still
-    // appear in the table (shown as a separate "Veteran" tier row).
-    const allRowSkillsL = new Set(allRows.map(r => r.js.toLowerCase()));
-    (STATE.skills||[]).forEach(s => {
-      const name = (s.skill_name||'').trim();
-      if (!isTechnicalOnly(name) && name && !allRowSkillsL.has(name.toLowerCase())) {
-        // Check if this vet skill loosely matches any job skill already in the table
-        const alreadyMatched = allRows.some(r => looseMatch(r.js.toLowerCase(), name.toLowerCase()));
-        if (!alreadyMatched) {
-          allRows.push({ tierKey: 'Veteran', js: '', civ: s, covered: true });
-          allRowSkillsL.add(name.toLowerCase());
-        }
-      }
-    });
-
-    // Add Veteran tier to colour palette for unmatched vet skills
-    TIER['Veteran'] = { label: 'Veteran', color: '#1e3a8a', bg: '#f0f4ff' };
 
     // ── Skill Mapping table ───────────────────────────────────────────
     let html = `<table style="width:100%;border-collapse:collapse">
