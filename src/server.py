@@ -684,10 +684,18 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
                             skill_tokens.append(tok)
             continue
 
-        block_text = ' '.join(b['lines'])
-        if not summary_text:
-            summary_text = block_text
-        elif len(block_text) > 15:
-            exp_texts.append(block_text)
+        # Each line in a block is treated as a separate experience entry so that
+        # multi-line accomplishment sections (no blank line between bullets) all
+        # get translated individually rather than collapsed into one big string.
+        # The first line of the first block becomes summary_text; every other
+        # non-trivial line becomes its own exp_text entry.
+        for line in b['lines']:
+            line = line.strip()
+            if len(line) < 10:
+                continue
+            if not summary_text:
+                summary_text = line
+            else:
+                exp_texts.append(line)
 
     return summary_text, exp_texts, skill_tokens
