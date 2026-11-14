@@ -72,14 +72,18 @@ def health():
     """Health check — returns env var status without exposing values."""
     import sys
     creds_ok = bool(os.environ.get("WATSONX_API_KEY")) and bool(os.environ.get("WATSONX_PROJECT_ID"))
+    usajobs_key    = os.environ.get("USAJOBS_API_KEY", "")
+    usajobs_agent  = os.environ.get("USAJOBS_USER_AGENT", "")
     return {
         "status": "ok",
         "python": sys.version,
-        "WATSONX_API_KEY":    "set" if os.environ.get("WATSONX_API_KEY")    else "MISSING",
-        "WATSONX_PROJECT_ID": "set" if os.environ.get("WATSONX_PROJECT_ID") else "MISSING",
-        "WATSONX_URL":        os.environ.get("WATSONX_URL", "MISSING"),
-        "API_BASE":           os.environ.get("API_BASE", "not set"),
-        "creds_ready":        creds_ok,
+        "WATSONX_API_KEY":      "set" if os.environ.get("WATSONX_API_KEY")    else "MISSING",
+        "WATSONX_PROJECT_ID":   "set" if os.environ.get("WATSONX_PROJECT_ID") else "MISSING",
+        "WATSONX_URL":          os.environ.get("WATSONX_URL", "MISSING"),
+        "API_BASE":             os.environ.get("API_BASE", "not set"),
+        "creds_ready":          creds_ok,
+        "USAJOBS_API_KEY":      f"set ({len(usajobs_key)} chars)" if usajobs_key.strip() else "MISSING",
+        "USAJOBS_USER_AGENT":   f"set ({len(usajobs_agent)} chars)" if usajobs_agent.strip() else "MISSING",
     }
 
 
