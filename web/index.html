@@ -1214,8 +1214,6 @@
     const list = document.getElementById('s2-bullets-list');
 
     // ── Branch + specialty header ──────────────────────────────────────
-    // Look up the full label from the SPECIALTY_CODES table so we can show
-    // the description alongside the code (e.g. "25B – IT Specialist").
     const branchEntries = SPECIALTY_CODES[STATE.branch] || [];
     const specEntry = branchEntries.find(e => e[0] === STATE.specialty);
     const specLabel = specEntry ? specEntry[1] : STATE.specialty;
@@ -1229,34 +1227,23 @@
       <span style="font-weight:600;color:#0369a1">${esc(specLabel)}</span>
     </div>`;
 
-    // ── Summary paragraph ──────────────────────────────────────────────
-    if (STATE.summary) {
-      html += `<div style="margin-bottom:14px">
-        <div class="skill-section-title">Summary</div>
-        <div style="font-size:13px;color:#1f2328;line-height:1.6;padding:8px 0">${esc(STATE.summary)}</div>
-      </div>`;
-    }
+    // ── Experience & Accomplishments ───────────────────────────────────
+    // Summary is prepended as bullet #1 so all content appears as accomplishments.
+    // No separate Summary section — no Skills badges section.
+    const allBullets = [
+      ...(STATE.summary ? [STATE.summary] : []),
+      ...(STATE.translatedBullets || []),
+    ];
 
-    // ── Experience / accomplishment bullets ────────────────────────────
-    if (STATE.translatedBullets.length) {
-      html += `<div style="margin-bottom:14px">
+    if (allBullets.length) {
+      html += `<div>
         <div class="skill-section-title">Experience &amp; Accomplishments</div>
-        ${STATE.translatedBullets.map((b, i) => `
+        ${allBullets.map((b, i) => `
           <div class="bullet-row">
             <span style="color:#57606a;font-size:12px;min-width:20px">${i+1}.</span>
             <span class="bullet-text">${esc(b)}</span>
             <span class="tag tag-ev">EVIDENCED</span>
           </div>`).join('')}
-      </div>`;
-    }
-
-    // ── Skills list ────────────────────────────────────────────────────
-    if ((STATE.resumeSkills||[]).length) {
-      html += `<div>
-        <div class="skill-section-title">Skills</div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
-          ${STATE.resumeSkills.map(s => `<span class="badge badge-covered">${esc(s)}</span>`).join('')}
-        </div>
       </div>`;
     }
 
@@ -1346,154 +1333,119 @@
     document.getElementById('s4-sub').textContent  = `${(gr.covered_skills||[]).length} of ${(gr.covered_skills||[]).length + (gr.gap_skills||[]).length} required skills covered`;
 
     // ── Helpers ───────────────────────────────────────────────────────
-    // Uppercase first char of each word, lowercase rest
     const toTitle = s => (s||'').replace(/\b(\w)(\w*)/g, (_, f, r) => f.toUpperCase() + r.toLowerCase());
-    // Filter: standalone "Technical" is not a specific skill
     const isTechnicalOnly = s => /^\s*technical\s*$/i.test(s||'');
 
-    // Build lookup: civilian skill name (lower) → {skill_name, category, confidence}
+    // Tier colour palette
+    const TIER = {
+      Required:  { label: 'Required',  color: '#991b1b', bg: '#fff1f2' },
+      Preferred: { label: 'Preferred', color: '#92400e', bg: '#fffbeb' },
+      Optional:  { label: 'Optional',  color: '#166534', bg: '#f0fdf4' },
+    };
+
+    // Build lookup: civilian skill name (lower) → skill object
     const civMap = {};
     (STATE.skills||[]).forEach(s => {
       if (!isTechnicalOnly(s.skill_name))
         civMap[(s.skill_name||'').toLowerCase()] = s;
     });
 
-    // Build lookup: gap skill name (lower) → gap object (has .courses[])
+    // Build lookup: gap skill name (lower) → gap object
     const gapMap = {};
     (gr.gap_skills||[]).forEach(g => {
       const name = (g.skill_name||g.gap_skill||g||'').toString().toLowerCase();
       gapMap[name] = g;
     });
 
-    // Loose match helper: true if two lowercased skill strings are the same or one contains the other
     const looseMatch = (a, b) => a === b || a.includes(b) || b.includes(a);
+    const inGap  = nL => !!(gapMap[nL] || Object.keys(gapMap).find(k => looseMatch(k, nL)));
+    const getCiv = nL => { const k = Object.keys(civMap).find(c => c === nL || looseMatch(c, nL)); return k ? civMap[k] : null; };
 
-    const inGap = nameL => !!(gapMap[nameL] || Object.keys(gapMap).find(k => looseMatch(k, nameL)));
-    const getGap = nameL => gapMap[nameL] || gapMap[Object.keys(gapMap).find(k => looseMatch(k, nameL))||''] || null;
-
-    // Covered skill names set (lower-cased)
+    // Covered names set
     const coveredNames = new Set((gr.covered_skills||[]).map(s => (s.skill_name||s||'').toString().toLowerCase()));
 
-    // Job skills by priority tier from jobAnalysis
+    // Job skill tiers
     const ja = STATE.jobAnalysis || {};
     const requiredSkills  = (ja.required_skills  || []).filter(s => !isTechnicalOnly(s));
     const preferredSkills = (ja.preferred_skills || []).filter(s => !isTechnicalOnly(s));
     const optionalSkills  = (ja.optional_skills  || []).filter(s => !isTechnicalOnly(s));
 
-    // For each job skill determine covered/gap status
-    const classifyJobSkill = (js) => {
+    // ── Shared table style helpers ────────────────────────────────────
+    const th = (w, label) =>
+      `<th style="width:${w};padding:7px 10px;background:#1e3a8a;color:#fff;font-size:11px;font-weight:700;letter-spacing:0.05em;text-align:left;border:1px solid #c8d0d9">${label}</th>`;
+    const td = (content, extra='') =>
+      `<td style="padding:8px 10px;border:1px solid #e5e7eb;vertical-align:middle;font-size:13px${extra ? ';'+extra : ''}">${content}</td>`;
+
+    // Build all rows: each job skill → { tier, jobSkill, vetSkill|null, isCovered }
+    const buildRows = (skills, tierKey) => skills.map(js => {
       const jsL = js.toLowerCase();
-      const civKey = Object.keys(civMap).find(k => k === jsL) || Object.keys(civMap).find(k => looseMatch(k, jsL)) || '';
-      const civSkill  = civKey ? civMap[civKey] : null;
-      const gap       = inGap(jsL);
-      const isCovered = !gap && (coveredNames.has(jsL) || !!civSkill);
-      const gapObj    = gap ? getGap(jsL) : null;
-      return { js, civSkill, isCovered, gapObj };
-    };
-
-    // ── Section styles ────────────────────────────────────────────────
-    const sectionHdr = (icon, label, color) =>
-      `<div style="display:flex;align-items:center;gap:6px;margin:18px 0 8px;font-size:11px;font-weight:700;letter-spacing:0.08em;color:${color};text-transform:uppercase">${icon} ${esc(label)}</div>`;
-
-    const tierHdr = label =>
-      `<div style="font-size:11px;font-weight:600;color:#57606a;text-transform:uppercase;letter-spacing:0.06em;margin:10px 0 4px;padding-left:2px">${esc(label)}</div>`;
-
-    // Covered skill row: ✓  Skill Name  ·····  Covered (green badge)
-    const coveredRow = (name) =>
-      `<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 2px;border-bottom:1px solid #f0f0f0">
-        <div style="display:flex;align-items:center;gap:10px">
-          <span style="color:#16a34a;font-weight:700;font-size:15px">✓</span>
-          <span style="font-size:14px;font-weight:600;color:#1f2328">${esc(toTitle(name))}</span>
-        </div>
-        <span style="font-size:12px;font-weight:600;color:#16a34a;border:1.5px solid #16a34a;border-radius:999px;padding:1px 10px">Covered</span>
-      </div>`;
-
-    // Gap skill row: ✗  Skill Name  ·····  Priority badge (always shown)
-    const priorityBadge = p => {
-      const col = p === 'High' ? '#b91c1c' : p === 'Medium' ? '#92400e' : '#166534';
-      return `<span style="font-size:12px;font-weight:600;color:${col};border:1.5px solid ${col};border-radius:999px;padding:1px 10px">${esc(p)}</span>`;
-    };
-    // tierPriority: the default badge label derived from the job skill tier
-    const gapRow = (name, gapObj, tierPriority) => {
-      const p = (gapObj && (gapObj.priority || gapObj.gap_priority)) || tierPriority || '';
-      return `<div style="padding:9px 2px;border-bottom:1px solid #f0f0f0">
-        <div style="display:flex;align-items:center;justify-content:space-between">
-          <div style="display:flex;align-items:center;gap:10px">
-            <span style="color:#b91c1c;font-weight:700;font-size:15px">✗</span>
-            <span style="font-size:14px;font-weight:600;color:#1f2328">${esc(toTitle(name))}</span>
-          </div>
-          ${p ? priorityBadge(p) : ''}
-        </div>
-      </div>`;
-    };
-
-    // ── Build Covered Skills section (grouped by tier) ────────────────
-    let html = '';
-
-    const renderTierCovered = (skills, tierLabel) => {
-      const covered = skills.filter(js => { const r = classifyJobSkill(js); return r.isCovered; });
-      if (covered.length === 0) return '';
-      return tierHdr(tierLabel) + covered.map(js => coveredRow(js)).join('');
-    };
-    const covReq  = renderTierCovered(requiredSkills,  'Required Skills');
-    const covPref = renderTierCovered(preferredSkills, 'Preferred Skills');
-    const covOpt  = renderTierCovered(optionalSkills,  'Optional Skills');
-
-    if (covReq || covPref || covOpt) {
-      html += sectionHdr('✓', 'Covered Skills', '#16a34a');
-      html += covReq + covPref + covOpt;
-    }
-
-    // ── Build Skill Gaps section (grouped by tier) ────────────────────
-    // tierPriority is the guaranteed badge label for the tier: Required=High, Preferred=Medium, Optional=Low
-    const renderTierGaps = (skills, tierLabel, tierPriority) => {
-      const gaps = skills.filter(js => { const r = classifyJobSkill(js); return !r.isCovered; });
-      if (gaps.length === 0) return '';
-      return tierHdr(tierLabel) + gaps.map(js => {
-        const r = classifyJobSkill(js);
-        return gapRow(js, r.gapObj, tierPriority);
-      }).join('');
-    };
-
-    // Also include gap_skills from gapResult not already in job skill tiers
-    const allJobSkillsL = [...requiredSkills, ...preferredSkills, ...optionalSkills].map(s => s.toLowerCase());
-    const extraGaps = (gr.gap_skills||[]).filter(g => {
-      const nL = (g.skill_name||g.gap_skill||g||'').toString().toLowerCase();
-      return !isTechnicalOnly(nL) && !allJobSkillsL.some(j => looseMatch(j, nL));
+      const gap = inGap(jsL);
+      const civ = getCiv(jsL);
+      const covered = !gap && (coveredNames.has(jsL) || !!civ);
+      return { tierKey, js, civ, covered };
     });
 
-    const gapReq  = renderTierGaps(requiredSkills,  'Required Skills',  'High');
-    const gapPref = renderTierGaps(preferredSkills, 'Preferred Skills', 'Medium');
-    const gapOpt  = renderTierGaps(optionalSkills,  'Optional Skills',  'Low');
-    const gapExtra = extraGaps.map(g => gapRow((g.skill_name||g.gap_skill||g||'').toString(), g, 'High')).join('');
+    const allRows = [
+      ...buildRows(requiredSkills,  'Required'),
+      ...buildRows(preferredSkills, 'Preferred'),
+      ...buildRows(optionalSkills,  'Optional'),
+    ];
 
-    if (gapReq || gapPref || gapOpt || gapExtra) {
-      html += sectionHdr('✗', 'Skill Gaps — With SkillsBuild Recommendations', '#b91c1c');
-      html += gapReq + gapPref + gapOpt + gapExtra;
-      html += `<div style="margin-top:12px;font-size:12px;color:#57606a;padding:8px 2px;border-top:1px solid #e5e7eb">
-        📚 Close your skill gaps with free courses at <a href="https://skillsbuild.org" target="_blank" style="color:#1d4ed8;text-decoration:none;font-weight:600">IBM SkillsBuild — skillsbuild.org</a>
+    // ── Skill Mapping table ───────────────────────────────────────────
+    let html = `<table style="width:100%;border-collapse:collapse">
+      <thead><tr>
+        ${th('14%','Type')}
+        ${th('43%','Job Skills')}
+        ${th('43%','Veteran Skills')}
+      </tr></thead><tbody>`;
+
+    allRows.forEach((r, i) => {
+      const tier = TIER[r.tierKey];
+      const bg   = i % 2 === 0 ? '#ffffff' : '#f7f8fa';
+
+      // Col 1: type label in tier colour
+      const typeCell = `<span style="font-weight:700;color:${tier.color}">${tier.label}</span>`;
+
+      // Col 2: job skill name
+      const jobCell = esc(toTitle(r.js));
+
+      // Col 3: matched veteran skill name, or ✗ Gap in same colour as type
+      const vetCell = r.covered
+        ? esc(toTitle(r.civ ? r.civ.skill_name : r.js))
+        : `<span style="font-weight:700;color:${tier.color}">✗ Gap</span>`;
+
+      html += `<tr style="background:${bg}">
+        ${td(typeCell)}
+        ${td(jobCell)}
+        ${td(vetCell)}
+      </tr>`;
+    });
+
+    html += `</tbody></table>`;
+
+    // SkillsBuild note if any gaps exist
+    if (allRows.some(r => !r.covered)) {
+      html += `<div style="margin-top:10px;font-size:12px;color:#57606a;padding:6px 2px">
+        📚 Close skill gaps with free courses at <a href="https://skillsbuild.org" target="_blank" style="color:#1d4ed8;text-decoration:none;font-weight:600">IBM SkillsBuild — skillsbuild.org</a>
       </div>`;
     }
 
-    // ── Civilian Skill Inventory table ────────────────────────────────
+    // ── Veteran Civilian Skills table ─────────────────────────────────
     const civSkills = (STATE.skills||[]).filter(s => !isTechnicalOnly(s.skill_name));
     if (civSkills.length > 0) {
-      const confColor = c => {
-        if (/high/i.test(c))   return '#16a34a';
-        if (/medium/i.test(c)) return '#b45309';
-        return '#57606a';
-      };
-      html += sectionHdr('', 'Veteran Civilian Skills', '#1e3a8a');
-      html += `<table style="width:100%;border-collapse:collapse;margin-top:4px">
+      const confColor = c => /high/i.test(c) ? '#16a34a' : /medium/i.test(c) ? '#b45309' : '#57606a';
+      html += `<div style="margin-top:18px;font-size:11px;font-weight:700;letter-spacing:0.08em;color:#1e3a8a;text-transform:uppercase;margin-bottom:6px">Veteran Civilian Skills</div>`;
+      html += `<table style="width:100%;border-collapse:collapse">
         <thead><tr>
-          <th style="text-align:left;padding:7px 10px;border-bottom:2px solid #e5e7eb;font-size:12px;font-weight:700;color:#1f2328">Skill</th>
-          <th style="text-align:left;padding:7px 10px;border-bottom:2px solid #e5e7eb;font-size:12px;font-weight:700;color:#1f2328">Confidence</th>
+          ${th('70%','Skill')}
+          ${th('30%','Confidence')}
         </tr></thead><tbody>`;
-      civSkills.forEach(s => {
+      civSkills.forEach((s, i) => {
         const conf = s.confidence || s.confidence_level || '';
-        html += `<tr style="border-bottom:1px solid #f0f0f0">
-          <td style="padding:9px 10px;font-size:13px;color:#1f2328">${esc(toTitle(s.skill_name||''))}</td>
-          <td style="padding:9px 10px;font-size:13px;font-weight:700;color:${confColor(conf)}">${esc(conf)}</td>
+        const bg   = i % 2 === 0 ? '#ffffff' : '#f7f8fa';
+        html += `<tr style="background:${bg}">
+          ${td(esc(toTitle(s.skill_name||'')))}
+          ${td(`<span style="font-weight:700;color:${confColor(conf)}">${esc(conf)}</span>`)}
         </tr>`;
       });
       html += `</tbody></table>`;
