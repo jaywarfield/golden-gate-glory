@@ -565,6 +565,16 @@
           <div style="font-size:12px;color:#57606a;margin-top:3px" id="s4-sub"></div>
         </div>
       </div>
+      <div id="s4-pref-row" style="display:none;margin-top:10px">
+        <div style="font-size:11px;font-weight:600;color:#57606a;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em">Preferred Skills</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="font-size:18px;font-weight:700;color:#1f2328;min-width:36px" id="s4-pref-pct">–</div>
+          <div style="flex:1">
+            <div class="bar-track"><div class="bar-fill" id="s4-pref-bar" style="width:0%;background:#92400e"></div></div>
+            <div style="font-size:12px;color:#57606a;margin-top:3px" id="s4-pref-sub"></div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="card">
       <div class="card-title">Skill Comparison</div>
@@ -1330,10 +1340,13 @@
     const pct = gr.coverage_pct || 0;
     document.getElementById('s4-pct').textContent = `${pct}%`;
     document.getElementById('s4-bar').style.width  = `${pct}%`;
-    document.getElementById('s4-sub').textContent  = `${(gr.covered_skills||[]).length} of ${(gr.covered_skills||[]).length + (gr.gap_skills||[]).length} required skills covered`;
+    // Coverage bar counts only Required job skills (not preferred/optional)
+    // — computed after requiredSkills is built below; placeholder for now.
 
     // ── Helpers ───────────────────────────────────────────────────────
-    const toTitle = s => (s||'').replace(/\b(\w)(\w*)/g, (_, f, r) => f.toUpperCase() + r.toLowerCase());
+    // Preserve original casing (CompTIA, TCP/IP) — only uppercase first letter
+    // of each word, leave the rest unchanged (same as Step 3).
+    const capWords = s => (s||'').replace(/\b\w/g, c => c.toUpperCase());
     const isTechnicalOnly = s => /^\s*technical\s*$/i.test(s||'');
 
     // Tier colour palette
@@ -1370,13 +1383,36 @@
     const preferredSkills = (ja.preferred_skills || []).filter(s => !isTechnicalOnly(s));
     const optionalSkills  = (ja.optional_skills  || []).filter(s => !isTechnicalOnly(s));
 
+    // Required coverage bar
+    const reqCovered = requiredSkills.filter(js => {
+      const jsL = js.toLowerCase();
+      return !inGap(jsL) && (coveredNames.has(jsL) || !!getCiv(jsL));
+    }).length;
+    document.getElementById('s4-sub').textContent =
+      `${reqCovered} of ${requiredSkills.length} required skills covered`;
+
+    // Preferred coverage bar — only shown if there are preferred skills
+    if (preferredSkills.length > 0) {
+      const prefCovered = preferredSkills.filter(js => {
+        const jsL = js.toLowerCase();
+        return !inGap(jsL) && (coveredNames.has(jsL) || !!getCiv(jsL));
+      }).length;
+      const prefPct = Math.round((prefCovered / preferredSkills.length) * 100);
+      document.getElementById('s4-pref-pct').textContent  = `${prefPct}%`;
+      document.getElementById('s4-pref-bar').style.width  = `${prefPct}%`;
+      document.getElementById('s4-pref-sub').textContent  = `${prefCovered} of ${preferredSkills.length} preferred skills covered`;
+      document.getElementById('s4-pref-row').style.display = 'block';
+    } else {
+      document.getElementById('s4-pref-row').style.display = 'none';
+    }
+
     // ── Shared table style helpers ────────────────────────────────────
     const th = (w, label) =>
       `<th style="width:${w};padding:7px 10px;background:#1e3a8a;color:#fff;font-size:11px;font-weight:700;letter-spacing:0.05em;text-align:left;border:1px solid #c8d0d9">${label}</th>`;
     const td = (content, extra='') =>
       `<td style="padding:8px 10px;border:1px solid #e5e7eb;vertical-align:middle;font-size:13px${extra ? ';'+extra : ''}">${content}</td>`;
 
-    // Build all rows: each job skill → { tier, jobSkill, vetSkill|null, isCovered }
+    // Build all rows: each job skill → { tierKey, js (original casing), civ, covered }
     const buildRows = (skills, tierKey) => skills.map(js => {
       const jsL = js.toLowerCase();
       const gap = inGap(jsL);
@@ -1390,6 +1426,24 @@
       ...buildRows(preferredSkills, 'Preferred'),
       ...buildRows(optionalSkills,  'Optional'),
     ];
+
+    // Append veteran skills that have no matching job skill row so they still
+    // appear in the table (shown as a separate "Veteran" tier row).
+    const allRowSkillsL = new Set(allRows.map(r => r.js.toLowerCase()));
+    (STATE.skills||[]).forEach(s => {
+      const name = (s.skill_name||'').trim();
+      if (!isTechnicalOnly(name) && name && !allRowSkillsL.has(name.toLowerCase())) {
+        // Check if this vet skill loosely matches any job skill already in the table
+        const alreadyMatched = allRows.some(r => looseMatch(r.js.toLowerCase(), name.toLowerCase()));
+        if (!alreadyMatched) {
+          allRows.push({ tierKey: 'Veteran', js: '', civ: s, covered: true });
+          allRowSkillsL.add(name.toLowerCase());
+        }
+      }
+    });
+
+    // Add Veteran tier to colour palette for unmatched vet skills
+    TIER['Veteran'] = { label: 'Veteran', color: '#1e3a8a', bg: '#f0f4ff' };
 
     // ── Skill Mapping table ───────────────────────────────────────────
     let html = `<table style="width:100%;border-collapse:collapse">
@@ -1406,12 +1460,12 @@
       // Col 1: type label in tier colour
       const typeCell = `<span style="font-weight:700;color:${tier.color}">${tier.label}</span>`;
 
-      // Col 2: job skill name
-      const jobCell = esc(toTitle(r.js));
+      // Col 2: job skill name — preserve original casing (CompTIA, TCP/IP, etc.)
+      const jobCell = r.tierKey === 'Veteran' ? '' : esc(capWords(r.js));
 
       // Col 3: matched veteran skill name, or N/A if no match
       const vetCell = r.covered
-        ? esc(toTitle(r.civ ? r.civ.skill_name : r.js))
+        ? esc(capWords(r.civ ? r.civ.skill_name : r.js))
         : `<span style="color:#57606a">N/A</span>`;
 
       html += `<tr style="background:${bg}">
