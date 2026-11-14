@@ -474,7 +474,7 @@
       <label for="s1-career-path">Target career path</label>
       <input type="text" id="s1-career-path" list="career-path-list"
              placeholder="Preset according to specialty code or enter your own"
-             oninput="updateTargetRoles(this.value.trim()); checkCustomEntry('s1-career-path','cp-custom-note', Object.keys(ROLES_BY_CAREER_PATH))">
+             oninput="updateTargetRoles(this.value.trim()); checkCustomEntry('s1-career-path','cp-custom-note', Object.keys(ROLES_BY_CAREER_PATH)); s3UpdateHints()">
       <datalist id="career-path-list"></datalist>
       <div id="cp-custom-note" class="notice warn" style="display:none;margin-top:6px;font-size:12px">
         <strong>Custom entry:</strong> This career path is not in the predefined list
@@ -486,7 +486,7 @@
       <label for="s1-target-role">Target career role <span class="req">*</span></label>
       <input type="text" id="s1-target-role" list="target-role-list"
              placeholder="Select from predefined list or enter your own"
-             oninput="checkCustomEntry('s1-target-role','role-custom-note', s6KnownRoles())">
+             oninput="checkCustomEntry('s1-target-role','role-custom-note', s6KnownRoles()); s3UpdateHints()">
       <datalist id="target-role-list"></datalist>
       <div id="role-custom-note" class="notice warn" style="display:none;margin-top:6px;font-size:12px">
         <strong>Custom entry:</strong> This role is not in the predefined list
@@ -1289,8 +1289,8 @@
   // ═══════════════════════════════════════════════════════════════════
 
   function s3UpdateHints() {
-    const role = STATE.targetRole || '—';
-    const path = STATE.careerPath || '—';
+    const role = document.getElementById('s1-target-role').value.trim() || STATE.targetRole || '—';
+    const path = document.getElementById('s1-career-path').value.trim() || STATE.careerPath || '—';
     document.getElementById('s3-role-hint').textContent = role;
     document.getElementById('s3-path-hint').textContent = path;
   }
