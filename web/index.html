@@ -1194,21 +1194,17 @@
     const branch     = document.getElementById('s1-branch').value.trim();
     const specialty  = document.getElementById('s1-specialty').value.trim();
     const resumeText = document.getElementById('s2-resume').value.trim();
-    const targetRole = document.getElementById('s1-target-role').value.trim();
-    const careerPath = document.getElementById('s1-career-path').value.trim();
     const err = document.getElementById('s2-error');
     err.style.display = 'none';
-    if (!branch || !specialty || !resumeText || !targetRole) {
-      showStepError('s2', 'All service profile and career goal fields are required. Upload or paste your service resume.'); return;
+    if (!branch || !specialty || !resumeText) {
+      showStepError('s2', 'All service profile fields are required. Upload or paste your service resume.'); return;
     }
     const pii = detectPII(resumeText);
     if (pii) { showStepError('s2', `${pii} detected in service resume. Please remove it before proceeding.`); return; }
 
-    // Commit intake fields to STATE — pass the full raw resume text to the
-    // AI just like step 3 passes the full job description. The AI extracts
-    // summary, experience bullets, and skills from whatever format it receives.
+    // Commit intake fields to STATE — target role and career path are now set
+    // in step 3 (Civilian Goals card) before the job search / analysis.
     STATE.branch = branch; STATE.specialty = specialty;
-    STATE.targetRole = targetRole; STATE.careerPath = careerPath;
     setStepLoading('s2', true);
     await delay(USE_MOCK ? 1200 : 0);
     try {
@@ -1300,6 +1296,13 @@
   }
 
   async function step3SearchJobs() {
+    // Commit civilian goals before searching
+    STATE.targetRole = document.getElementById('s1-target-role').value.trim() || STATE.targetRole;
+    STATE.careerPath = document.getElementById('s1-career-path').value.trim() || STATE.careerPath;
+    if (!STATE.targetRole) {
+      s3ShowSearchError('Enter a target career role above before searching.');
+      return;
+    }
     document.getElementById('s3-search-error').style.display = 'none';
     document.getElementById('s3-job-list').style.display    = 'none';
     setStepLoading('s3-search', true);
@@ -1375,12 +1378,13 @@
   // ═══════════════════════════════════════════════════════════════════
   async function step3Analyze() {
     const jd = document.getElementById('s3-jd').value.trim();
+    // Commit civilian goals from the step 3 card before validation
+    STATE.targetRole = document.getElementById('s1-target-role').value.trim() || STATE.targetRole;
+    STATE.careerPath = document.getElementById('s1-career-path').value.trim() || STATE.careerPath;
+    if (!STATE.targetRole) { showStepError('s3', 'Target career role is required. Fill in the Civilian Goals section above.'); return; }
     if (!jd) { showStepError('s3', 'Job description is required.'); return; }
     if (jd.length < 50) { showStepError('s3', 'Please paste the full job description (at least 50 characters).'); return; }
     document.getElementById('s3-error').style.display = 'none';
-    // Re-read career goal fields in case the user reached step 3 without running step2Translate
-    STATE.targetRole = document.getElementById('s1-target-role').value.trim() || STATE.targetRole;
-    STATE.careerPath = document.getElementById('s1-career-path').value.trim() || STATE.careerPath;
     STATE.jobDescription = jd;
     setStepLoading('s3', true);
     await delay(USE_MOCK ? 1400 : 0);
