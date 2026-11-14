@@ -56,11 +56,12 @@ def translate_accomplishment(
 
 Convert the military accomplishment bullet below into ONE ATS-ready civilian resume bullet.
 Rules:
-- Start with a strong action verb.
+- Begin with the action verb or role language already present in the original bullet (e.g. if the bullet says "coordinated", start with "Coordinated"; if it says "trained", start with "Trained"). Do NOT substitute generic verbs like "spearheaded", "managed", "leveraged", or "orchestrated" unless that exact word already appears in the original.
 - Quantify impact where possible using the provided metrics.
 - Remove all military jargon; use plain civilian language.
 - Do not invent facts not present in the original bullet or metrics.
-- Output exactly one bullet, no preamble, no explanation.
+- Output exactly ONE sentence. Do not repeat any phrase or clause.
+- No preamble, no explanation, no bullet character at the start.
 
 Target civilian role: {target_role}{metrics_clause}
 

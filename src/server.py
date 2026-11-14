@@ -182,7 +182,7 @@ def _step_translate_resume(inp: dict) -> dict:
 
     # ── Translate each experience block ──────────────────────────────────────
     def _clean_bullet(text: str) -> str:
-        """Strip markdown artefacts the LLM sometimes emits."""
+        """Strip markdown artefacts and deduplicate repeated sentences."""
         # Remove leading list markers: *, -, •, –
         text = _re.sub(r'^\s*[\*\-\•\–]\s+', '', text.strip())
         # Remove any trailing lines that start with # (markdown headings / comments)
@@ -192,7 +192,19 @@ def _step_translate_resume(inp: dict) -> dict:
             if _re.match(r'^\s*#+\s*', line):
                 break  # stop at first heading-style line; discard it and everything after
             clean_lines.append(line)
-        return ' '.join(clean_lines).strip()
+        text = ' '.join(clean_lines).strip()
+
+        # Deduplicate repeated sentences: split on sentence-ending punctuation,
+        # keep only the first occurrence of each sentence (case-insensitive).
+        sentences = _re.split(r'(?<=[.!?])\s+', text)
+        seen_sents: list[str] = []
+        seen_lower: set[str] = set()
+        for s in sentences:
+            key = s.strip().lower()
+            if key and key not in seen_lower:
+                seen_lower.add(key)
+                seen_sents.append(s.strip())
+        return ' '.join(seen_sents).strip()
 
     bullets: list[str] = []
     for block in exp_texts:
