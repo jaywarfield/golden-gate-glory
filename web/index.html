@@ -437,34 +437,6 @@
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-title">Civilian Goals</div>
-    <div class="field">
-      <label for="s1-career-path">Target career path</label>
-      <input type="text" id="s1-career-path" list="career-path-list"
-             placeholder="Preset according to specialty code or enter your own"
-             oninput="updateTargetRoles(this.value.trim()); checkCustomEntry('s1-career-path','cp-custom-note', Object.keys(ROLES_BY_CAREER_PATH))">
-      <datalist id="career-path-list"></datalist>
-      <div id="cp-custom-note" class="notice warn" style="display:none;margin-top:6px;font-size:12px">
-        <strong>Custom entry:</strong> This career path is not in the predefined list
-        and will be used as-is — verify it maps to a recognized civilian career field
-        before proceeding.
-      </div>
-    </div>
-    <div class="field">
-      <label for="s1-target-role">Target career role <span class="req">*</span></label>
-      <input type="text" id="s1-target-role" list="target-role-list"
-             placeholder="Select from predefined list or enter your own"
-             oninput="checkCustomEntry('s1-target-role','role-custom-note', s6KnownRoles())">
-      <datalist id="target-role-list"></datalist>
-      <div id="role-custom-note" class="notice warn" style="display:none;margin-top:6px;font-size:12px">
-        <strong>Custom entry:</strong> This role is not in the predefined list
-        and will be used as-is — verify it matches a recognized job title before
-        proceeding.
-      </div>
-    </div>
-  </div>
-
   <div class="btn-row">
     <button class="btn btn-primary" id="s2-btn" onclick="step2Translate()">Analyze Service Profile</button>
   </div>
@@ -494,6 +466,34 @@
 
   <div class="notice">
     <strong>User goal:</strong> Select job description, extract skills and ATS keywords.
+  </div>
+
+  <div class="card">
+    <div class="card-title">Civilian Goals</div>
+    <div class="field">
+      <label for="s1-career-path">Target career path</label>
+      <input type="text" id="s1-career-path" list="career-path-list"
+             placeholder="Preset according to specialty code or enter your own"
+             oninput="updateTargetRoles(this.value.trim()); checkCustomEntry('s1-career-path','cp-custom-note', Object.keys(ROLES_BY_CAREER_PATH))">
+      <datalist id="career-path-list"></datalist>
+      <div id="cp-custom-note" class="notice warn" style="display:none;margin-top:6px;font-size:12px">
+        <strong>Custom entry:</strong> This career path is not in the predefined list
+        and will be used as-is — verify it maps to a recognized civilian career field
+        before proceeding.
+      </div>
+    </div>
+    <div class="field">
+      <label for="s1-target-role">Target career role <span class="req">*</span></label>
+      <input type="text" id="s1-target-role" list="target-role-list"
+             placeholder="Select from predefined list or enter your own"
+             oninput="checkCustomEntry('s1-target-role','role-custom-note', s6KnownRoles())">
+      <datalist id="target-role-list"></datalist>
+      <div id="role-custom-note" class="notice warn" style="display:none;margin-top:6px;font-size:12px">
+        <strong>Custom entry:</strong> This role is not in the predefined list
+        and will be used as-is — verify it matches a recognized job title before
+        proceeding.
+      </div>
+    </div>
   </div>
 
   <div class="card">
