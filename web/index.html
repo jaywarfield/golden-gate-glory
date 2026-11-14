@@ -1348,128 +1348,174 @@
     document.getElementById('s4-bar').style.width  = `${pct}%`;
     document.getElementById('s4-sub').textContent  = `${(gr.covered_skills||[]).length} of ${(gr.covered_skills||[]).length + (gr.gap_skills||[]).length} required skills covered`;
 
-    // ── Skill Comparison table ────────────────────────────────────────
-    // Build lookup: civilian skill name (lower) → {category, confidence}
+    // ── Helpers ───────────────────────────────────────────────────────
+    // Uppercase first char of each word, lowercase rest
+    const toTitle = s => (s||'').replace(/\b(\w)(\w*)/g, (_, f, r) => f.toUpperCase() + r.toLowerCase());
+    // Filter: standalone "Technical" is not a specific skill
+    const isTechnicalOnly = s => /^\s*technical\s*$/i.test(s||'');
+
+    // Build lookup: civilian skill name (lower) → {skill_name, category, confidence}
     const civMap = {};
     (STATE.skills||[]).forEach(s => {
-      civMap[(s.skill_name||'').toLowerCase()] = s;
+      if (!isTechnicalOnly(s.skill_name))
+        civMap[(s.skill_name||'').toLowerCase()] = s;
     });
 
-    // Build lookup: gap skill name (lower) → gap object (with courses)
+    // Build lookup: gap skill name (lower) → gap object (has .courses[])
     const gapMap = {};
     (gr.gap_skills||[]).forEach(g => {
       const name = (g.skill_name||g.gap_skill||g||'').toString().toLowerCase();
       gapMap[name] = g;
     });
 
+    // Loose match helper: true if two lowercased skill strings are the same or one contains the other
+    const looseMatch = (a, b) => a === b || a.includes(b) || b.includes(a);
+
+    const inGap = nameL => !!(gapMap[nameL] || Object.keys(gapMap).find(k => looseMatch(k, nameL)));
+    const getGap = nameL => gapMap[nameL] || gapMap[Object.keys(gapMap).find(k => looseMatch(k, nameL))||''] || null;
+
     // Covered skill names set (lower-cased)
     const coveredNames = new Set((gr.covered_skills||[]).map(s => (s.skill_name||s||'').toString().toLowerCase()));
 
     // Job skills by priority tier from jobAnalysis
     const ja = STATE.jobAnalysis || {};
-    const requiredSkills  = ja.required_skills  || [];
-    const preferredSkills = ja.preferred_skills || [];
-    const optionalSkills  = ja.optional_skills  || [];
+    const requiredSkills  = (ja.required_skills  || []).filter(s => !isTechnicalOnly(s));
+    const preferredSkills = (ja.preferred_skills || []).filter(s => !isTechnicalOnly(s));
+    const optionalSkills  = (ja.optional_skills  || []).filter(s => !isTechnicalOnly(s));
 
-    // Helper: build a row object for a given job skill + priority label
-    const makeRow = (js, priority) => {
+    // For each job skill determine covered/gap status
+    const classifyJobSkill = (js) => {
       const jsL = js.toLowerCase();
-      const civKey = Object.keys(civMap).find(k => k === jsL) ||
-                     Object.keys(civMap).find(k => k.includes(jsL) || jsL.includes(k)) || '';
+      const civKey = Object.keys(civMap).find(k => k === jsL) || Object.keys(civMap).find(k => looseMatch(k, jsL)) || '';
       const civSkill  = civKey ? civMap[civKey] : null;
-      const inGapMap  = !!(gapMap[jsL] || Object.keys(gapMap).find(k => k.includes(jsL) || jsL.includes(k)));
-      const isCovered = !inGapMap && (coveredNames.has(jsL) || !!civSkill);
-      const gapObj    = inGapMap ? (gapMap[jsL] || gapMap[Object.keys(gapMap).find(k => k.includes(jsL) || jsL.includes(k))||'']) : null;
-      return { js, priority, civSkill, isCovered, gapObj };
+      const gap       = inGap(jsL);
+      const isCovered = !gap && (coveredNames.has(jsL) || !!civSkill);
+      const gapObj    = gap ? getGap(jsL) : null;
+      return { js, civSkill, isCovered, gapObj };
     };
 
-    const rows = [
-      ...requiredSkills.map(js  => makeRow(js, 'Required')),
-      ...preferredSkills.map(js => makeRow(js, 'Preferred')),
-      ...optionalSkills.map(js  => makeRow(js, 'Optional')),
-    ];
+    // ── Section styles ────────────────────────────────────────────────
+    const sectionHdr = (icon, label, color) =>
+      `<div style="display:flex;align-items:center;gap:6px;margin:18px 0 8px;font-size:11px;font-weight:700;letter-spacing:0.08em;color:${color};text-transform:uppercase">${icon} ${esc(label)}</div>`;
 
-    // Also add gap skills not already represented in the job skill tiers
-    const allJobSkills = [...requiredSkills, ...preferredSkills, ...optionalSkills];
-    (gr.gap_skills||[]).forEach(g => {
-      const name  = (g.skill_name||g.gap_skill||g||'').toString();
-      const nameL = name.toLowerCase();
-      if (!allJobSkills.some(j => {
-        const jL = j.toLowerCase();
-        return jL === nameL || jL.includes(nameL) || nameL.includes(jL);
-      })) {
-        rows.push({ js: name, priority: 'Required', civSkill: civMap[nameL]||null, isCovered: false, gapObj: g });
-      }
-    });
+    const tierHdr = label =>
+      `<div style="font-size:11px;font-weight:600;color:#57606a;text-transform:uppercase;letter-spacing:0.06em;margin:10px 0 4px;padding-left:2px">${esc(label)}</div>`;
 
-    // Also show veteran skills that didn't match any job skill row
-    const matchedCivKeys = new Set(rows.map(r => r.civSkill ? (r.civSkill.skill_name||'').toLowerCase() : '').filter(Boolean));
-    (STATE.skills||[]).forEach(s => {
-      const sL = (s.skill_name||'').toLowerCase();
-      if (!matchedCivKeys.has(sL)) {
-        rows.push({ js: s.skill_name||'', priority: '—', civSkill: s, isCovered: true, gapObj: null, veteranOnly: true });
-      }
-    });
+    // Covered skill row: ✓  Skill Name  ·····  Covered (green badge)
+    const coveredRow = (name) =>
+      `<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 2px;border-bottom:1px solid #f0f0f0">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="color:#16a34a;font-weight:700;font-size:15px">✓</span>
+          <span style="font-size:14px;font-weight:600;color:#1f2328">${esc(toTitle(name))}</span>
+        </div>
+        <span style="font-size:12px;font-weight:600;color:#16a34a;border:1.5px solid #16a34a;border-radius:999px;padding:1px 10px">Covered</span>
+      </div>`;
 
-    const th = (w, label) => `<th style="width:${w};padding:7px 10px;background:#1e3a8a;color:#fff;font-size:11px;font-weight:700;letter-spacing:0.04em;text-align:left;border:1px solid #c8d0d9">${label}</th>`;
-    const tdStyle = (extra='') => `style="padding:8px 10px;border:1px solid #e5e7eb;vertical-align:top;font-size:13px${extra?';'+extra:''}"`;
-    const toTitle = s => (s||'').replace(/\b(\w)(\w*)/g, (_, f, r) => f.toUpperCase() + r.toLowerCase());
-
-    // Priority badge styling
-    const priorityCell = p => {
-      if (p === 'Required')  return `<span style="font-weight:700;color:#991b1b">Required</span>`;
-      if (p === 'Preferred') return `<span style="font-weight:700;color:#92400e">Preferred</span>`;
-      if (p === 'Optional')  return `<span style="font-weight:700;color:#166534">Optional</span>`;
-      return `<span style="color:#57606a">${esc(p)}</span>`;
+    // Gap skill row: ✗  Skill Name  ·····  Priority badge  +  course card below
+    const priorityBadge = p => {
+      const col = p === 'High' ? '#b91c1c' : p === 'Medium' ? '#92400e' : '#57606a';
+      return `<span style="font-size:12px;font-weight:600;color:${col};border:1.5px solid ${col};border-radius:999px;padding:1px 10px">${esc(p)}</span>`;
     };
-
-    // Filter out standalone "Technical" skill rows (not a specific skill)
-    const isTechnicalOnly = s => /^\s*technical\s*$/i.test(s||'');
-    const filteredRows = rows.filter(r => !isTechnicalOnly(r.js) && !(r.civSkill && isTechnicalOnly(r.civSkill.skill_name)));
-
-    // Helper: render IBM SkillsBuild course link(s) for a gap row
-    const courseLinks = gapObj => {
+    const courseCard = (gapObj) => {
       const courses = (gapObj && gapObj.courses) || [];
       if (courses.length === 0) {
-        return `<div style="margin-top:5px;font-size:11px"><a href="https://skillsbuild.org" target="_blank" style="color:#1d4ed8">📚 IBM SkillsBuild — skillsbuild.org</a></div>`;
+        return `<div style="margin:6px 0 10px 26px;background:#f0f4ff;border-radius:8px;padding:9px 12px;display:inline-block;min-width:180px">
+          <div style="font-size:13px;font-weight:700;color:#1d4ed8"><a href="https://skillsbuild.org" target="_blank" style="color:#1d4ed8;text-decoration:none">IBM SkillsBuild</a></div>
+          <div style="font-size:12px;color:#57606a;margin-top:2px"><a href="https://skillsbuild.org" target="_blank" style="color:#57606a;text-decoration:none">skillsbuild.org</a></div>
+        </div>`;
       }
       return courses.map(c =>
-        `<div style="margin-top:5px;font-size:11px"><a href="${esc(c.url||'https://skillsbuild.org')}" target="_blank" style="color:#1d4ed8">📚 ${esc(c.title||'IBM SkillsBuild')}</a>${c.hours_estimate ? ` <span style="color:#57606a">(~${c.hours_estimate}h)</span>` : ''}</div>`
+        `<div style="margin:6px 0 10px 26px;background:#f0f4ff;border-radius:8px;padding:9px 12px;display:inline-block;min-width:180px">
+          <div style="font-size:13px;font-weight:700;color:#1d4ed8"><a href="${esc(c.url||'https://skillsbuild.org')}" target="_blank" style="color:#1d4ed8;text-decoration:none">${esc(c.title||'IBM SkillsBuild')}</a></div>
+          <div style="font-size:12px;color:#57606a;margin-top:2px">${c.credential_type ? esc(c.credential_type)+' · ' : ''}${c.hours_estimate ? c.hours_estimate+' hrs · ' : ''}<a href="${esc(c.url||'https://skillsbuild.org')}" target="_blank" style="color:#57606a;text-decoration:none">skillsbuild.org</a></div>
+        </div>`
       ).join('');
     };
+    const gapRow = (name, gapObj) => {
+      const p = (gapObj && (gapObj.priority || gapObj.gap_priority)) || '';
+      return `<div style="padding:9px 2px 2px;border-bottom:1px solid #f0f0f0">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="color:#b91c1c;font-weight:700;font-size:15px">✗</span>
+            <span style="font-size:14px;font-weight:600;color:#1f2328">${esc(toTitle(name))}</span>
+          </div>
+          ${p ? priorityBadge(p) : ''}
+        </div>
+        ${courseCard(gapObj)}
+      </div>`;
+    };
 
-    let thtml = `<table style="width:100%;border-collapse:collapse">
-      <thead><tr>
-        ${th('14%','Priority')}
-        ${th('43%','Job Skills')}
-        ${th('43%','Covered / Courses')}
-      </tr></thead><tbody>`;
+    // ── Build Covered Skills section (grouped by tier) ────────────────
+    let html = '';
 
-    filteredRows.forEach((r, i) => {
-      const bg = i % 2 === 0 ? '' : 'background:#f7f8fa';
+    const renderTierCovered = (skills, tierLabel) => {
+      const covered = skills.filter(js => { const r = classifyJobSkill(js); return r.isCovered; });
+      if (covered.length === 0) return '';
+      return tierHdr(tierLabel) + covered.map(js => coveredRow(js)).join('');
+    };
+    const covReq  = renderTierCovered(requiredSkills,  'Required Skills');
+    const covPref = renderTierCovered(preferredSkills, 'Preferred Skills');
+    const covOpt  = renderTierCovered(optionalSkills,  'Optional Skills');
 
-      // Col 1: priority
-      const col1 = priorityCell(r.priority);
+    if (covReq || covPref || covOpt) {
+      html += sectionHdr('✓', 'Covered Skills', '#16a34a');
+      html += covReq + covPref + covOpt;
+    }
 
-      // Col 2: job skill name; veteran-only rows shown in italics
-      const col2 = r.veteranOnly
-        ? `<span style="font-style:italic;color:#57606a">${esc(toTitle(r.js))}</span>`
-        : esc(toTitle(r.js));
+    // ── Build Skill Gaps section (grouped by tier) ────────────────────
+    const renderTierGaps = (skills, tierLabel) => {
+      const gaps = skills.filter(js => { const r = classifyJobSkill(js); return !r.isCovered; });
+      if (gaps.length === 0) return '';
+      return tierHdr(tierLabel) + gaps.map(js => {
+        const r = classifyJobSkill(js);
+        return gapRow(js, r.gapObj);
+      }).join('');
+    };
 
-      // Col 3: covered = civilian skill name only; gap = ✗ Gap + SkillsBuild course link(s)
-      const col3 = r.isCovered
-        ? esc(toTitle(r.civSkill ? r.civSkill.skill_name : r.js))
-        : `<span style="color:#b91c1c;font-weight:600">✗ Gap</span>${courseLinks(r.gapObj)}`;
-
-      thtml += `<tr style="${bg}">
-        <td ${tdStyle()}>${col1}</td>
-        <td ${tdStyle()}>${col2}</td>
-        <td ${tdStyle()}>${col3}</td>
-      </tr>`;
+    // Also include gap_skills from gapResult not already in job skill tiers
+    const allJobSkillsL = [...requiredSkills, ...preferredSkills, ...optionalSkills].map(s => s.toLowerCase());
+    const extraGaps = (gr.gap_skills||[]).filter(g => {
+      const nL = (g.skill_name||g.gap_skill||g||'').toString().toLowerCase();
+      return !isTechnicalOnly(nL) && !allJobSkillsL.some(j => looseMatch(j, nL));
     });
-    thtml += `</tbody></table>`;
-    document.getElementById('s4-comparison').innerHTML = thtml;
 
+    const gapReq  = renderTierGaps(requiredSkills,  'Required Skills');
+    const gapPref = renderTierGaps(preferredSkills, 'Preferred Skills');
+    const gapOpt  = renderTierGaps(optionalSkills,  'Optional Skills');
+    const gapExtra = extraGaps.map(g => gapRow((g.skill_name||g.gap_skill||g||'').toString(), g)).join('');
+
+    if (gapReq || gapPref || gapOpt || gapExtra) {
+      html += sectionHdr('✗', 'Skill Gaps — With SkillsBuild Recommendations', '#b91c1c');
+      html += gapReq + gapPref + gapOpt + gapExtra;
+    }
+
+    // ── Civilian Skill Inventory table ────────────────────────────────
+    const civSkills = (STATE.skills||[]).filter(s => !isTechnicalOnly(s.skill_name));
+    if (civSkills.length > 0) {
+      const confColor = c => {
+        if (/high/i.test(c))   return '#16a34a';
+        if (/medium/i.test(c)) return '#b45309';
+        return '#57606a';
+      };
+      html += sectionHdr('', 'Civilian Skill Inventory', '#1e3a8a');
+      html += `<table style="width:100%;border-collapse:collapse;margin-top:4px">
+        <thead><tr>
+          <th style="text-align:left;padding:7px 10px;border-bottom:2px solid #e5e7eb;font-size:12px;font-weight:700;color:#1f2328">Skill</th>
+          <th style="text-align:left;padding:7px 10px;border-bottom:2px solid #e5e7eb;font-size:12px;font-weight:700;color:#1f2328">Category</th>
+          <th style="text-align:left;padding:7px 10px;border-bottom:2px solid #e5e7eb;font-size:12px;font-weight:700;color:#1f2328">Confidence</th>
+        </tr></thead><tbody>`;
+      civSkills.forEach(s => {
+        const conf = s.confidence || s.confidence_level || '';
+        html += `<tr style="border-bottom:1px solid #f0f0f0">
+          <td style="padding:9px 10px;font-size:13px;color:#1f2328">${esc(toTitle(s.skill_name||''))}</td>
+          <td style="padding:9px 10px;font-size:13px;color:#57606a">${esc(s.category||'')}</td>
+          <td style="padding:9px 10px;font-size:13px;font-weight:700;color:${confColor(conf)}">${esc(conf)}</td>
+        </tr>`;
+      });
+      html += `</tbody></table>`;
+    }
+
+    document.getElementById('s4-comparison').innerHTML = html;
     document.getElementById('s4-output').style.display = 'block';
   }
 
