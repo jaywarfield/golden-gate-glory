@@ -1455,10 +1455,9 @@
     // ── Skill Mapping table ───────────────────────────────────────────
     let html = `<table style="width:100%;border-collapse:collapse">
       <thead><tr>
-        ${th('12%','Type')}
-        ${th('30%','Job Skills')}
-        ${th('30%','Civilian Skills')}
-        ${th('28%','Covered / Courses')}
+        ${th('14%','Type')}
+        ${th('43%','Job Skills')}
+        ${th('43%','Veteran Skills')}
       </tr></thead><tbody>`;
 
     allRows.forEach((r, i) => {
@@ -1471,26 +1470,26 @@
       // Col 2: job skill name — strip leading "Technical", then title-case
       const jobCell = r.tierKey === 'Veteran' ? '' : esc(capWords(stripTechnical(r.js)));
 
-      // Col 3: matched civilian skill name — strip leading "Technical", title-case; or N/A
+      // Col 3: matched veteran skill name — strip leading "Technical", title-case; or N/A
       const vetCell = r.covered
         ? esc(capWords(stripTechnical(r.civ ? r.civ.skill_name : r.js)))
         : `<span style="color:#57606a">N/A</span>`;
-
-      // Col 4: "✓ Covered" when matched; IBM SkillsBuild link when NOT covered
-      const courseCell = r.covered
-        ? `<span style="color:#166534;font-weight:600">✓ Covered</span>`
-        : `<a href="https://skillsbuild.org" target="_blank" style="color:#1d4ed8;text-decoration:none;font-weight:600;font-size:12px">IBM SkillsBuild</a>`;
 
       html += `<tr style="background:${bg}">
         ${td(typeCell)}
         ${td(jobCell)}
         ${td(vetCell)}
-        ${td(courseCell)}
       </tr>`;
     });
 
     html += `</tbody></table>`;
 
+    // SkillsBuild note if any gaps exist
+    if (allRows.some(r => !r.covered)) {
+      html += `<div style="margin-top:10px;font-size:12px;color:#57606a;padding:6px 2px">
+        📚 Close skill gaps with free courses at <a href="https://skillsbuild.org" target="_blank" style="color:#1d4ed8;text-decoration:none;font-weight:600">IBM SkillsBuild — skillsbuild.org</a>
+      </div>`;
+    }
 
     document.getElementById('s4-comparison').innerHTML = html;
     document.getElementById('s4-output').style.display = 'block';
