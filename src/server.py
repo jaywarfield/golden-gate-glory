@@ -205,15 +205,7 @@ def _step_translate_resume(inp: dict) -> dict:
                 seen_sents.append(s.strip())
         return ' '.join(seen_sents).strip()
 
-    def _translate_block(block: str) -> str | None:
-        """Translate one block; return cleaned bullet or None on error."""
-        result = translate_accomplishment(bullet=block, target_role=target_role)
-        if result.get("error") or result.get("pii_warning"):
-            return None
-        raw = result.get("translated_bullet") or block
-        return _clean_bullet(raw)
-
-    # Translate experience blocks first so we know what's already covered.
+    # Translate only the experience blocks extracted from the resume — no fabrication.
     bullets: list[str] = []
     for block in exp_texts:
         result = translate_accomplishment(bullet=block, target_role=target_role)
@@ -223,37 +215,6 @@ def _step_translate_resume(inp: dict) -> dict:
             return {"error": result["pii_warning"]}
         raw_bullet = result.get("translated_bullet") or block
         bullets.append(_clean_bullet(raw_bullet))
-
-    # ── Split summary into sentences and translate each as a separate bullet ──
-    # Only keep a summary-derived bullet if it doesn't overlap with any bullet
-    # already produced from the experience blocks (loose substring match).
-    def _overlaps_existing(candidate: str, existing: list[str]) -> bool:
-        c = candidate.lower()
-        for b in existing:
-            b_l = b.lower()
-            # Overlap if either contains a 6+ word run from the other
-            words_c = c.split()
-            for n in range(min(6, len(words_c)), len(words_c) + 1):
-                phrase = ' '.join(words_c[:n])
-                if len(phrase) > 30 and phrase in b_l:
-                    return True
-        return False
-
-    summary_bullets: list[str] = []
-    if summary_text:
-        raw_sentences = _re.split(r'(?<=[.!?])\s+', summary_text.strip())
-        for sent in raw_sentences:
-            sent = sent.strip()
-            if len(sent) < 15:
-                continue
-            translated = _translate_block(sent)
-            if not translated:
-                continue
-            if not _overlaps_existing(translated, bullets + summary_bullets):
-                summary_bullets.append(translated)
-
-    # Summary bullets go first, then experience bullets
-    bullets = summary_bullets + bullets
 
     # ── Merge O*NET skills for the specialty code ────────────────────────────
     # Look up the crosswalk entry for this specialty code and pull skills from

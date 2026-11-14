@@ -1227,21 +1227,28 @@
       <span style="font-weight:600;color:#0369a1">${esc(specLabel)}</span>
     </div>`;
 
-    // ── Experience & Accomplishments ──────────────────────────────────
-    // The server splits the summary into individual translated accomplishment
-    // bullets (non-overlapping) and prepends them to bullets[], so we render
-    // STATE.translatedBullets only — no manual summary prepend needed here.
+    // ── Accomplishments ────────────────────────────────────────────────
     const allBullets = STATE.translatedBullets || [];
 
     if (allBullets.length) {
-      html += `<div>
-        <div class="skill-section-title">Experience &amp; Accomplishments</div>
+      html += `<div style="margin-bottom:14px">
+        <div class="skill-section-title">Accomplishments</div>
         ${allBullets.map((b, i) => `
           <div class="bullet-row">
             <span style="color:#57606a;font-size:12px;min-width:20px">${i+1}.</span>
             <span class="bullet-text">${esc(b)}</span>
             <span class="tag tag-ev">EVIDENCED</span>
           </div>`).join('')}
+      </div>`;
+    }
+
+    // ── Skills ─────────────────────────────────────────────────────────
+    if ((STATE.resumeSkills||[]).length) {
+      html += `<div>
+        <div class="skill-section-title">Skills</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
+          ${STATE.resumeSkills.map(s => `<span class="badge badge-covered">${esc(s)}</span>`).join('')}
+        </div>
       </div>`;
     }
 
