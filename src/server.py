@@ -745,6 +745,30 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
 
 _USAJOBS_API_BASE = "https://data.usajobs.gov/api/search"
 
+# OPM occupational series that cover IT/cyber/engineering roles used by this app.
+# USAJobs "JobCategoryCode" accepts semicolon-separated series codes.
+# Series reference: https://www.opm.gov/policy-data-oversight/classification-qualifications/
+_CAREER_PATH_TO_SERIES: dict[str, list[str]] = {
+    "IT Infrastructure":    ["2210", "0854", "0391"],
+    "IT Operations":        ["2210", "0391", "0854"],
+    "IT Support":           ["2210", "0335", "0303"],
+    "Network Engineering":  ["2210", "0854", "0391"],
+    "Network Infrastructure":["2210", "0854"],
+    "Telecommunications":   ["0391", "0394", "2210"],
+    "Cybersecurity":        ["2210", "1550", "0080"],
+    "Cyber Engineering":    ["2210", "0854", "1550"],
+    "Software Development": ["2210", "1550", "0854"],
+    "Software Engineering": ["2210", "1550", "0854"],
+    "Cloud Infrastructure": ["2210", "0854"],
+    "Enterprise Systems":   ["2210", "0854", "0391"],
+    "Hardware Engineering": ["0854", "0856", "0855"],
+    "Project Management":   ["2210", "0340", "0301"],
+    "Program Management":   ["2210", "0340", "0301"],
+    "Data Analytics":       ["2210", "1550", "1515"],
+}
+# Fallback series when no career path matches — still IT-focused
+_DEFAULT_SERIES = ["2210", "0854", "1550", "0391"]
+
 async def _step_search_jobs(inp: dict) -> dict:
     """
     Proxy a job search to the USAJobs API and return a normalised list of
@@ -776,15 +800,21 @@ async def _step_search_jobs(inp: dict) -> dict:
     target_role = (inp.get("target_role") or "").strip()
     career_path = (inp.get("career_path") or "").strip()
 
-    # Build a keyword query: prefer the specific role; fall back to career path
-    keyword = target_role or career_path or "IT"
+    # Combine role + path as keyword for tighter text matching
+    keyword_parts = [p for p in [target_role, career_path] if p]
+    keyword = " ".join(keyword_parts) if keyword_parts else "IT"
+
+    # Map career path to OPM series codes; fall back to general IT series
+    series_codes = _CAREER_PATH_TO_SERIES.get(career_path, _DEFAULT_SERIES)
+    job_category = ";".join(series_codes)
 
     params = {
-        "Keyword":        keyword,
-        "ResultsPerPage": "10",
-        "Fields":         "min",          # lighter payload
-        "SortField":      "OpenDate",
-        "SortDirection":  "Desc",
+        "Keyword":         keyword,
+        "JobCategoryCode": job_category,
+        "ResultsPerPage":  "10",
+        "Fields":          "min",
+        "SortField":       "OpenDate",
+        "SortDirection":   "Desc",
     }
 
     headers = {
