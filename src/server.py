@@ -313,10 +313,22 @@ def _step_map_skills(inp: dict) -> dict:
     # Normalize skill shape: toolkit returns {skill, category, evidence}
     # frontend expects {skill_name, category, confidence}
     # Guard: Llama sometimes returns a plain array of strings instead of objects
+    # Strip leading action verbs the LLM sometimes prepends to skill names
+    # e.g. "Directed Network Infrastructure" → "Network Infrastructure"
+    import re as _re
+    _LEADING_VERB = _re.compile(
+        r'^(directed|managed|led|supervised|performed|conducted|executed|'
+        r'coordinated|oversaw|delivered|developed|maintained|ensured|'
+        r'provided|utilized|supported|assisted|handled)\s+',
+        _re.IGNORECASE,
+    )
+    def _clean_skill_name(raw: str) -> str:
+        return _LEADING_VERB.sub('', (raw or '').strip()).strip()
+
     raw_skills = result.get("skills") or []
     skills = [
         {
-            "skill_name": s if isinstance(s, str) else s.get("skill", s.get("skill_name", "")),
+            "skill_name": _clean_skill_name(s if isinstance(s, str) else s.get("skill", s.get("skill_name", ""))),
             "category":   "" if isinstance(s, str) else s.get("category", ""),
             "confidence": "High" if isinstance(s, str) else (
                 "High" if not s.get("evidence", "").startswith("O*NET crosswalk") else "Medium"

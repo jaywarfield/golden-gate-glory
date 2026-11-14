@@ -1339,7 +1339,7 @@
     // Tier colour palette
     const TIER = {
       Required:  { label: 'Required',  color: '#991b1b', bg: '#fff1f2' },
-      Preferred: { label: 'Preferred', color: '#92400e', bg: '#fffbeb' },
+      Preferred: { label: 'Preferred', color: '#1f2328', bg: '#fffbeb' },
       Optional:  { label: 'Optional',  color: '#166534', bg: '#f0fdf4' },
     };
 
@@ -1409,10 +1409,10 @@
       // Col 2: job skill name
       const jobCell = esc(toTitle(r.js));
 
-      // Col 3: matched veteran skill name, or ✗ Gap in same colour as type
+      // Col 3: matched veteran skill name, or N/A if no match
       const vetCell = r.covered
         ? esc(toTitle(r.civ ? r.civ.skill_name : r.js))
-        : `<span style="font-weight:700;color:${tier.color}">✗ Gap</span>`;
+        : `<span style="color:#57606a">N/A</span>`;
 
       html += `<tr style="background:${bg}">
         ${td(typeCell)}
@@ -1430,26 +1430,6 @@
       </div>`;
     }
 
-    // ── Veteran Civilian Skills table ─────────────────────────────────
-    const civSkills = (STATE.skills||[]).filter(s => !isTechnicalOnly(s.skill_name));
-    if (civSkills.length > 0) {
-      const confColor = c => /high/i.test(c) ? '#16a34a' : /medium/i.test(c) ? '#b45309' : '#57606a';
-      html += `<div style="margin-top:18px;font-size:11px;font-weight:700;letter-spacing:0.08em;color:#1e3a8a;text-transform:uppercase;margin-bottom:6px">Veteran Civilian Skills</div>`;
-      html += `<table style="width:100%;border-collapse:collapse">
-        <thead><tr>
-          ${th('70%','Skill')}
-          ${th('30%','Confidence')}
-        </tr></thead><tbody>`;
-      civSkills.forEach((s, i) => {
-        const conf = s.confidence || s.confidence_level || '';
-        const bg   = i % 2 === 0 ? '#ffffff' : '#f7f8fa';
-        html += `<tr style="background:${bg}">
-          ${td(esc(toTitle(s.skill_name||'')))}
-          ${td(`<span style="font-weight:700;color:${confColor(conf)}">${esc(conf)}</span>`)}
-        </tr>`;
-      });
-      html += `</tbody></table>`;
-    }
 
     document.getElementById('s4-comparison').innerHTML = html;
     document.getElementById('s4-output').style.display = 'block';
