@@ -1378,8 +1378,18 @@
     });
 
     const looseMatch = (a, b) => a === b || a.includes(b) || b.includes(a);
+
+    // Word-overlap match: share ≥1 significant word (>3 chars) in common
+    const sigWords = s => s.split(/\W+/).filter(w => w.length > 3);
+    const wordOverlap = (a, b) => sigWords(a).some(w => sigWords(b).includes(w));
+
     const inGap  = nL => !!(gapMap[nL] || Object.keys(gapMap).find(k => looseMatch(k, nL)));
-    const getCiv = nL => { const k = Object.keys(civMap).find(c => c === nL || looseMatch(c, nL)); return k ? civMap[k] : null; };
+    // getCiv: try exact/substring match first, then word-overlap as fallback
+    const getCiv = nL => {
+      const k = Object.keys(civMap).find(c => c === nL || looseMatch(c, nL))
+             || Object.keys(civMap).find(c => wordOverlap(c, nL));
+      return k ? civMap[k] : null;
+    };
 
     // Covered names set
     const coveredNames = new Set((gr.covered_skills||[]).map(s => (s.skill_name||s||'').toString().toLowerCase()));
@@ -1428,9 +1438,10 @@
       // A skill is covered if coveredNames says so OR a vet skill loosely matches.
       // A skill is a gap only if it's explicitly in gapMap AND NOT in coveredNames.
       const explicitlyCovered = coveredNames.has(jsL) ||
-        [...coveredNames].some(c => looseMatch(c, jsL));
+        [...coveredNames].some(c => looseMatch(c, jsL) || wordOverlap(c, jsL));
       const explicitlyGap = !explicitlyCovered && inGap(jsL);
-      const covered = explicitlyCovered || (!explicitlyGap && !!civ);
+      // Also covered if a vet skill word-overlaps with the job skill, regardless of gap map
+      const covered = explicitlyCovered || !!civ;
       return { tierKey, js, civ, covered };
     });
 
