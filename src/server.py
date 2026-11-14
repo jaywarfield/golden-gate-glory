@@ -633,15 +633,34 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
     """
     Lightweight resume parser: strip headers, group into blocks, classify as
     summary / experience / skills.  Returns (summary_text, exp_texts, skill_tokens).
-    This mirrors the mock parser but runs server-side so the AI can work on
-    clean, pre-structured input.
     """
     import re
 
     HEADER_RE  = re.compile(r'^[A-Za-z0-9 &/\-]{1,50}:?\s*$')
     SKILLS_HDR = re.compile(r'\b(skill|qualification|certification|competenc|proficienc|technical|tool|technolog)', re.IGNORECASE)
+    # Inline label pattern: "Label Title: content" or "Label Title:\xa0content"
+    # Captures everything after the first colon+space/nbsp as the real content.
+    INLINE_LABEL = re.compile(r'^[A-Za-z0-9 &/\-]{2,50}[:\uff1a][\s\xa0]+(.+)$')
 
-    lines   = text.split('\n')
+    def _split_line(raw_line: str) -> list[str]:
+        """
+        Normalise a single resume line into one or more content strings:
+        1. Replace non-breaking spaces (\xa0) and other Unicode spaces with regular space.
+        2. Strip inline section labels ("Label: content" → "content").
+        3. Split on bullet characters (•, ·, –, —) that separate packed sub-items.
+        """
+        # Normalise whitespace variants to regular space
+        line = raw_line.replace('\xa0', ' ').replace('\u2009', ' ').replace('\u200b', '').strip()
+        # Strip inline label prefix if present
+        m = INLINE_LABEL.match(line)
+        if m:
+            line = m.group(1).strip()
+        # Split on mid-line bullet separators that pack multiple items onto one line
+        parts = re.split(r'\s*[•·–—]\s*', line)
+        return [p.strip() for p in parts if len(p.strip()) >= 10]
+
+    # Normalise the whole text: replace \xa0 in line splitting too
+    lines = text.replace('\xa0', ' ').split('\n')
     last_hdr = ''
     blocks: list[dict] = []
     cur: dict | None = None
@@ -670,12 +689,6 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
     seen: set[str] = set()
 
     for b in blocks:
-        # A block is a skills list if:
-        #   (a) its section header contains a skills-related keyword, OR
-        #   (b) it has no skills-keyword header BUT most lines are very short
-        #       (≤3 words) — genuine skill tokens like "Python", "CCNA", "Network+".
-        # Bullet-point accomplishments (5–15 words each) must NOT be classified as
-        # skills even though they are "short" relative to prose paragraphs.
         has_skills_hint = bool(SKILLS_HDR.search(b['hint']))
         short_line_ratio = (
             sum(1 for l in b['lines'] if len(l.split()) <= 3) / len(b['lines'])
@@ -693,18 +706,14 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
                             skill_tokens.append(tok)
             continue
 
-        # Each line in a block is treated as a separate experience entry so that
-        # multi-line accomplishment sections (no blank line between bullets) all
-        # get translated individually rather than collapsed into one big string.
-        # The first line of the first block becomes summary_text; every other
-        # non-trivial line becomes its own exp_text entry.
-        for line in b['lines']:
-            line = line.strip()
-            if len(line) < 10:
-                continue
-            if not summary_text:
-                summary_text = line
-            else:
-                exp_texts.append(line)
+        # Expand each raw line into content fragments (strip inline labels,
+        # split on packed bullet separators, normalise whitespace).
+        # First fragment overall → summary_text; all others → exp_texts.
+        for raw_line in b['lines']:
+            for fragment in _split_line(raw_line):
+                if not summary_text:
+                    summary_text = fragment
+                else:
+                    exp_texts.append(fragment)
 
     return summary_text, exp_texts, skill_tokens
