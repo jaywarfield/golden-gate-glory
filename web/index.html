@@ -1416,24 +1416,9 @@
       const col = p === 'High' ? '#b91c1c' : p === 'Medium' ? '#92400e' : '#57606a';
       return `<span style="font-size:12px;font-weight:600;color:${col};border:1.5px solid ${col};border-radius:999px;padding:1px 10px">${esc(p)}</span>`;
     };
-    const courseCard = (gapObj) => {
-      const courses = (gapObj && gapObj.courses) || [];
-      if (courses.length === 0) {
-        return `<div style="margin:6px 0 10px 26px;background:#f0f4ff;border-radius:8px;padding:9px 12px;display:inline-block;min-width:180px">
-          <div style="font-size:13px;font-weight:700;color:#1d4ed8"><a href="https://skillsbuild.org" target="_blank" style="color:#1d4ed8;text-decoration:none">IBM SkillsBuild</a></div>
-          <div style="font-size:12px;color:#57606a;margin-top:2px"><a href="https://skillsbuild.org" target="_blank" style="color:#57606a;text-decoration:none">skillsbuild.org</a></div>
-        </div>`;
-      }
-      return courses.map(c =>
-        `<div style="margin:6px 0 10px 26px;background:#f0f4ff;border-radius:8px;padding:9px 12px;display:inline-block;min-width:180px">
-          <div style="font-size:13px;font-weight:700;color:#1d4ed8"><a href="${esc(c.url||'https://skillsbuild.org')}" target="_blank" style="color:#1d4ed8;text-decoration:none">${esc(c.title||'IBM SkillsBuild')}</a></div>
-          <div style="font-size:12px;color:#57606a;margin-top:2px">${c.credential_type ? esc(c.credential_type)+' · ' : ''}${c.hours_estimate ? c.hours_estimate+' hrs · ' : ''}<a href="${esc(c.url||'https://skillsbuild.org')}" target="_blank" style="color:#57606a;text-decoration:none">skillsbuild.org</a></div>
-        </div>`
-      ).join('');
-    };
     const gapRow = (name, gapObj) => {
       const p = (gapObj && (gapObj.priority || gapObj.gap_priority)) || '';
-      return `<div style="padding:9px 2px 2px;border-bottom:1px solid #f0f0f0">
+      return `<div style="padding:9px 2px;border-bottom:1px solid #f0f0f0">
         <div style="display:flex;align-items:center;justify-content:space-between">
           <div style="display:flex;align-items:center;gap:10px">
             <span style="color:#b91c1c;font-weight:700;font-size:15px">✗</span>
@@ -1441,7 +1426,6 @@
           </div>
           ${p ? priorityBadge(p) : ''}
         </div>
-        ${courseCard(gapObj)}
       </div>`;
     };
 
@@ -1487,6 +1471,9 @@
     if (gapReq || gapPref || gapOpt || gapExtra) {
       html += sectionHdr('✗', 'Skill Gaps — With SkillsBuild Recommendations', '#b91c1c');
       html += gapReq + gapPref + gapOpt + gapExtra;
+      html += `<div style="margin-top:12px;font-size:12px;color:#57606a;padding:8px 2px;border-top:1px solid #e5e7eb">
+        📚 Close your skill gaps with free courses at <a href="https://skillsbuild.org" target="_blank" style="color:#1d4ed8;text-decoration:none;font-weight:600">IBM SkillsBuild — skillsbuild.org</a>
+      </div>`;
     }
 
     // ── Civilian Skill Inventory table ────────────────────────────────
@@ -1497,18 +1484,16 @@
         if (/medium/i.test(c)) return '#b45309';
         return '#57606a';
       };
-      html += sectionHdr('', 'Civilian Skill Inventory', '#1e3a8a');
+      html += sectionHdr('', 'Veteran Civilian Skills', '#1e3a8a');
       html += `<table style="width:100%;border-collapse:collapse;margin-top:4px">
         <thead><tr>
           <th style="text-align:left;padding:7px 10px;border-bottom:2px solid #e5e7eb;font-size:12px;font-weight:700;color:#1f2328">Skill</th>
-          <th style="text-align:left;padding:7px 10px;border-bottom:2px solid #e5e7eb;font-size:12px;font-weight:700;color:#1f2328">Category</th>
           <th style="text-align:left;padding:7px 10px;border-bottom:2px solid #e5e7eb;font-size:12px;font-weight:700;color:#1f2328">Confidence</th>
         </tr></thead><tbody>`;
       civSkills.forEach(s => {
         const conf = s.confidence || s.confidence_level || '';
         html += `<tr style="border-bottom:1px solid #f0f0f0">
           <td style="padding:9px 10px;font-size:13px;color:#1f2328">${esc(toTitle(s.skill_name||''))}</td>
-          <td style="padding:9px 10px;font-size:13px;color:#57606a">${esc(s.category||'')}</td>
           <td style="padding:9px 10px;font-size:13px;font-weight:700;color:${confColor(conf)}">${esc(conf)}</td>
         </tr>`;
       });
