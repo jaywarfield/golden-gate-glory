@@ -60,7 +60,7 @@ Rules:
 - Replace ALL military jargon with plain civilian equivalents. Examples: "deployment cycle" → "annual period" or "fiscal year"; "deployment" → "assignment"; "theater" → "region"; "AOR" → "area of responsibility"; "MOS/AFSC/rate" → "role"; "NCO" → "supervisor"; "unit" → "team" or "department"; "mission" → "project" or "operation".
 - Quantify impact where possible using the provided metrics.
 - STRICT: Do not invent any fact, number, name, metric, or detail that is not explicitly stated in the original bullet or metrics. If the bullet is too vague to produce a faithful translation, output exactly the word SKIP and nothing else.
-- Output exactly ONE sentence. Do not repeat any phrase, clause, or idea.
+- Output exactly ONE sentence and stop. Do not write a second sentence. Do not repeat any phrase, clause, or idea in different words.
 - No preamble, no explanation, no bullet character at the start.
 
 Target civilian role: {target_role}{metrics_clause}
@@ -72,7 +72,7 @@ Civilian resume bullet:"""
 
     t0 = time.monotonic()
     try:
-        response = llm_generate(prompt, _MODEL_ID, max_tokens=120, temperature=0.3)
+        response = llm_generate(prompt, _MODEL_ID, max_tokens=80, temperature=0.3)
         latency_ms = (time.monotonic() - t0) * 1000
         translated = response.strip().lstrip("•-– ").strip()
 

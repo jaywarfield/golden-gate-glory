@@ -194,16 +194,11 @@ def _step_translate_resume(inp: dict) -> dict:
             clean_lines.append(line)
         text = ' '.join(clean_lines).strip()
 
-        # Deduplicate repeated sentences within a single bullet
-        sentences = _re.split(r'(?<=[.!?])\s+', text)
-        seen_sents: list[str] = []
-        seen_lower: set[str] = set()
-        for s in sentences:
-            key = s.strip().lower()
-            if key and key not in seen_lower:
-                seen_lower.add(key)
-                seen_sents.append(s.strip())
-        return ' '.join(seen_sents).strip()
+        # Keep only the FIRST sentence — the prompt asks for one sentence and
+        # stops, but as a hard backstop discard everything after the first
+        # sentence-ending punctuation followed by a capital letter or end of string.
+        first = _re.split(r'(?<=[.!?])\s+(?=[A-Z])', text, maxsplit=1)[0].strip()
+        return first
 
     # Translate only the experience blocks extracted from the resume — no fabrication.
     # If the LLM returns "SKIP" (too vague to translate faithfully), drop that bullet.
