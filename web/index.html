@@ -1574,8 +1574,8 @@
     // Experience bullets
     document.getElementById('s5-bullets').innerHTML = (rd.bullets||[]).map((b, i) => itemRow('bullet', i, b)).join('');
 
-    // Skills (no tags — always shown as-is)
-    document.getElementById('s5-skills').innerHTML = (rd.skills_section||[]).map(s=>`
+    // Skills (no tags — only veteran skills, no job-description skills or bare "Technical")
+    document.getElementById('s5-skills').innerHTML = _veteranSkills().map(s=>`
       <div class="bullet-row"><span class="bullet-text">• ${esc(s)}</span></div>`).join('');
 
     s5UpdateTagCounts();
