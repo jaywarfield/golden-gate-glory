@@ -661,10 +661,18 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
     seen: set[str] = set()
 
     for b in blocks:
-        is_skills = bool(SKILLS_HDR.search(b['hint'])) or (
-            b['lines'] and
-            sum(1 for l in b['lines'] if len(l.split()) <= 5) / len(b['lines']) >= 0.7
+        # A block is a skills list if:
+        #   (a) its section header contains a skills-related keyword, OR
+        #   (b) it has no skills-keyword header BUT most lines are very short
+        #       (≤3 words) — genuine skill tokens like "Python", "CCNA", "Network+".
+        # Bullet-point accomplishments (5–15 words each) must NOT be classified as
+        # skills even though they are "short" relative to prose paragraphs.
+        has_skills_hint = bool(SKILLS_HDR.search(b['hint']))
+        short_line_ratio = (
+            sum(1 for l in b['lines'] if len(l.split()) <= 3) / len(b['lines'])
+            if b['lines'] else 0
         )
+        is_skills = has_skills_hint or (not has_skills_hint and short_line_ratio >= 0.7)
         if is_skills:
             for l in b['lines']:
                 for tok in re.split(r'[,;•·\-–]\s*', l):
