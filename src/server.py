@@ -689,15 +689,20 @@ def _source_label(item: dict) -> str:
 
 def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
     """
-    Lightweight resume parser: strip headers, group into blocks, classify as
-    summary / experience / skills.  Returns (summary_text, exp_texts, skill_tokens).
+    Lightweight resume parser.  Returns (summary_text, exp_texts, skill_tokens).
+
+    Skills are extracted via two passes:
+    1. Structured skills blocks (comma/semicolon-separated lists under skills headers
+       and subheaders like "Information Technology", "Networking", "Cybersecurity", etc.)
+    2. Universal inline scan of ALL lines — including experience, certifications,
+       education, and awards — extracting tokens that look like known skill patterns
+       (cert names, tool names, technologies, programming languages, etc.)
     """
     import re
 
-    HEADER_RE  = re.compile(r'^[A-Za-z0-9 &/\-]{1,50}:?\s*$')
-    # Matches any header that signals a skills section — including common IT subheaders
-    # found under "TECHNICAL SKILLS" (e.g. "Information Technology", "Networking",
-    # "Cybersecurity", "System Administration", "Leadership and Operations").
+    HEADER_RE = re.compile(r'^[A-Za-z0-9 &/\-]{1,50}:?\s*$')
+
+    # Headers that signal a structured skills section (and their IT subheaders)
     SKILLS_HDR = re.compile(
         r'\b(skill|qualification|certification|competenc|proficienc|technical|tool|technolog'
         r'|networking|network|cybersecurity|cyber|information technology|system admin'
@@ -705,31 +710,52 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
         r'|programming|language|platform|infrastructure)\b',
         re.IGNORECASE
     )
-    # Inline label pattern: "Label Title: content" or "Label Title:\xa0content"
-    # Captures everything after the first colon+space/nbsp as the real content.
+
+    # Inline label pattern: "Label: content"
     INLINE_LABEL = re.compile(r'^[A-Za-z0-9 &/\-]{2,50}[:\uff1a][\s\xa0]+(.+)$')
 
+    def _is_noise_tok(tok: str) -> bool:
+        """Return True if tok is noise and should not be added as a skill."""
+        if not tok or not (2 <= len(tok) <= 50):
+            return True
+        words = tok.split()
+        if len(words) >= 6:                                 # sentence-length fragment
+            return True
+        if tok.endswith('.') and len(words) >= 3:           # sentence fragment ending with period
+            return True
+        if re.fullmatch(r'[A-Za-z]\.?', tok):              # single letter
+            return True
+        if re.fullmatch(r'([A-Za-z])\1{2,}\.?', tok):      # repeated same char: OOO, nnn, 000
+            return True
+        if re.fullmatch(r'[\d\s\.\-\+\(\)\/\\]+', tok):   # purely numeric/punctuation: "000.", "3.5"
+            return True
+        if re.match(r'^\d+[\+\-]?\s*(years?|yrs?|months?)\b', tok, re.IGNORECASE):
+            return True                                     # "5+ years"
+        if re.match(r'^\d+\s*[\+\-]?\s*(users?|people|personnel|staff|technician)', tok, re.IGNORECASE):
+            return True                                     # "500+ users"
+        return False
+
+    def _add_token(tok: str, skill_tokens: list, seen: set) -> None:
+        tok = tok.strip().strip('-–—').strip()
+        if _is_noise_tok(tok):
+            return
+        key = tok.lower()
+        if key not in seen:
+            seen.add(key)
+            skill_tokens.append(tok)
+
     def _split_line(raw_line: str) -> list[str]:
-        """
-        Normalise a single resume line into one or more content strings:
-        1. Replace non-breaking spaces (\xa0) and other Unicode spaces with regular space.
-        2. Strip inline section labels ("Label: content" → "content").
-        3. Split on bullet characters (•, ·, –, —) that separate packed sub-items.
-        """
-        # Normalise whitespace variants to regular space
         line = raw_line.replace('\xa0', ' ').replace('\u2009', ' ').replace('\u200b', '').strip()
-        # Strip inline label prefix if present
         m = INLINE_LABEL.match(line)
         if m:
             line = m.group(1).strip()
-        # Split on mid-line bullet separators that pack multiple items onto one line
         parts = re.split(r'\s*[•·–—]\s*', line)
         return [p.strip() for p in parts if len(p.strip()) >= 10]
 
-    # Normalise the whole text: replace \xa0 in line splitting too
+    # ── Pass 1: parse lines into blocks ──────────────────────────────────────
     lines = text.replace('\xa0', ' ').split('\n')
     last_hdr = ''
-    in_skills_section = False   # True once we've seen a skills-flagged header
+    in_skills_section = False
     blocks: list[dict] = []
     cur: dict | None = None
 
@@ -743,24 +769,22 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
             if cur and cur['lines']:
                 blocks.append(cur); cur = None
             last_hdr = t.rstrip(':').lower()
-            # If this header (or any parent context) flags a skills section,
-            # propagate that into the hint so subheaders inherit the classification.
             if SKILLS_HDR.search(last_hdr):
                 in_skills_section = True
-            # A clearly non-skills header (experience / education / work history)
-            # resets the skills-section context.
-            elif re.search(r'\b(experience|education|employment|work history|objective|summary|profile|certification|award|honor)\b', last_hdr, re.IGNORECASE):
+            elif re.search(r'\b(experience|employment|work history)\b', last_hdr, re.IGNORECASE):
                 in_skills_section = False
+            # Note: education, certifications, awards do NOT reset skills context —
+            # they may contain inline skill tokens we want to capture.
             continue
         if cur is None:
-            # Carry the skills-section flag forward into every block opened under it
-            hint = last_hdr if not in_skills_section else last_hdr + ' skill'
+            hint = (last_hdr + ' skill') if in_skills_section else last_hdr
             cur = {'hint': hint, 'lines': []}
         cur['lines'].append(t)
 
     if cur and cur['lines']:
         blocks.append(cur)
 
+    # ── Pass 2: classify blocks and extract content ───────────────────────────
     summary_text = ''
     exp_texts: list[str] = []
     skill_tokens: list[str] = []
@@ -769,51 +793,62 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
     for b in blocks:
         has_skills_hint = bool(SKILLS_HDR.search(b['hint']))
         short_line_ratio = (
-            sum(1 for l in b['lines'] if len(l.split()) <= 3) / len(b['lines'])
+            sum(1 for l in b['lines'] if len(l.split()) <= 4) / len(b['lines'])
             if b['lines'] else 0
         )
-        is_skills = has_skills_hint or (not has_skills_hint and short_line_ratio >= 0.7)
+        is_skills = has_skills_hint or short_line_ratio >= 0.7
+
         if is_skills:
+            # Structured skills block: split on commas/semicolons, extract each token
             for l in b['lines']:
-                # Lines may be comma/semicolon-separated lists OR colon-prefixed sub-lists
-                # e.g. "Protocols: TCP/IP, DNS, DHCP" → strip the label, then split on delimiters
                 m_label = re.match(r'^[A-Za-z0-9 /&\-]{2,40}:\s*(.+)$', l)
                 content = m_label.group(1) if m_label else l
                 for tok in re.split(r'[,;•·]\s*', content):
-                    tok = tok.strip().strip('-–—').strip()
-                    if not tok or not (3 <= len(tok) <= 50):
-                        continue
-                    # Skip tokens that are sentences: ≥6 words, or end in a period
-                    # after multiple words (e.g. "Managed helpdesk supporting 500+ users.")
-                    tok_words = tok.split()
-                    if len(tok_words) >= 6:
-                        continue
-                    if tok.endswith('.') and len(tok_words) >= 3:
-                        continue
-                    # Skip single uppercase letters and repeated-char noise like "OOO.", "NNN".
-                    # Allow real acronyms (DNS, BGP, VPN, SQL, etc.) — they have distinct chars.
-                    if re.fullmatch(r'[A-Z]\.?', tok):
-                        continue   # single letter
-                    if re.fullmatch(r'([A-Z])\1{1,}\.?', tok):
-                        continue   # repeated same letter: OOO, NNN, XXX
-                    # Skip metric fragments like "500+ users", "8 technicians"
-                    if re.search(r'\d+\s*[\+\-]?\s*(users?|people|personnel|staff|technician)', tok, re.IGNORECASE):
-                        continue
-                    key = tok.lower()
-                    if key not in seen:
-                        seen.add(key)
-                        skill_tokens.append(tok)
+                    _add_token(tok, skill_tokens, seen)
             continue
 
-        # Expand each raw line into content fragments (strip inline labels,
-        # split on packed bullet separators, normalise whitespace).
-        # First fragment overall → summary_text; all others → exp_texts.
+        # Experience / narrative block: extract summary/bullets AND scan inline for skills
         for raw_line in b['lines']:
             for fragment in _split_line(raw_line):
                 if not summary_text:
                     summary_text = fragment
                 else:
                     exp_texts.append(fragment)
+            # Universal inline skill scan: pull out cert names, tool names, technologies
+            # that appear anywhere — experience bullets, education, awards, certs section.
+            # Pattern: tokens separated by commas/semicolons on the same line,
+            # OR a "Label: token, token" sub-list pattern.
+            line_norm = raw_line.replace('\xa0', ' ').strip()
+            m_label = re.match(r'^[A-Za-z0-9 /&\-]{2,40}:\s*(.+)$', line_norm)
+            scan_content = m_label.group(1) if m_label else line_norm
+            # Only scan lines that look like skill lists or cert/tool mentions.
+            # Drop lines that are clearly education prose (degree/university names),
+            # award citations, or long narrative sentences.
+            if re.search(
+                r'\b(bachelor|master|doctor|associate|university|college|institute|school'
+                r'|medal|award|honor|commendation|certificate of|graduated|degree)\b',
+                scan_content, re.IGNORECASE
+            ):
+                continue
+
+            parts = re.split(r'[,;]\s*', scan_content)
+            if len(parts) >= 2:
+                # Comma/semicolon-delimited — only add parts that are short (≤5 words),
+                # so we don't pull sentence fragments from comma-rich experience bullets.
+                for tok in parts:
+                    if len(tok.split()) <= 5:
+                        _add_token(tok, skill_tokens, seen)
+            else:
+                # Single item — only add if it strongly looks like a cert, tool or tech keyword
+                tok = scan_content.strip()
+                if re.search(
+                    r'\b(CompTIA|CISSP|CEH|CCNA|CCNP|AWS|Azure|GCP|Linux|Windows|Cisco|Python'
+                    r'|Java|SQL|Docker|Kubernetes|Terraform|Ansible|ITIL|PMP|CAPM|Scrum|Agile'
+                    r'|NIST|DISA|DoD|STIG|RMF|VMware|Hyper\-V|PowerShell|Active Directory'
+                    r'|Splunk|CrowdStrike|Nessus|Wireshark|SolarWinds|ServiceNow|Jira)\b',
+                    tok, re.IGNORECASE
+                ):
+                    _add_token(tok, skill_tokens, seen)
 
     return summary_text, exp_texts, skill_tokens
 
