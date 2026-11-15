@@ -1223,8 +1223,7 @@
       STATE.summary          = result.summary          || '';
       STATE.translatedBullets = result.bullets          || [];
       STATE.resumeSkills      = result.resume_skills    || [];
-      if (!STATE.summary)           { showStepError('s2', 'Could not identify a summary in the resume. Check that it contains narrative text.'); return; }
-      if (!STATE.translatedBullets.length) { showStepError('s2', 'No experience paragraphs found. The resume needs at least one accomplishment or experience block.'); return; }
+      if (!STATE.translatedBullets.length) { showStepError('s2', 'No accomplishments found. The resume needs at least one experience block or summary sentence.'); return; }
       renderStep2();
     } catch (e) { showStepError('s2', `Could not translate accomplishments: ${e.message}`); }
     finally { setStepLoading('s2', false); }
@@ -1246,14 +1245,6 @@
       <span style="color:#57606a;margin:0 6px">·</span>
       <span style="font-weight:600;color:#0369a1">${esc(specLabel)}</span>
     </div>`;
-
-    // ── Summary ────────────────────────────────────────────────────────
-    if (STATE.summary) {
-      html += `<div style="margin-bottom:14px">
-        <div class="skill-section-title">Summary</div>
-        <div style="font-size:13px;color:#1f2328;line-height:1.6;padding:8px 0">${esc(STATE.summary)}</div>
-      </div>`;
-    }
 
     // ── Accomplishments ────────────────────────────────────────────────
     const allBullets = STATE.translatedBullets || [];

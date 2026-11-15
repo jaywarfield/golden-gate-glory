@@ -223,6 +223,42 @@ def _step_translate_resume(inp: dict) -> dict:
             continue
         bullets.append(cleaned)
 
+    # ── Merge summary sentences into bullets ─────────────────────────────────
+    # Split the summary paragraph into individual sentences, translate each one,
+    # and prepend any that are not already represented in the bullets list.
+    if summary_text:
+        # Split on sentence boundaries
+        summary_sentences = [
+            s.strip() for s in _re.split(r'(?<=[.!?])\s+', summary_text)
+            if len(s.strip()) >= 20
+        ]
+        # Build a lowercased set of significant words already in bullets for overlap check
+        bullet_text_lower = ' '.join(bullets).lower()
+
+        def _already_covered(sentence: str) -> bool:
+            """True if ≥3 significant words from the sentence appear in the existing bullets."""
+            words = [w for w in _re.findall(r'[a-z]+', sentence.lower()) if len(w) > 4]
+            if not words:
+                return False
+            matches = sum(1 for w in words if w in bullet_text_lower)
+            return matches >= min(3, len(words))
+
+        summary_bullets: list[str] = []
+        for sent in summary_sentences:
+            if _already_covered(sent):
+                continue
+            res = translate_accomplishment(bullet=sent, target_role=target_role)
+            if res.get("error") or res.get("pii_warning"):
+                continue   # skip on error — don't block the whole step
+            cleaned = _clean_bullet(res.get("translated_bullet") or sent)
+            if cleaned.strip().upper() == "SKIP":
+                continue
+            if not _already_covered(cleaned):
+                summary_bullets.append(cleaned)
+
+        # Prepend unique summary-derived bullets before the experience bullets
+        bullets = summary_bullets + bullets
+
     # ── Merge O*NET skills for the specialty code ────────────────────────────
     # Look up the crosswalk entry for this specialty code and pull skills from
     # the matching O*NET occupation record. Deduplicate against resume_skills.
