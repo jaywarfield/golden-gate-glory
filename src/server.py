@@ -700,7 +700,22 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
     """
     import re
 
-    HEADER_RE = re.compile(r'^[A-Za-z0-9 &/\-]{1,50}:?\s*$')
+    # A section header is one of:
+    #   (a) ALL-CAPS, 2+ words: "TECHNICAL SKILLS", "EDUCATION & TRAINING"
+    #   (b) Single ALL-CAPS word that is a known section keyword: "EXPERIENCE", "AWARDS"
+    #   (c) Any case ending with a colon: "Technical Skills:", "Experience:"
+    # Single all-caps acronyms (DNS, DHCP, TCP/IP) and mixed-case skill names are content.
+    _SECTION_KEYWORDS = re.compile(
+        r'^(SUMMARY|EXPERIENCE|EMPLOYMENT|EDUCATION|TRAINING|SKILLS|CERTIFICATIONS?'
+        r'|AWARDS?|HONORS?|CLEARANCE|REFERENCES?|OBJECTIVE|PROFILE|PUBLICATIONS?'
+        r'|VOLUNTEER|PROJECTS?|ACHIEVEMENTS?|HIGHLIGHTS?|QUALIFICATIONS?)$'
+    )
+    HEADER_RE = re.compile(
+        r'^(?:'
+        r'[A-Z][A-Z0-9&/\-]*(?:\s+[A-Z0-9&/\-]+)+'  # ALL-CAPS, 2+ words
+        r'|[A-Za-z0-9 &/\-]{2,60}:'                   # any case ending with colon
+        r')\s*$'
+    )
 
     # Headers that signal a structured skills section (and their IT subheaders)
     SKILLS_HDR = re.compile(
@@ -714,9 +729,37 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
     # Inline label pattern: "Label: content"
     INLINE_LABEL = re.compile(r'^[A-Za-z0-9 &/\-]{2,50}[:\uff1a][\s\xa0]+(.+)$')
 
+    # Action verb stems that begin experience bullets — not skills.
+    # Matched against the first word of a token (case-insensitive).
+    # Pattern: stem + optional conjugation endings (e, ed, ing, s, d).
+    _ACTION_VERB_RE = re.compile(
+        r'^(install(ed|s)?|configur(ed|e|es|ing)?|maintain(ed|s)?|manag(ed|e|es|ing)?'
+        r'|resolv(ed|e|es|ing)?|document(ed|s)?|monitor(ed|s)?|perform(ed|s)?'
+        r'|support(ed|s)?|deploy(ed|s)?|creat(ed|e|es|ing)?|conduct(ed|s)?'
+        r'|operat(ed|e|es|ing)?|troubleshoot(ed|s|ing)?|repair(ed|s)?|led|lead(s)?'
+        r'|ensur(ed|e|es|ing)?|develop(ed|s)?|train(ed|s)?|coordinat(ed|e|es|ing)?'
+        r'|implement(ed|s)?|execut(ed|e|es|ing)?|identif(ied|y|ies)?|analyz(ed|e|es|ing)?'
+        r'|assess(ed|es)?|prepar(ed|e|es|ing)?|updat(ed|e|es|ing)?|test(ed|s)?'
+        r'|review(ed|s)?|establish(ed|es)?|provid(ed|e|es|ing)?|handl(ed|e|es|ing)?'
+        r'|mitigat(ed|e|es|ing)?|inspect(ed|s)?|track(ed|s)?|audit(ed|s)?'
+        r'|report(ed|s)?|communic(ated|ate|ates|ating)?|collaborat(ed|e|es|ing)?'
+        r'|supervis(ed|e|es|ing)?|overhaul(ed|s)?|integrat(ed|e|es|ing)?'
+        r'|automat(ed|e|es|ing)?|built|build(s)?|design(ed|s)?|patch(ed|es)?'
+        r'|scan(ned|s)?|harden(ed|s)?|encrypt(ed|s)?|back(ed|s)?|restor(ed|e|es|ing)?'
+        r'|migrat(ed|e|es|ing)?|consolid(ated|ate|ates|ating)?|verif(ied|y|ies)?'
+        r'|validat(ed|e|es|ing)?|enforc(ed|e|es|ing)?|respond(ed|s)?|detect(ed|s)?'
+        r'|prevent(ed|s)?|protect(ed|s)?|secur(ed|e|es|ing)?|control(led|s)?'
+        r'|process(ed|es)?|schedul(ed|e|es|ing)?|delegat(ed|e|es|ing)?|prioritiz(ed|e|es|ing)?'
+        r'|manag(ed|e|es|ing)?|set(up)?|load(ed|s)?|input|output)\b',
+        re.IGNORECASE
+    )
+
     def _is_noise_tok(tok: str) -> bool:
         """Return True if tok is noise and should not be added as a skill."""
-        if not tok or not (2 <= len(tok) <= 50):
+        if not tok or not (2 <= len(tok) <= 60):
+            return True
+        # Bracket/template artefacts: "if applicable]", "State]January 2021"
+        if '[' in tok or ']' in tok:
             return True
         words = tok.split()
         if len(words) >= 6:                                 # sentence-length fragment
@@ -733,6 +776,31 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
             return True                                     # "5+ years"
         if re.match(r'^\d+\s*[\+\-]?\s*(users?|people|personnel|staff|technician)', tok, re.IGNORECASE):
             return True                                     # "500+ users"
+        # Date fragments: "January 2021", "2021 – Present", month names alone
+        if re.search(
+            r'\b(january|february|march|april|may|june|july|august|september'
+            r'|october|november|december|present)\b',
+            tok, re.IGNORECASE
+        ):
+            return True
+        # Leading conjunctions: "and switches", "and repaired"
+        if words[0].lower() in ('and', 'or', 'but', 'with', 'including', 'such', 'as'):
+            return True
+        # Gerund-led tokens (any length): "managing Active Directory", "maintaining LAN/WAN"
+        # Also catches bare gerunds: "troubleshooting", "maintaining"
+        if re.match(r'^[A-Za-z]+ing\b', words[0]) and words[0].lower() not in (
+            'networking', 'computing', 'engineering', 'programming',
+        ):
+            return True
+        # Bare single-word action verbs from experience bullets: "Installed", "configured"
+        # Only applied to single-word tokens — multi-word phrases like "patch management"
+        # are legitimate skills and must not be blocked by a verb first-word test.
+        if len(words) == 1 and _ACTION_VERB_RE.match(tok):
+            return True
+        # Multi-word verb phrases: "resolve technical problems", "document IT procedures"
+        # Drop any multi-word token whose first word matches the action verb list.
+        if len(words) >= 2 and _ACTION_VERB_RE.match(words[0]):
+            return True
         return False
 
     def _add_token(tok: str, skill_tokens: list, seen: set) -> None:
@@ -752,10 +820,20 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
         parts = re.split(r'\s*[•·–—]\s*', line)
         return [p.strip() for p in parts if len(p.strip()) >= 10]
 
+    # Regex: headers that mean "not a skills section" — education, training, awards.
+    # Uses prefix-only word boundary (\b before each word) to match plurals/variants:
+    # e.g. "awards" matches "award", "certifications" matches "certification".
+    EDU_AWARDS_HDR = re.compile(
+        r'\b(educat|train|school|certif|licens|award|honor|decorat'
+        r'|achieve|commend|recognit|clearance|volunteer|reference)',
+        re.IGNORECASE
+    )
+
     # ── Pass 1: parse lines into blocks ──────────────────────────────────────
     lines = text.replace('\xa0', ' ').split('\n')
     last_hdr = ''
     in_skills_section = False
+    in_edu_awards = False
     blocks: list[dict] = []
     cur: dict | None = None
 
@@ -765,20 +843,24 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
             if cur and cur['lines']:
                 blocks.append(cur); cur = None
             continue
-        if HEADER_RE.match(t):
+        if HEADER_RE.match(t) or _SECTION_KEYWORDS.match(t):
             if cur and cur['lines']:
                 blocks.append(cur); cur = None
             last_hdr = t.rstrip(':').lower()
-            if SKILLS_HDR.search(last_hdr):
-                in_skills_section = True
+            # EDU_AWARDS_HDR takes precedence over SKILLS_HDR (e.g. "CERTIFICATIONS" is edu, not skills)
+            if EDU_AWARDS_HDR.search(last_hdr):
+                in_skills_section = False
+                in_edu_awards = True
             elif re.search(r'\b(experience|employment|work history)\b', last_hdr, re.IGNORECASE):
                 in_skills_section = False
-            # Note: education, certifications, awards do NOT reset skills context —
-            # they may contain inline skill tokens we want to capture.
+                in_edu_awards = False
+            elif SKILLS_HDR.search(last_hdr):
+                in_skills_section = True
+                in_edu_awards = False
             continue
         if cur is None:
             hint = (last_hdr + ' skill') if in_skills_section else last_hdr
-            cur = {'hint': hint, 'lines': []}
+            cur = {'hint': hint, 'lines': [], 'is_edu_awards': in_edu_awards}
         cur['lines'].append(t)
 
     if cur and cur['lines']:
@@ -791,6 +873,7 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
     seen: set[str] = set()
 
     for b in blocks:
+        is_edu_awards = b.get('is_edu_awards', False)
         has_skills_hint = bool(SKILLS_HDR.search(b['hint']))
         short_line_ratio = (
             sum(1 for l in b['lines'] if len(l.split()) <= 4) / len(b['lines'])
@@ -798,12 +881,27 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
         )
         is_skills = has_skills_hint or short_line_ratio >= 0.7
 
-        if is_skills:
+        if is_skills and not is_edu_awards:
             # Structured skills block: split on commas/semicolons, extract each token
             for l in b['lines']:
                 m_label = re.match(r'^[A-Za-z0-9 /&\-]{2,40}:\s*(.+)$', l)
                 content = m_label.group(1) if m_label else l
                 for tok in re.split(r'[,;•·]\s*', content):
+                    _add_token(tok, skill_tokens, seen)
+            continue
+
+        if is_edu_awards:
+            # Education/awards/training block: only extract known cert/tool names.
+            # Do NOT do broad comma-split — these lines contain training courses,
+            # award citations, school names, etc. that look like skills but aren't.
+            for l in b['lines']:
+                tok = l.strip()
+                if re.search(
+                    r'\b(CompTIA|CISSP|CEH|CCNA|CCNP|CISM|CISA|Security\+|Network\+|A\+'
+                    r'|AWS|Azure|GCP|Linux\+|CySA\+|PenTest\+|CASP\+|OSCP|GIAC'
+                    r'|ITIL|PMP|CAPM|Scrum|Agile|NIST|RMF|STIG)\b',
+                    tok, re.IGNORECASE
+                ):
                     _add_token(tok, skill_tokens, seen)
             continue
 
@@ -814,41 +912,33 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
                     summary_text = fragment
                 else:
                     exp_texts.append(fragment)
-            # Universal inline skill scan: pull out cert names, tool names, technologies
-            # that appear anywhere — experience bullets, education, awards, certs section.
-            # Pattern: tokens separated by commas/semicolons on the same line,
-            # OR a "Label: token, token" sub-list pattern.
+            # Inline skill scan: pull cert names and tool names from experience lines.
+            # Only scan comma-separated parts that contain known tech keywords.
             line_norm = raw_line.replace('\xa0', ' ').strip()
             m_label = re.match(r'^[A-Za-z0-9 /&\-]{2,40}:\s*(.+)$', line_norm)
             scan_content = m_label.group(1) if m_label else line_norm
-            # Only scan lines that look like skill lists or cert/tool mentions.
-            # Drop lines that are clearly education prose (degree/university names),
-            # award citations, or long narrative sentences.
-            if re.search(
-                r'\b(bachelor|master|doctor|associate|university|college|institute|school'
-                r'|medal|award|honor|commendation|certificate of|graduated|degree)\b',
-                scan_content, re.IGNORECASE
-            ):
-                continue
 
             parts = re.split(r'[,;]\s*', scan_content)
             if len(parts) >= 2:
-                # Comma/semicolon-delimited — only add parts that are short (≤5 words),
-                # so we don't pull sentence fragments from comma-rich experience bullets.
+                # Comma-delimited: only keep short (≤3 words) parts that look like
+                # tech terms — not generic nouns or activity descriptions.
                 for tok in parts:
-                    if len(tok.split()) <= 5:
+                    tok = tok.strip()
+                    if len(tok.split()) <= 3 and re.search(
+                        r'\b(TCP|UDP|IP|DNS|DHCP|SSH|SSL|TLS|VPN|LAN|WAN|VLAN|HTTP|HTTPS'
+                        r'|SMTP|LDAP|AD|GPO|SNMP|BGP|OSPF|MPLS|QoS|NAT|PAT|ACL|DMZ'
+                        r'|router|switch|firewall|server|desktop|laptop|printer|NAS|SAN'
+                        r'|Linux|Windows|macOS|Unix|Android|iOS|VMware|Hyper-V|ESXi'
+                        r'|Python|Bash|PowerShell|SQL|JavaScript|Java|C\+\+|C#|Go|Rust'
+                        r'|Docker|Kubernetes|Ansible|Terraform|Git|Jenkins|Splunk'
+                        r'|Wireshark|Nessus|Nmap|Metasploit|CrowdStrike|Tanium|SolarWinds'
+                        r'|ServiceNow|Jira|Confluence|SharePoint|Office 365|Azure|AWS|GCP'
+                        r'|Active Directory|Group Policy|SCCM|WSUS|Nagios|Zabbix)\b',
+                        tok, re.IGNORECASE
+                    ):
                         _add_token(tok, skill_tokens, seen)
-            else:
-                # Single item — only add if it strongly looks like a cert, tool or tech keyword
-                tok = scan_content.strip()
-                if re.search(
-                    r'\b(CompTIA|CISSP|CEH|CCNA|CCNP|AWS|Azure|GCP|Linux|Windows|Cisco|Python'
-                    r'|Java|SQL|Docker|Kubernetes|Terraform|Ansible|ITIL|PMP|CAPM|Scrum|Agile'
-                    r'|NIST|DISA|DoD|STIG|RMF|VMware|Hyper\-V|PowerShell|Active Directory'
-                    r'|Splunk|CrowdStrike|Nessus|Wireshark|SolarWinds|ServiceNow|Jira)\b',
-                    tok, re.IGNORECASE
-                ):
-                    _add_token(tok, skill_tokens, seen)
+            # No single-item inline scan for narrative blocks —
+            # single-item lines from experience are caught via the structured skills path.
 
     return summary_text, exp_texts, skill_tokens
 
