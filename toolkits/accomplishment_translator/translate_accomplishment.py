@@ -56,7 +56,7 @@ def translate_accomplishment(
 
 Convert the military accomplishment bullet below into ONE ATS-ready civilian resume bullet.
 Rules:
-- Begin with the action verb or role language already present in the original bullet (e.g. if the bullet says "trained", start with "Trained"; if it says "coordinated", start with "Coordinated"). Do NOT substitute generic verbs like "spearheaded", "managed", "leveraged", or "orchestrated" unless that exact word already appears in the original.
+- Choose the strongest, most precise action verb that captures the same sentiment and meaning as the original — you are not limited to the words used in the original bullet.
 - Replace ALL military jargon with plain civilian equivalents. Examples: "deployment cycle" → "annual period" or "fiscal year"; "deployment" → "assignment"; "theater" → "region"; "AOR" → "area of responsibility"; "MOS/AFSC/rate" → "role"; "NCO" → "supervisor"; "unit" → "team" or "department"; "mission" → "project" or "operation".
 - Quantify impact where possible using the provided metrics.
 - STRICT: Do not invent any fact, number, name, metric, or detail that is not explicitly stated in the original bullet or metrics. If the bullet is too vague to produce a faithful translation, output exactly the word SKIP and nothing else.
