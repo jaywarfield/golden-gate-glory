@@ -50,24 +50,31 @@ def extract_resume_skills(
 
     prompt = f"""You are an expert civilian resume analyst for military veterans.
 
-Read the resume below and extract a structured list of CIVILIAN SKILLS that are
+Read the resume below and extract ONLY the concrete civilian SKILLS that are
 EXPLICITLY EVIDENCED in the text.
 
-STRICT RULES:
-1. Only list skills that appear in the resume text — in skills sections, experience
-   bullets, certifications, or descriptions of responsibilities.
-2. Use civilian terminology (e.g. "Network Administration" not "DCGS network ops").
-3. Do NOT infer skills from the MOS/AFSC code alone — only extract what the text shows.
-4. Do NOT include activities, duties, or job titles — only skills and competencies.
-5. Each skill must be a noun phrase (2–5 words), not a sentence or verb phrase.
-   WRONG: "managed Active Directory user accounts"
-   RIGHT: "Active Directory Administration"
-6. No duplicates. Merge near-synonyms into the best single entry.
+STRICT RULES — read each one carefully:
+1. Source only: skills sections, certification lists, tools/technologies mentioned
+   in experience bullets. Do NOT invent or infer skills not visible in the text.
+2. Use standard civilian terminology (e.g. "Network Administration", not "DCGS comms").
+3. Each skill_name MUST be a NOUN PHRASE — a thing you can have or know, not an action.
+   These are WRONG (verb phrases / activities):
+     "managed Active Directory user accounts"  → WRONG
+     "troubleshooting computer hardware"       → WRONG
+     "maintaining LAN/WAN connectivity"        → WRONG
+   These are RIGHT (noun-phrase skills):
+     "Active Directory Administration"         → RIGHT
+     "Computer Hardware Troubleshooting"       → RIGHT
+     "LAN/WAN Network Administration"          → RIGHT
+4. skill_name must be 2–5 words. Single words like "Technical", "Networking",
+   "Leadership" are TOO VAGUE — do not include them.
+5. Do NOT include job titles, rank, unit names, awards, or training course names.
+6. No duplicates. Merge near-synonyms into one entry.
 
 Return ONLY a valid JSON array. Each element must have exactly these keys:
-  "skill_name" — the civilian skill name (2–5 words, noun phrase)
+  "skill_name" — 2–5 word noun phrase naming the skill
   "category"   — one of: Technical, Security, Leadership, Operations, Communication, Analytical
-  "evidence"   — a verbatim short quote (≤12 words) from the resume that supports this skill
+  "evidence"   — verbatim quote ≤12 words from the resume that proves this skill
 
 No preamble, no explanation, no markdown fences.
 
@@ -99,15 +106,60 @@ JSON array:"""
             skills = [{"skill_name": s, "category": "", "evidence": ""} for s in skills]
 
         # Normalise key name: model may use "skill" instead of "skill_name"
+        import re as _re
+
+        # O*NET cognitive/work-activity labels that are too generic to be useful
+        # as resume skills.  The LLM sometimes echoes these from training data.
+        _ONET_GENERIC = {
+            "systems analysis", "critical thinking", "complex problem solving",
+            "active listening", "monitoring", "judgment and decision making",
+            "technology design", "coordination", "time management", "speaking",
+            "writing", "reading comprehension", "learning strategies",
+            "management of personnel resources", "management of material resources",
+            "management of financial resources", "operations analysis",
+            "systems evaluation", "quality control analysis", "troubleshooting",
+            "equipment maintenance", "equipment selection", "installation",
+            "operation monitoring", "operation and control", "programming",
+            "repairing", "service orientation", "social perceptiveness",
+            "instructing", "negotiation", "persuasion",
+        }
+
+        # First-word verb stems that mean the entry is a verb phrase, not a skill name
+        _VERB_START = _re.compile(
+            r'^(manag|maintain|operat|install|configur|resolv|troubleshoot|repair|'
+            r'conduct|perform|monitor|support|develop|train|deploy|ensur|provid|'
+            r'creat|document|inspect|track|audit|report|lead|supervis|coordinat|'
+            r'implement|execut|identif|analyz|assess|prepar|updat|review|'
+            r'establish|handl|mitigat|detect|prevent|protect|secur|control|'
+            r'process|schedul|delegat|prioritiz)',
+            _re.IGNORECASE
+        )
+
         normalised = []
         for s in skills:
-            if isinstance(s, dict):
-                name = s.get("skill_name") or s.get("skill") or ""
-                normalised.append({
-                    "skill_name": name.strip(),
-                    "category":   s.get("category", ""),
-                    "evidence":   s.get("evidence", ""),
-                })
+            if not isinstance(s, dict):
+                continue
+            name = (s.get("skill_name") or s.get("skill") or "").strip()
+            if not name:
+                continue
+            words = name.split()
+            # Drop: single-word entries (too vague)
+            if len(words) < 2:
+                continue
+            # Drop: >5 words (sentence, not a skill name)
+            if len(words) > 5:
+                continue
+            # Drop: known O*NET generic work-activity descriptors
+            if name.lower() in _ONET_GENERIC:
+                continue
+            # Drop: verb-phrase entries (action, not skill name)
+            if _VERB_START.match(words[0]):
+                continue
+            normalised.append({
+                "skill_name": name,
+                "category":   s.get("category", ""),
+                "evidence":   s.get("evidence", ""),
+            })
         skills = normalised
 
         result = {

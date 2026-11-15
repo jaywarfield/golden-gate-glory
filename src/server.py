@@ -290,27 +290,10 @@ def _step_translate_resume(inp: dict) -> dict:
         seen_lower = {s.lower() for s in resume_skills}
         final_skills = list(resume_skills)
 
-    # ── Supplement with O*NET crosswalk skills ───────────────────────────────
-    # Append any O*NET required skills not already in the AI-extracted list.
-    # These fill in standard competency vocabulary the resume may not spell out.
-    from shared._common import lookup_crosswalk, load_onet_occupation_skills
-
-    onet_skills: list[str] = []
-    crosswalk_hits = lookup_crosswalk(specialty_code, service_branch)
-    if crosswalk_hits:
-        onet_soc = crosswalk_hits[0].get("onet_soc")
-        onet_records = load_onet_occupation_skills()
-
-        occ = next((r for r in onet_records if r.get("onet_soc") == onet_soc), None)
-        if not occ and career_path:
-            occ = next((r for r in onet_records if r.get("career_path") == career_path), None)
-        if occ:
-            onet_skills = occ.get("required_skills", [])
-
-    for skill in onet_skills:
-        if skill.lower() not in seen_lower:
-            final_skills.append(skill)
-            seen_lower.add(skill.lower())
+    # O*NET crosswalk skills are NOT appended here — they are generic work-activity
+    # descriptors (e.g. "Critical Thinking", "Active Listening") that pollute the
+    # user-facing skills display.  They are used downstream in map_military_skills
+    # (step 4) where they serve as target vocabulary for the LLM, not as claimed skills.
 
     return {
         "summary":       summary_text,
