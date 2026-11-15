@@ -212,13 +212,17 @@ def _step_translate_resume(inp: dict) -> dict:
 
     # Translate only the experience blocks extracted from the resume — no fabrication.
     # If the LLM returns "SKIP" (too vague to translate faithfully), drop that bullet.
+    # On quota / API errors, keep the original untranslated text rather than aborting —
+    # a partial translation is more useful than a hard failure.
     bullets: list[str] = []
     for block in exp_texts:
         result = translate_accomplishment(bullet=block, target_role=target_role)
-        if result.get("error"):
-            return {"error": result["error"]}
         if result.get("pii_warning"):
-            return {"error": result["pii_warning"]}
+            return {"error": result["pii_warning"]}   # PII is always fatal
+        if result.get("error"):
+            # API / quota error — keep the raw block rather than aborting
+            bullets.append(block)
+            continue
         raw_bullet = result.get("translated_bullet") or block
         cleaned = _clean_bullet(raw_bullet)
         if cleaned.strip().upper() == "SKIP":
@@ -262,21 +266,19 @@ def _step_translate_resume(inp: dict) -> dict:
         bullets = summary_bullets + bullets
 
     # ── AI skill extraction from the full resume text ────────────────────────
-    # Send the resume text to the LLM and get back a structured, evidence-grounded
-    # list of civilian skills.  This replaces the regex-parsed resume_skills as the
-    # primary source — the AI reads the full text holistically, the same way
-    # analyze_job_description reads a JD.
-    ai_result = extract_resume_skills(
-        resume_text=resume_text,
-        service_branch=service_branch,
-        specialty_code=specialty_code,
-    )
-    if ai_result.get("pii_warning"):
-        return {"error": ai_result["pii_warning"]}
+    # Non-fatal: quota / API errors fall back to regex-parsed resume_skills.
+    try:
+        ai_result = extract_resume_skills(
+            resume_text=resume_text,
+            service_branch=service_branch,
+            specialty_code=specialty_code,
+        )
+        if ai_result.get("pii_warning"):
+            return {"error": ai_result["pii_warning"]}
+    except Exception:
+        ai_result = {"skills": None}
 
     ai_skills_raw = ai_result.get("skills") or []
-    # Build the primary skills list from AI output: plain skill_name strings,
-    # deduplicated, non-empty.  Errors are non-fatal — fall back to regex skills.
     if ai_skills_raw:
         seen_lower: set[str] = set()
         final_skills: list[str] = []
