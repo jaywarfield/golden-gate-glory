@@ -1383,7 +1383,30 @@
       if (USE_MOCK) {
         STATE.jobAnalysis = mockJobAnalysis(jd, STATE.skills);
       } else {
-        STATE.jobAnalysis = await apiCall({ step: 'analyze_job', input: { job_description: jd, veteran_skills_json: JSON.stringify(STATE.skills) } });
+        // Auto-retry once on quota errors — quota resets every ~60 s.
+        // Show a live countdown so the user knows to wait.
+        const _doCall = () => apiCall({ step: 'analyze_job', input: { job_description: jd, veteran_skills_json: JSON.stringify(STATE.skills) } });
+        try {
+          STATE.jobAnalysis = await _doCall();
+        } catch (e1) {
+          if (/quota/i.test(e1.message)) {
+            // Show countdown notice inside the spinner area
+            const spinnerSpan = document.querySelector('#s3-spinner span');
+            const origText = spinnerSpan ? spinnerSpan.textContent : '';
+            let secs = 75;
+            const tick = setInterval(() => {
+              secs--;
+              if (spinnerSpan) spinnerSpan.textContent = `Token quota — retrying in ${secs}s…`;
+              if (secs <= 0) clearInterval(tick);
+            }, 1000);
+            await delay(75000);
+            clearInterval(tick);
+            if (spinnerSpan) spinnerSpan.textContent = origText;
+            STATE.jobAnalysis = await _doCall(); // second attempt — let it throw if still failing
+          } else {
+            throw e1;
+          }
+        }
       }
       renderStep3();
     } catch (e) { showStepError('s3', `Could not analyze job description: ${e.message}`); }

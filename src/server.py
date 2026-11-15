@@ -256,7 +256,10 @@ Military accomplishments:
 
 JSON array:"""
 
-        _BATCH_MODEL = "ibm/granite-4-h-small"
+        # Step 2 batch translate uses Llama 3.3 so its quota is separate from
+        # the Granite 4 pool used by steps 3-7. This spreads per-minute quota
+        # across two independent pools, reducing step 2→3 quota collisions.
+        _BATCH_MODEL = "meta-llama/llama-3-3-70b-instruct"
         try:
             raw = llm_generate(prompt, _BATCH_MODEL, max_tokens=min(120 * len(fragments), 1200))
             parsed = parse_llm_json(raw, "batch_translate")
