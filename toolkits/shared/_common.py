@@ -125,6 +125,18 @@ def llm_generate(prompt: str, model_id: str, max_tokens: int = 800, temperature:
             body = json.loads(resp.read())
     except urllib.error.HTTPError as e:
         body_text = e.read().decode(errors="replace")
+        # Surface quota errors with a clear retry message rather than raw JSON
+        if e.code == 403:
+            try:
+                err_body = json.loads(body_text)
+                codes = [err.get("code", "") for err in err_body.get("errors", [])]
+                if "token_quota_reached" in codes:
+                    raise RuntimeError(
+                        "Token quota reached on the watsonx.ai project. "
+                        "Please wait 1–2 minutes and try again — quota resets automatically."
+                    ) from e
+            except (json.JSONDecodeError, AttributeError):
+                pass
         raise RuntimeError(f"watsonx.ai API error {e.code}: {body_text}") from e
     results = body.get("results", [])
     if not results:
