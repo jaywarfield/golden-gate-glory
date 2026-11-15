@@ -695,7 +695,16 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
     import re
 
     HEADER_RE  = re.compile(r'^[A-Za-z0-9 &/\-]{1,50}:?\s*$')
-    SKILLS_HDR = re.compile(r'\b(skill|qualification|certification|competenc|proficienc|technical|tool|technolog)', re.IGNORECASE)
+    # Matches any header that signals a skills section — including common IT subheaders
+    # found under "TECHNICAL SKILLS" (e.g. "Information Technology", "Networking",
+    # "Cybersecurity", "System Administration", "Leadership and Operations").
+    SKILLS_HDR = re.compile(
+        r'\b(skill|qualification|certification|competenc|proficienc|technical|tool|technolog'
+        r'|networking|network|cybersecurity|cyber|information technology|system admin'
+        r'|operating system|database|cloud|software|hardware|security|leadership|operation'
+        r'|programming|language|platform|infrastructure)\b',
+        re.IGNORECASE
+    )
     # Inline label pattern: "Label Title: content" or "Label Title:\xa0content"
     # Captures everything after the first colon+space/nbsp as the real content.
     INLINE_LABEL = re.compile(r'^[A-Za-z0-9 &/\-]{2,50}[:\uff1a][\s\xa0]+(.+)$')
@@ -720,6 +729,7 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
     # Normalise the whole text: replace \xa0 in line splitting too
     lines = text.replace('\xa0', ' ').split('\n')
     last_hdr = ''
+    in_skills_section = False   # True once we've seen a skills-flagged header
     blocks: list[dict] = []
     cur: dict | None = None
 
@@ -733,9 +743,19 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
             if cur and cur['lines']:
                 blocks.append(cur); cur = None
             last_hdr = t.rstrip(':').lower()
+            # If this header (or any parent context) flags a skills section,
+            # propagate that into the hint so subheaders inherit the classification.
+            if SKILLS_HDR.search(last_hdr):
+                in_skills_section = True
+            # A clearly non-skills header (experience / education / work history)
+            # resets the skills-section context.
+            elif re.search(r'\b(experience|education|employment|work history|objective|summary|profile|certification|award|honor)\b', last_hdr, re.IGNORECASE):
+                in_skills_section = False
             continue
         if cur is None:
-            cur = {'hint': last_hdr, 'lines': []}
+            # Carry the skills-section flag forward into every block opened under it
+            hint = last_hdr if not in_skills_section else last_hdr + ' skill'
+            cur = {'hint': hint, 'lines': []}
         cur['lines'].append(t)
 
     if cur and cur['lines']:
@@ -755,9 +775,13 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
         is_skills = has_skills_hint or (not has_skills_hint and short_line_ratio >= 0.7)
         if is_skills:
             for l in b['lines']:
-                for tok in re.split(r'[,;•·\-–]\s*', l):
-                    tok = tok.strip()
-                    if 1 < len(tok) < 60:
+                # Lines may be comma/semicolon-separated lists OR colon-prefixed sub-lists
+                # e.g. "Protocols: TCP/IP, DNS, DHCP" → strip the label, then split on delimiters
+                m_label = re.match(r'^[A-Za-z0-9 /&\-]{2,40}:\s*(.+)$', l)
+                content = m_label.group(1) if m_label else l
+                for tok in re.split(r'[,;•·/]\s*', content):
+                    tok = tok.strip().strip('-–').strip()
+                    if 2 < len(tok) < 60:
                         key = tok.lower()
                         if key not in seen:
                             seen.add(key)
