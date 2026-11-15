@@ -823,13 +823,63 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
             seen.add(key)
             skill_tokens.append(tok)
 
+    # Patterns that mark a line as resume metadata rather than an accomplishment.
+    # Applied to the WHOLE line — if any pattern matches, the line is skipped.
+    # Rank terms only fire when the line is SHORT (≤10 words); long narrative sentences
+    # that mention a rank in passing (e.g. professional summaries) are kept.
+    _META_ALWAYS = re.compile(
+        r'(?:'
+        r'\b(rank|mos|afsc|rating|nec|clearance|years of service|unit|battalion'
+        r'|brigade|installation|duty station|branch of service)\s*[:=]'  # labeled field: "Rank: E-5"
+        r'|\[.{2,60}\]'                    # template bracket anywhere in line
+        r'|\b(january|february|march|april|may|june|july|august|september'
+        r'|october|november|december)\s+\d{4}'   # month-year date in line
+        r'|\bpresent\b'                    # "– Present" / "to Present"
+        r'|\be-[1-9]\b|\bo-[1-9]\b|\bw-[1-5]\b'  # pay-grade codes E-5, O-3, W-2
+        r')',
+        re.IGNORECASE
+    )
+    # Rank/title terms that identify a line as metadata ONLY when line is short (≤10 words)
+    _META_SHORT_LINE = re.compile(
+        r'\b(sergeant|corporal|specialist|private|staff sergeant|master sergeant'
+        r'|command sergeant|chief|general|admiral|colonel|major|captain|lieutenant'
+        r'|warrant officer|petty officer|airman|seaman|lance corporal)\b',
+        re.IGNORECASE
+    )
+
     def _split_line(raw_line: str) -> list[str]:
         line = raw_line.replace('\xa0', ' ').replace('\u2009', ' ').replace('\u200b', '').strip()
+        # Skip resume metadata lines — job titles, rank, MOS, dates, unit names, brackets.
+        if _META_ALWAYS.search(line):
+            return []
+        if len(line.split()) <= 10 and _META_SHORT_LINE.search(line):
+            return []
         m = INLINE_LABEL.match(line)
         if m:
             line = m.group(1).strip()
         parts = re.split(r'\s*[•·–—]\s*', line)
-        return [p.strip() for p in parts if len(p.strip()) >= 10]
+        # Only return fragments that are substantial prose (≥8 words) or contain a verb —
+        # this filters out bare job-title lines and org-name lines that slipped through.
+        result = []
+        for p in parts:
+            p = p.strip()
+            if len(p) < 10:
+                continue
+            words = p.split()
+            if len(words) >= 8:
+                result.append(p)   # long enough to be a sentence
+            elif re.search(
+                r'\b(managed|led|trained|deployed|operated|supported|maintained|'
+                r'installed|configured|conducted|performed|developed|executed|'
+                r'coordinated|supervised|established|provided|ensured|delivered|'
+                r'achieved|reduced|increased|improved|created|designed|implemented|'
+                r'monitored|tracked|audited|inspected|responded|detected|secured|'
+                r'hardened|migrated|automated|integrated|built|restored|recovered|'
+                r'collaborated|communicated|reported|scheduled|prioritized)\b',
+                p, re.IGNORECASE
+            ):
+                result.append(p)   # has a past-tense action verb → likely an accomplishment
+        return result
 
     # Regex: headers that mean "not a skills section" — education, training, awards.
     # Uses prefix-only word boundary (\b before each word) to match plurals/variants:
