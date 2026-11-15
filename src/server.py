@@ -779,13 +779,30 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
                 # e.g. "Protocols: TCP/IP, DNS, DHCP" → strip the label, then split on delimiters
                 m_label = re.match(r'^[A-Za-z0-9 /&\-]{2,40}:\s*(.+)$', l)
                 content = m_label.group(1) if m_label else l
-                for tok in re.split(r'[,;•·/]\s*', content):
-                    tok = tok.strip().strip('-–').strip()
-                    if 2 < len(tok) < 60:
-                        key = tok.lower()
-                        if key not in seen:
-                            seen.add(key)
-                            skill_tokens.append(tok)
+                for tok in re.split(r'[,;•·]\s*', content):
+                    tok = tok.strip().strip('-–—').strip()
+                    if not tok or not (3 <= len(tok) <= 50):
+                        continue
+                    # Skip tokens that are sentences: ≥6 words, or end in a period
+                    # after multiple words (e.g. "Managed helpdesk supporting 500+ users.")
+                    tok_words = tok.split()
+                    if len(tok_words) >= 6:
+                        continue
+                    if tok.endswith('.') and len(tok_words) >= 3:
+                        continue
+                    # Skip single uppercase letters and repeated-char noise like "OOO.", "NNN".
+                    # Allow real acronyms (DNS, BGP, VPN, SQL, etc.) — they have distinct chars.
+                    if re.fullmatch(r'[A-Z]\.?', tok):
+                        continue   # single letter
+                    if re.fullmatch(r'([A-Z])\1{1,}\.?', tok):
+                        continue   # repeated same letter: OOO, NNN, XXX
+                    # Skip metric fragments like "500+ users", "8 technicians"
+                    if re.search(r'\d+\s*[\+\-]?\s*(users?|people|personnel|staff|technician)', tok, re.IGNORECASE):
+                        continue
+                    key = tok.lower()
+                    if key not in seen:
+                        seen.add(key)
+                        skill_tokens.append(tok)
             continue
 
         # Expand each raw line into content fragments (strip inline labels,
