@@ -156,6 +156,14 @@ Using ONLY the evidence below, produce a resume draft. Tag each bullet/sentence:
   [INFERRED]  — reasonable inference from the inputs (must be plausible, not invented)
   [MISSING]   — required by the JD but absent from inputs; write a placeholder
 
+IMPORTANT RULES:
+- The "summary" array must contain ONLY prose sentences (subject + verb + object).
+  Do NOT put a job title, role name, or header (e.g. "Network Administrator") as a summary item.
+  The first summary item must be a full professional summary sentence.
+- The "skills" array must contain ONLY skills the veteran has DEMONSTRATED based on the
+  inputs. Do NOT include skills only mentioned in the job description. Do NOT include
+  category labels (Technical, Leadership, Operations, Communication, Analytical) as skill names.
+
 Return ONLY a valid JSON object with this structure:
 {{
   "summary": [ {{"tag": "EVIDENCED|INFERRED|MISSING", "text": "..."}} ],

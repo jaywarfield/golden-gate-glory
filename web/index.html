@@ -1857,12 +1857,24 @@
   }
 
   // Returns veteran-mapped skills only (from STATE.skills — the skill inventory
-  // built in step 2). Never includes job-description-only skills from skills_section,
-  // and never includes a bare "Technical" entry.
+  // built in step 2). Drops:
+  //   • empty strings
+  //   • bare category labels the LLM sometimes emits as skill names
+  //     (Technical, Leadership, Operations, Communication, Analytical)
+  //   • anything that starts with "Technical" (e.g. "Technical Skills", "Technical Proficiency")
+  //   • short job-title lines ≤ 3 words that match the target role (e.g. "Network Administrator")
+  const _CATEGORY_LABEL_RE = /^\s*(technical|leadership|operations|communication|analytical)\b/i;
   function _veteranSkills() {
+    const targetLower = (STATE.targetRole||'').toLowerCase();
     return (STATE.skills||[])
       .map(s => (s.skill_name||'').trim())
-      .filter(s => s && !/^\s*technical\s*$/i.test(s));
+      .filter(s => {
+        if (!s) return false;
+        if (_CATEGORY_LABEL_RE.test(s)) return false;
+        // drop if it matches the target role title exactly (job title leaked in as a skill)
+        if (targetLower && s.toLowerCase() === targetLower) return false;
+        return true;
+      });
   }
 
   function renderFinalPackage() {
@@ -1878,10 +1890,22 @@
     const body = text => `<div style="margin-bottom:4px">${esc(text)}</div>`;
     const divider = `<hr style="border:none;border-top:1px solid #e5e7eb;margin:4px 0">`;
 
+    // Guard: LLM sometimes emits a bare job-title line as the first summary item
+    // (e.g. "Network Administrator"). Skip it — it's not prose, not useful in a resume body.
+    // A "header line" is: ≤ 6 words AND does not contain common prose connectors.
+    const _isProseSummary = text => {
+      if (!text) return false;
+      const words = text.trim().split(/\s+/);
+      if (words.length > 6) return true;  // long enough to be real prose
+      // short line — only keep if it has a verb connector indicating prose
+      return /\b(with|and|experience|background|proven|skilled|expert|professional|managed|led|delivered|developed|responsible)\b/i.test(text);
+    };
+    const summaryText = _isProseSummary(summary.text) ? summary.text : '';
+
     let html = '';
     html += divider;
     html += hdr('Summary');
-    html += body(summary.text || '');
+    html += body(summaryText);
     if (bullets.length) {
       html += hdr('Experience Highlights');
       html += bullets.map(b => body(`• ${b.text||b}`)).join('');
@@ -1939,10 +1963,11 @@
   }
 
   function _resumePlainText() {
-    const rd      = STATE.resumeDraft || {};
-    const summary = typeof rd.summary === 'string' ? rd.summary : ((rd.summary||{}).text||'');
-    const bullets = (rd.bullets||[]).map(b=>`• ${b.text||b}`);
-    const skills  = _veteranSkills().join(', ');
+    const rd       = STATE.resumeDraft || {};
+    const rawSum   = typeof rd.summary === 'string' ? rd.summary : ((rd.summary||{}).text||'');
+    const summary  = _isProseSummary(rawSum) ? rawSum : '';
+    const bullets  = (rd.bullets||[]).map(b=>`• ${b.text||b}`);
+    const skills   = _veteranSkills().join(', ');
     return [
       'SUMMARY',
       summary,
@@ -2024,7 +2049,8 @@
     const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle } = window.docx;
 
     const rd      = STATE.resumeDraft || {};
-    const summary = typeof rd.summary === 'string' ? rd.summary : ((rd.summary||{}).text||'');
+    const rawSum  = typeof rd.summary === 'string' ? rd.summary : ((rd.summary||{}).text||'');
+    const summary = _isProseSummary(rawSum) ? rawSum : '';
     const bullets = rd.bullets||[];
     const skills  = _veteranSkills();
 

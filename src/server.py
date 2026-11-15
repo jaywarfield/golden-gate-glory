@@ -383,6 +383,13 @@ def _step_map_skills(inp: dict) -> dict:
         r'provided|utilized|supported|assisted|handled)\s+',
         _re.IGNORECASE,
     )
+    # Category labels the LLM sometimes emits verbatim as skill names — not useful skills.
+    # Also drop "Technical*" prefix entries (e.g. "Technical Skills", "Technical Proficiency").
+    _CATEGORY_LABEL = _re.compile(
+        r'^(technical|leadership|operations|communication|analytical)(\s|$)',
+        _re.IGNORECASE,
+    )
+
     def _clean_skill_name(raw: str) -> str:
         return _LEADING_VERB.sub('', (raw or '').strip()).strip()
 
@@ -397,6 +404,10 @@ def _step_map_skills(inp: dict) -> dict:
             "evidence":   "" if isinstance(s, str) else s.get("evidence", ""),
         }
         for s in raw_skills
+        if _clean_skill_name(s if isinstance(s, str) else s.get("skill", s.get("skill_name", "")))
+        and not _CATEGORY_LABEL.match(
+            _clean_skill_name(s if isinstance(s, str) else s.get("skill", s.get("skill_name", "")))
+        )
     ]
 
     return {
