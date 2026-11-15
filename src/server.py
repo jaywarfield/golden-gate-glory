@@ -46,6 +46,7 @@ from plan_builder.build_plan import (                                           
     build_resume_draft,
     evaluate_export_gate,
 )
+from resume_parser.extract_resume_skills import extract_resume_skills                   # noqa: E402
 
 # ── App ─────────────────────────────────────────────────────────────────────
 app = FastAPI(title="Mission Veteran AI — Bridge Server")
@@ -108,7 +109,8 @@ async def translate(request: Request) -> JSONResponse:
         { "step": "<step_name>", "input": { ... } }
 
     Step names and their toolkit mappings:
-        translate_resume  → parse_resume_text (internal) + translate_accomplishment (per bullet)
+        translate_resume  → extract_resume_skills (AI) + parse_resume_text (regex fallback)
+                            + translate_accomplishment (per bullet) + O*NET crosswalk merge
         analyze_job       → analyze_job_description
         map_skills        → map_military_skills
         gap_analysis      → analyze_skills_gap
@@ -259,37 +261,61 @@ def _step_translate_resume(inp: dict) -> dict:
         # Prepend unique summary-derived bullets before the experience bullets
         bullets = summary_bullets + bullets
 
-    # ── Merge O*NET skills for the specialty code ────────────────────────────
-    # Look up the crosswalk entry for this specialty code and pull skills from
-    # the matching O*NET occupation record. Deduplicate against resume_skills.
+    # ── AI skill extraction from the full resume text ────────────────────────
+    # Send the resume text to the LLM and get back a structured, evidence-grounded
+    # list of civilian skills.  This replaces the regex-parsed resume_skills as the
+    # primary source — the AI reads the full text holistically, the same way
+    # analyze_job_description reads a JD.
+    ai_result = extract_resume_skills(
+        resume_text=resume_text,
+        service_branch=service_branch,
+        specialty_code=specialty_code,
+    )
+    if ai_result.get("pii_warning"):
+        return {"error": ai_result["pii_warning"]}
+
+    ai_skills_raw = ai_result.get("skills") or []
+    # Build the primary skills list from AI output: plain skill_name strings,
+    # deduplicated, non-empty.  Errors are non-fatal — fall back to regex skills.
+    if ai_skills_raw:
+        seen_lower: set[str] = set()
+        final_skills: list[str] = []
+        for s in ai_skills_raw:
+            name = (s.get("skill_name") or "").strip() if isinstance(s, dict) else str(s).strip()
+            if name and name.lower() not in seen_lower:
+                seen_lower.add(name.lower())
+                final_skills.append(name)
+    else:
+        # AI call failed or returned nothing — fall back to regex-parsed skills
+        seen_lower = {s.lower() for s in resume_skills}
+        final_skills = list(resume_skills)
+
+    # ── Supplement with O*NET crosswalk skills ───────────────────────────────
+    # Append any O*NET required skills not already in the AI-extracted list.
+    # These fill in standard competency vocabulary the resume may not spell out.
     from shared._common import lookup_crosswalk, load_onet_occupation_skills
 
     onet_skills: list[str] = []
     crosswalk_hits = lookup_crosswalk(specialty_code, service_branch)
     if crosswalk_hits:
         onet_soc = crosswalk_hits[0].get("onet_soc")
-        civilian_title = crosswalk_hits[0].get("civilian_title", "")
         onet_records = load_onet_occupation_skills()
 
-        # Match by onet_soc first, then by career_path as fallback
         occ = next((r for r in onet_records if r.get("onet_soc") == onet_soc), None)
         if not occ and career_path:
             occ = next((r for r in onet_records if r.get("career_path") == career_path), None)
-
         if occ:
             onet_skills = occ.get("required_skills", [])
 
-    # Merge: resume_skills first, then O*NET skills not already present
-    seen_lower = {s.lower() for s in resume_skills}
     for skill in onet_skills:
         if skill.lower() not in seen_lower:
-            resume_skills.append(skill)
+            final_skills.append(skill)
             seen_lower.add(skill.lower())
 
     return {
         "summary":       summary_text,
         "bullets":       bullets,
-        "resume_skills": resume_skills,
+        "resume_skills": final_skills,
     }
 
 
