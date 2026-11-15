@@ -110,7 +110,7 @@ def llm_generate(prompt: str, model_id: str, max_tokens: int = 800, temperature:
     QUOTA_RETRY_DELAY_S = 90   # generous buffer above the ~60 s per-minute quota window
 
     creds = get_credentials()
-    url = f"{creds['url'].rstrip('/')}/ml/v1/text/generation?version=2023-05-29"
+    url = f"{creds['url'].rstrip('/')}/ml/v1/text/generation?version=2025-02-11"
     payload = json.dumps({
         "model_id": model_id,
         "input": prompt,
