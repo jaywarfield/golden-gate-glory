@@ -2244,11 +2244,23 @@
   const API_BASE = window.API_BASE || '';
 
   async function apiCall(body) {
-    const resp = await fetch(API_BASE + '/api/translate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
+    // 240 s timeout — covers server-side quota retry (65 s sleep + LLM call time)
+    const ctrl = new AbortController();
+    const tid  = setTimeout(() => ctrl.abort(), 240000);
+    let resp;
+    try {
+      resp = await fetch(API_BASE + '/api/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: ctrl.signal,
+      });
+    } catch (err) {
+      clearTimeout(tid);
+      if (err.name === 'AbortError') throw new Error('Request timed out after 4 minutes. Please try again.');
+      throw err;
+    }
+    clearTimeout(tid);
     // Always try to read the JSON body — the server returns {"error": "..."}
     // even on 500, so we can surface the real Python exception to the UI.
     let data;

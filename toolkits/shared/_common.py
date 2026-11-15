@@ -97,10 +97,19 @@ def llm_generate(prompt: str, model_id: str, max_tokens: int = 800, temperature:
     Call the watsonx.ai text generation REST API directly.
     Returns the generated text string.
     Raises RuntimeError on API errors.
+
+    Quota errors (403 token_quota_reached) are automatically retried up to
+    MAX_QUOTA_RETRIES times with an exponential back-off starting at
+    QUOTA_RETRY_DELAY_S seconds, so transient per-minute quota exhaustion is
+    transparent to callers.
     """
     import urllib.request
+    import time as _time
+
+    MAX_QUOTA_RETRIES   = 1    # one retry — 65 s wait keeps total < Railway's 300 s timeout
+    QUOTA_RETRY_DELAY_S = 65   # quota resets every ~60 s; 65 s gives a 5 s buffer
+
     creds = get_credentials()
-    token = _get_iam_token(creds["api_key"])
     url = f"{creds['url'].rstrip('/')}/ml/v1/text/generation?version=2023-05-29"
     payload = json.dumps({
         "model_id": model_id,
@@ -112,40 +121,51 @@ def llm_generate(prompt: str, model_id: str, max_tokens: int = 800, temperature:
         },
         "project_id": creds["project_id"],
     }).encode()
-    req = urllib.request.Request(
-        url,
-        data=payload,
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {token}",
-        },
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            body = json.loads(resp.read())
-    except urllib.error.HTTPError as e:
-        body_text = e.read().decode(errors="replace")
-        # Surface quota errors with a clear retry message rather than raw JSON
-        if e.code == 403:
-            try:
-                err_body = json.loads(body_text)
-                codes = [err.get("code", "") for err in err_body.get("errors", [])]
-                if "token_quota_reached" in codes:
-                    raise RuntimeError(
-                        "Token quota reached on the watsonx.ai project. "
-                        "Please wait 1–2 minutes and try again — quota resets automatically."
-                    ) from e
-            except (json.JSONDecodeError, AttributeError):
-                pass
-        raise RuntimeError(f"watsonx.ai API error {e.code}: {body_text}") from e
-    results = body.get("results", [])
-    if not results:
-        raise RuntimeError(f"watsonx.ai returned no results: {body}")
-    # results may be a list [{...}] or a single dict {...} depending on API version
-    first = results[0] if isinstance(results, list) else results
-    if not isinstance(first, dict):
-        raise RuntimeError(f"Unexpected results format from watsonx.ai: {results!r}")
-    return first.get("generated_text", "")
+
+    for attempt in range(MAX_QUOTA_RETRIES + 1):
+        token = _get_iam_token(creds["api_key"])
+        req = urllib.request.Request(
+            url,
+            data=payload,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {token}",
+            },
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=120) as resp:
+                body = json.loads(resp.read())
+        except urllib.error.HTTPError as e:
+            body_text = e.read().decode(errors="replace")
+            # Quota error — retry with back-off unless we've exhausted retries
+            if e.code == 403:
+                try:
+                    err_body = json.loads(body_text)
+                    codes = [err.get("code", "") for err in err_body.get("errors", [])]
+                    if "token_quota_reached" in codes:
+                        if attempt < MAX_QUOTA_RETRIES:
+                            wait = QUOTA_RETRY_DELAY_S * (attempt + 1)
+                            _time.sleep(wait)
+                            continue   # retry
+                        raise RuntimeError(
+                            "Token quota reached on the watsonx.ai project. "
+                            "Please wait 1–2 minutes and try again — quota resets automatically."
+                        ) from e
+                except (json.JSONDecodeError, AttributeError):
+                    pass
+            raise RuntimeError(f"watsonx.ai API error {e.code}: {body_text}") from e
+
+        results = body.get("results", [])
+        if not results:
+            raise RuntimeError(f"watsonx.ai returned no results: {body}")
+        # results may be a list [{...}] or a single dict {...} depending on API version
+        first = results[0] if isinstance(results, list) else results
+        if not isinstance(first, dict):
+            raise RuntimeError(f"Unexpected results format from watsonx.ai: {results!r}")
+        return first.get("generated_text", "")
+
+    # Should never reach here — loop always returns or raises
+    raise RuntimeError("llm_generate: exceeded retry limit without returning")
 
 
 # ---------------------------------------------------------------------------
