@@ -20,10 +20,13 @@ except ImportError:
     def tool(**_kw): return lambda f: f          # no-op decorator
     class ToolPermission: READ_ONLY = None       # noqa: E701
 
-# Step 3 (analyze_job_description) uses Granite 4 — different quota pool from
-# Llama 3.3 used by step 2, so back-to-back calls never share a quota bucket.
-_MODEL_ID_JD = "ibm/granite-4-h-small"
-# Steps 5 & 7 (build_resume_draft, evaluate_export_gate) also use Granite 4.
+# Step 3 (analyze_job_description) uses Llama 3.3 — same pool as step 2 BUT
+# the proactive 65 s frontend cooldown ensures the quota has reset before this fires.
+# Using Llama here keeps Granite 4 quota entirely free for steps 5 & 7.
+_MODEL_ID_JD = "meta-llama/llama-3-3-70b-instruct"
+# Steps 5 & 7 (build_resume_draft, evaluate_export_gate) use Granite 4.
+# By the time these run the user has clicked through steps 4-6 (minutes of gap),
+# so both the Llama and Granite 4 quota windows have fully reset.
 _MODEL_ID = "ibm/granite-4-h-small"
 
 

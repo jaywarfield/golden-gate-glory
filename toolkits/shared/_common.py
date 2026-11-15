@@ -106,8 +106,8 @@ def llm_generate(prompt: str, model_id: str, max_tokens: int = 800, temperature:
     import urllib.request
     import time as _time
 
-    MAX_QUOTA_RETRIES   = 1    # one retry — 65 s wait keeps total < Railway's 300 s timeout
-    QUOTA_RETRY_DELAY_S = 65   # quota resets every ~60 s; 65 s gives a 5 s buffer
+    MAX_QUOTA_RETRIES   = 1    # one retry — 90 s wait keeps total well < Railway's 300 s timeout
+    QUOTA_RETRY_DELAY_S = 90   # generous buffer above the ~60 s per-minute quota window
 
     creds = get_credentials()
     url = f"{creds['url'].rstrip('/')}/ml/v1/text/generation?version=2023-05-29"

@@ -1390,7 +1390,7 @@
         // Proactive cooldown: if step 2 finished within the last 65 s, the
         // per-minute quota may not have reset yet. Wait out the remainder
         // before making the first call rather than reacting to a quota error.
-        const QUOTA_WINDOW_MS = 65000;
+        const QUOTA_WINDOW_MS = 90000;
         if (STATE._step2CompletedAt) {
           const elapsed = Date.now() - STATE._step2CompletedAt;
           const remaining = QUOTA_WINDOW_MS - elapsed;
