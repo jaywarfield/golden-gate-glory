@@ -1856,18 +1856,13 @@
     document.getElementById('s7-output').style.display = 'block';
   }
 
-  // Returns skills_section filtered to veteran-only skills (from STATE.skills),
-  // excluding any standalone "Technical" entry.
+  // Returns veteran-mapped skills only (from STATE.skills — the skill inventory
+  // built in step 2). Never includes job-description-only skills from skills_section,
+  // and never includes a bare "Technical" entry.
   function _veteranSkills() {
-    const rd = STATE.resumeDraft || {};
-    const vetNames = new Set(
-      (STATE.skills||[]).map(s => (s.skill_name||'').trim().toLowerCase())
-    );
-    return (rd.skills_section||[]).filter(s => {
-      const lc = (s||'').trim().toLowerCase();
-      if (/^\s*technical\s*$/i.test(s)) return false;   // bare "Technical"
-      return vetNames.size === 0 || vetNames.has(lc);   // only veteran skills
-    });
+    return (STATE.skills||[])
+      .map(s => (s.skill_name||'').trim())
+      .filter(s => s && !/^\s*technical\s*$/i.test(s));
   }
 
   function renderFinalPackage() {
