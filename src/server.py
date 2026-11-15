@@ -190,80 +190,90 @@ def _step_translate_resume(inp: dict) -> dict:
     if not summary_text and exp_texts:
         summary_text = exp_texts.pop(0)
 
-    # ── Translate each experience block ──────────────────────────────────────
+    # ── Batch-translate all fragments in ONE LLM call ────────────────────────
+    # Collect all fragments to translate: summary sentences + experience blocks.
+    # Sending them in a single prompt costs 1 token-quota call instead of N.
     def _clean_bullet(text: str) -> str:
-        """Strip markdown artefacts and deduplicate repeated sentences."""
-        # Remove leading list markers: *, -, •, –
+        """Strip markdown artefacts and keep only the first sentence."""
         text = _re.sub(r'^\s*[\*\-\•\–]\s+', '', text.strip())
-        # Remove any trailing lines that start with # (markdown headings / comments)
         lines = text.splitlines()
         clean_lines = []
         for line in lines:
             if _re.match(r'^\s*#+\s*', line):
-                break  # stop at first heading-style line; discard it and everything after
+                break
             clean_lines.append(line)
         text = ' '.join(clean_lines).strip()
+        return _re.split(r'(?<=[.!?])\s+(?=[A-Z])', text, maxsplit=1)[0].strip()
 
-        # Keep only the FIRST sentence — the prompt asks for one sentence and
-        # stops, but as a hard backstop discard everything after the first
-        # sentence-ending punctuation followed by a capital letter or end of string.
-        first = _re.split(r'(?<=[.!?])\s+(?=[A-Z])', text, maxsplit=1)[0].strip()
-        return first
-
-    # Translate only the experience blocks extracted from the resume — no fabrication.
-    # If the LLM returns "SKIP" (too vague to translate faithfully), drop that bullet.
-    # On quota / API errors, keep the original untranslated text rather than aborting —
-    # a partial translation is more useful than a hard failure.
-    bullets: list[str] = []
-    for block in exp_texts:
-        result = translate_accomplishment(bullet=block, target_role=target_role)
-        if result.get("pii_warning"):
-            return {"error": result["pii_warning"]}   # PII is always fatal
-        if result.get("error"):
-            # API / quota error — keep the raw block rather than aborting
-            bullets.append(block)
-            continue
-        raw_bullet = result.get("translated_bullet") or block
-        cleaned = _clean_bullet(raw_bullet)
-        if cleaned.strip().upper() == "SKIP":
-            continue
-        bullets.append(cleaned)
-
-    # ── Merge summary sentences into bullets ─────────────────────────────────
-    # Split the summary paragraph into individual sentences, translate each one,
-    # and prepend any that are not already represented in the bullets list.
+    # Gather summary sentences that aren't already covered by exp_texts
+    summary_sentences: list[str] = []
     if summary_text:
-        # Split on sentence boundaries
-        summary_sentences = [
-            s.strip() for s in _re.split(r'(?<=[.!?])\s+', summary_text)
-            if len(s.strip()) >= 20
-        ]
-        # Build a lowercased set of significant words already in bullets for overlap check
-        bullet_text_lower = ' '.join(bullets).lower()
-
-        def _already_covered(sentence: str) -> bool:
-            """True if ≥3 significant words from the sentence appear in the existing bullets."""
-            words = [w for w in _re.findall(r'[a-z]+', sentence.lower()) if len(w) > 4]
-            if not words:
-                return False
-            matches = sum(1 for w in words if w in bullet_text_lower)
-            return matches >= min(3, len(words))
-
-        summary_bullets: list[str] = []
-        for sent in summary_sentences:
-            if _already_covered(sent):
+        exp_lower = ' '.join(exp_texts).lower()
+        for sent in _re.split(r'(?<=[.!?])\s+', summary_text):
+            sent = sent.strip()
+            if len(sent) < 20:
                 continue
-            res = translate_accomplishment(bullet=sent, target_role=target_role)
-            if res.get("error") or res.get("pii_warning"):
-                continue   # skip on error — don't block the whole step
-            cleaned = _clean_bullet(res.get("translated_bullet") or sent)
-            if cleaned.strip().upper() == "SKIP":
-                continue
-            if not _already_covered(cleaned):
-                summary_bullets.append(cleaned)
+            sig_words = [w for w in _re.findall(r'[a-z]+', sent.lower()) if len(w) > 4]
+            overlap = sum(1 for w in sig_words if w in exp_lower)
+            if sig_words and overlap < min(3, len(sig_words)):
+                summary_sentences.append(sent)
 
-        # Prepend unique summary-derived bullets before the experience bullets
-        bullets = summary_bullets + bullets
+    all_fragments = summary_sentences + exp_texts   # summary first, bullets after
+
+    def _batch_translate(fragments: list[str], role: str) -> list[str]:
+        """
+        Translate all fragments in one LLM call.
+        Returns a list of translated bullets (same order, SKIP entries removed).
+        Falls back to the original fragments on any error.
+        """
+        if not fragments:
+            return []
+
+        from shared._common import llm_generate, parse_llm_json
+
+        numbered = "\n".join(f'{i+1}. {f}' for i, f in enumerate(fragments))
+        prompt = f"""You are an expert resume writer helping a U.S. military veteran transition to civilian employment.
+
+Translate EACH numbered military accomplishment below into ONE ATS-ready civilian resume bullet.
+
+Rules for EVERY bullet:
+- Choose the strongest action verb that captures the same sentiment as the original.
+- Replace ALL military jargon with plain civilian equivalents.
+  Examples: "deployment" → "assignment", "theater" → "region", "NCO" → "supervisor",
+  "unit" → "team", "mission" → "project", "MOS/AFSC" → "role".
+- STRICT: Do not invent any fact, number, or detail not in the original.
+- If a bullet is too vague to translate faithfully, write exactly: SKIP
+- Each output must be ONE sentence only.
+
+Target civilian role: {role}
+
+Return ONLY a valid JSON array of strings, one per input, in the same order.
+No preamble, no explanation, no markdown fences.
+
+Military accomplishments:
+{numbered}
+
+JSON array:"""
+
+        _BATCH_MODEL = "meta-llama/llama-3-3-70b-instruct"
+        try:
+            raw = llm_generate(prompt, _BATCH_MODEL, max_tokens=min(120 * len(fragments), 1200))
+            parsed = parse_llm_json(raw, "batch_translate")
+            if not isinstance(parsed, list):
+                return fragments   # unexpected shape — fall back
+            results = []
+            for i, item in enumerate(parsed):
+                text = str(item).strip().lstrip("•-– ").strip()
+                if text.upper() == "SKIP" or not text:
+                    continue
+                cleaned = _clean_bullet(text)
+                if cleaned:
+                    results.append(cleaned)
+            return results if results else fragments
+        except Exception:
+            return fragments   # any error — return originals untranslated
+
+    bullets = _batch_translate(all_fragments, target_role)
 
     # ── AI skill extraction from the full resume text ────────────────────────
     # Non-fatal: quota / API errors fall back to regex-parsed resume_skills.
