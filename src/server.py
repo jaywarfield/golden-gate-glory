@@ -218,7 +218,8 @@ def _step_translate_resume(inp: dict) -> dict:
             if sig_words and overlap < min(3, len(sig_words)):
                 summary_sentences.append(sent)
 
-    all_fragments = summary_sentences + exp_texts   # summary first, bullets after
+    # Cap fragments to 12 to bound token usage — most resumes have fewer anyway
+    all_fragments = (summary_sentences + exp_texts)[:12]
 
     def _batch_translate(fragments: list[str], role: str) -> list[str]:
         """
@@ -255,7 +256,7 @@ Military accomplishments:
 
 JSON array:"""
 
-        _BATCH_MODEL = "meta-llama/llama-3-3-70b-instruct"
+        _BATCH_MODEL = "ibm/granite-3-8b-instruct"
         try:
             raw = llm_generate(prompt, _BATCH_MODEL, max_tokens=min(120 * len(fragments), 1200))
             parsed = parse_llm_json(raw, "batch_translate")

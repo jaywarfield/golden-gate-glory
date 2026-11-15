@@ -17,7 +17,7 @@ except ImportError:
     def tool(**_kw): return lambda f: f          # no-op decorator
     class ToolPermission: READ_ONLY = None       # noqa: E701
 
-_MODEL_ID = "meta-llama/llama-3-3-70b-instruct"
+_MODEL_ID = "ibm/granite-3-8b-instruct"
 
 
 @tool(permission=ToolPermission.READ_ONLY)
@@ -47,6 +47,9 @@ def extract_resume_skills(
             "skills": None, "skill_count": 0,
             "pii_warning": pii_warning_message(), "error": None,
         }
+
+    # Truncate to ~4000 chars to cap token usage on very long resumes
+    resume_text = resume_text[:4000]
 
     prompt = f"""You are an expert civilian resume analyst for military veterans.
 
