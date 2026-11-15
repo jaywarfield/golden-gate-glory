@@ -38,7 +38,7 @@ sys.path.insert(0, str(_ROOT / "toolkits"))
 load_dotenv(_ROOT / ".env")
 
 # ── Toolkit imports ─────────────────────────────────────────────────────────
-from accomplishment_translator.translate_accomplishment import translate_accomplishment  # noqa: E402
+# translate_accomplishment not used in step 2 — step 2 is regex-only, no LLM calls
 from skill_mapper.map_military_skills import map_military_skills                        # noqa: E402
 from gap_analyzer.analyze_skills_gap import analyze_skills_gap                          # noqa: E402
 from plan_builder.build_plan import (                                                    # noqa: E402
@@ -109,8 +109,7 @@ async def translate(request: Request) -> JSONResponse:
         { "step": "<step_name>", "input": { ... } }
 
     Step names and their toolkit mappings:
-        translate_resume  → extract_resume_skills (AI) + parse_resume_text (regex fallback)
-                            + translate_accomplishment (per bullet) + O*NET crosswalk merge
+        translate_resume  → parse_resume_text (regex only, no LLM — zero token quota used)
         analyze_job       → analyze_job_description
         map_skills        → map_military_skills
         gap_analysis      → analyze_skills_gap
@@ -160,9 +159,10 @@ async def translate(request: Request) -> JSONResponse:
 
 def _step_translate_resume(inp: dict) -> dict:
     """
-    Accepts the full resume text, extracts summary + experience paragraphs,
-    translates each experience block into an ATS bullet, and returns all
-    extracted skill tokens merged with O*NET skills for the specialty code.
+    Accepts the full resume text, parses it into summary + experience bullets
+    using regex only (no LLM). Returns the veteran's own words unchanged so
+    that step 2 makes zero LLM calls and consumes zero token quota.
+    The LLM translation happens later in step 5 (build_resume_draft).
 
     Expected input:
         resume_text, service_branch, specialty_code, target_role, career_path
@@ -170,18 +170,12 @@ def _step_translate_resume(inp: dict) -> dict:
     Returns:
         { summary, bullets[], resume_skills[] }
     """
-    import re as _re
-
-    resume_text: str    = inp.get("resume_text", "").strip()
-    target_role: str    = inp.get("target_role", "general civilian")
-    specialty_code: str = inp.get("specialty_code", "").strip()
-    service_branch: str = inp.get("service_branch", "").strip()
-    career_path: str    = inp.get("career_path", "").strip()
+    resume_text: str = inp.get("resume_text", "").strip()
 
     if not resume_text:
         return {"error": "resume_text is required"}
 
-    # ── Parse the resume into sections ──────────────────────────────────────
+    # ── Parse the resume into sections (regex only, no LLM) ─────────────────
     summary_text, exp_texts, resume_skills = _parse_resume(resume_text)
 
     if not summary_text and not exp_texts:
@@ -190,105 +184,10 @@ def _step_translate_resume(inp: dict) -> dict:
     if not summary_text and exp_texts:
         summary_text = exp_texts.pop(0)
 
-    # ── Batch-translate all fragments in ONE LLM call ────────────────────────
-    # Collect all fragments to translate: summary sentences + experience blocks.
-    # Sending them in a single prompt costs 1 token-quota call instead of N.
-    def _clean_bullet(text: str) -> str:
-        """Strip markdown artefacts and keep only the first sentence."""
-        text = _re.sub(r'^\s*[\*\-\•\–]\s+', '', text.strip())
-        lines = text.splitlines()
-        clean_lines = []
-        for line in lines:
-            if _re.match(r'^\s*#+\s*', line):
-                break
-            clean_lines.append(line)
-        text = ' '.join(clean_lines).strip()
-        return _re.split(r'(?<=[.!?])\s+(?=[A-Z])', text, maxsplit=1)[0].strip()
-
-    # Gather summary sentences that aren't already covered by exp_texts
-    summary_sentences: list[str] = []
-    if summary_text:
-        exp_lower = ' '.join(exp_texts).lower()
-        for sent in _re.split(r'(?<=[.!?])\s+', summary_text):
-            sent = sent.strip()
-            if len(sent) < 20:
-                continue
-            sig_words = [w for w in _re.findall(r'[a-z]+', sent.lower()) if len(w) > 4]
-            overlap = sum(1 for w in sig_words if w in exp_lower)
-            if sig_words and overlap < min(3, len(sig_words)):
-                summary_sentences.append(sent)
-
-    # Cap fragments to 12 to bound token usage — most resumes have fewer anyway
-    all_fragments = (summary_sentences + exp_texts)[:12]
-
-    def _batch_translate(fragments: list[str], role: str) -> list[str]:
-        """
-        Translate all fragments in one LLM call.
-        Returns a list of translated bullets (same order, SKIP entries removed).
-        Falls back to the original fragments on any error.
-        """
-        if not fragments:
-            return []
-
-        from shared._common import llm_generate, parse_llm_json
-
-        numbered = "\n".join(f'{i+1}. {f}' for i, f in enumerate(fragments))
-        prompt = f"""You are an expert resume writer helping a U.S. military veteran transition to civilian employment.
-
-Translate EACH numbered military accomplishment below into ONE ATS-ready civilian resume bullet.
-
-Rules for EVERY bullet:
-- Choose the strongest action verb that captures the same sentiment as the original.
-- Replace ALL military jargon with plain civilian equivalents.
-  Examples: "deployment" → "assignment", "theater" → "region", "NCO" → "supervisor",
-  "unit" → "team", "mission" → "project", "MOS/AFSC" → "role".
-- STRICT: Do not invent any fact, number, or detail not in the original.
-- If a bullet is too vague to translate faithfully, write exactly: SKIP
-- Each output must be ONE sentence only.
-
-Target civilian role: {role}
-
-Return ONLY a valid JSON array of strings, one per input, in the same order.
-No preamble, no explanation, no markdown fences.
-
-Military accomplishments:
-{numbered}
-
-JSON array:"""
-
-        # Step 2 batch translate uses Llama 3.3 so its quota is separate from
-        # the Granite 4 pool used by steps 3-7. This spreads per-minute quota
-        # across two independent pools, reducing step 2→3 quota collisions.
-        _BATCH_MODEL = "meta-llama/llama-3-3-70b-instruct"
-        try:
-            raw = llm_generate(prompt, _BATCH_MODEL, max_tokens=min(60 * len(fragments), 600))
-            parsed = parse_llm_json(raw, "batch_translate")
-            if not isinstance(parsed, list):
-                return fragments   # unexpected shape — fall back
-            results = []
-            for i, item in enumerate(parsed):
-                text = str(item).strip().lstrip("•-– ").strip()
-                if text.upper() == "SKIP" or not text:
-                    continue
-                cleaned = _clean_bullet(text)
-                if cleaned:
-                    results.append(cleaned)
-            return results if results else fragments
-        except Exception:
-            return fragments   # any error — return originals untranslated
-
-    bullets = _batch_translate(all_fragments, target_role)
-
-    # Skills: use regex-parsed skills directly — avoids a second LLM call in step 2
-    # which would exhaust token quota before step 3 runs.
-    # O*NET crosswalk skills are NOT appended here — they are generic work-activity
-    # descriptors that pollute the display; they are used downstream in map_military_skills.
-    final_skills = list(resume_skills)
-
     return {
         "summary":       summary_text,
-        "bullets":       bullets,
-        "resume_skills": final_skills,
+        "bullets":       exp_texts[:12],
+        "resume_skills": list(resume_skills),
     }
 
 
