@@ -102,7 +102,7 @@
         </div>
       </div>
       <div class="inputs-row">
-        <strong>Inputs:</strong> service branch · specialty code (AFSC / MOS / Rating) · service summary · accomplishment bullets · target career path · job description (paste from LinkedIn / Indeed / USAJobs)
+        <strong>Inputs:</strong> service branch · specialty code (AFSC / MOS / Rating) · service summary · accomplishment bullets · target career path · target career role · job description (USAJobs live search or drag &amp; drop from LinkedIn / Indeed)
       </div>
     </div>
   </div>
@@ -152,7 +152,7 @@
           <div style="font-size:11px;color:#374151;line-height:1.5">
             <span class="code">src/server.py</span> · uvicorn · <strong>Code Engine</strong> / Railway / OpenShift / Docker<br />
             Single endpoint <span class="code">POST /api/translate</span> dispatches on <strong>step:</strong><br />
-            <span class="code">translate_resume · analyze_job · map_skills · gap_analysis · build_resume · interview_prep · gate</span><br />
+            <span class="code">translate_resume · analyze_job · map_skills · gap_analysis · build_resume · interview_prep · gate · search_jobs</span><br />
             <span class="code">GET / → index.html   GET /health → creds check</span>
           </div>
         </div>
@@ -161,7 +161,7 @@
             <div class="section-title-sm">External APIs</div>
             <div style="font-size:11px;color:#374151;line-height:1.5">O*NET Crosswalk API · O*NET Occupations API · O*NET Work Activities · BLS OOH</div>
             <div style="margin-top:6px">
-              <span class="tag tag-pending">USAJobs API — pending</span> 
+              <span class="tag tag-bias">USAJobs API — live</span>
               <span class="tag tag-pending">CareerOneStop — pending</span>
             </div>
           </div>
@@ -296,9 +296,9 @@
         </div>
       </div>
       <div class="col4">
-        <div class="card card-yellow">
-          <div class="section-title-sm">USAJobs API <span class="tag tag-pending">pending</span></div>
-          <div style="font-size:11px;color:#374151;line-height:1.5">RAG-006 · OPM<br />Federal job postings<br />Real-time · API key req.</div>
+        <div class="card card-teal">
+          <div class="section-title-sm">USAJobs API <span class="tag tag-bias">live</span></div>
+          <div style="font-size:11px;color:#374151;line-height:1.5">RAG-006 · OPM<br />Federal job postings · OPM series filter<br />Real-time · Step 3 job search · API key req.</div>
         </div>
         <div class="card card-yellow">
           <div class="section-title-sm">CareerOneStop <span class="tag tag-pending">pending</span></div>
@@ -306,7 +306,7 @@
         </div>
         <div class="card card-teal">
           <div class="section-title-sm">Job Postings (user)</div>
-          <div style="font-size:11px;color:#374151;line-height:1.5">RAG-009 · User-provided<br />LinkedIn / Indeed / USAJobs<br />Copy-paste per session</div>
+          <div style="font-size:11px;color:#374151;line-height:1.5">RAG-009 · User-provided<br />LinkedIn / Indeed (drag &amp; drop)<br />Copy-paste per session</div>
         </div>
         <div class="card card-teal" style="border-color:#f9a8d4;background:#fdf4ff">
           <div class="section-title-sm">Hire Heroes USA</div>

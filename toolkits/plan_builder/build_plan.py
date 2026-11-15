@@ -168,9 +168,29 @@ JSON object:"""
 
     t0_draft = time.monotonic()
     try:
-        raw = llm_generate(prompt, _MODEL_ID, max_tokens=800)
+        raw = llm_generate(prompt, _MODEL_ID, max_tokens=1200)
         latency_ms_draft = (time.monotonic() - t0_draft) * 1000
         sections = parse_llm_json(raw, "build_resume_draft")
+
+        # Guard: LLM occasionally returns a JSON array instead of an object.
+        # Attempt to recover a dict by looking for section-keyed dicts inside
+        # the list; otherwise raise so the caller surfaces a clean retry message.
+        if isinstance(sections, list):
+            recovered = {}
+            for item in sections:
+                if isinstance(item, dict):
+                    for key in ("summary", "experience", "skills", "education_certifications"):
+                        if key in item:
+                            recovered.setdefault(key, [])
+                            val = item[key]
+                            recovered[key] += val if isinstance(val, list) else [val]
+            if recovered:
+                sections = recovered
+            else:
+                raise ValueError(
+                    "Model returned a JSON array instead of the expected object. "
+                    "Please try again — this is a transient model output issue."
+                )
 
         # ── Grounding check: verify every EVIDENCED tag ────────────────────
         # Build a flat list of all EVIDENCED items for the check prompt.
