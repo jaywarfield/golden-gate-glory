@@ -46,7 +46,7 @@ from plan_builder.build_plan import (                                           
     build_resume_draft,
     evaluate_export_gate,
 )
-from resume_parser.extract_resume_skills import extract_resume_skills                   # noqa: E402
+# extract_resume_skills removed — step 2 uses regex-parsed skills to conserve token quota
 
 # ── App ─────────────────────────────────────────────────────────────────────
 app = FastAPI(title="Mission Veteran AI — Bridge Server")
@@ -261,7 +261,7 @@ JSON array:"""
         # across two independent pools, reducing step 2→3 quota collisions.
         _BATCH_MODEL = "meta-llama/llama-3-3-70b-instruct"
         try:
-            raw = llm_generate(prompt, _BATCH_MODEL, max_tokens=min(120 * len(fragments), 1200))
+            raw = llm_generate(prompt, _BATCH_MODEL, max_tokens=min(60 * len(fragments), 600))
             parsed = parse_llm_json(raw, "batch_translate")
             if not isinstance(parsed, list):
                 return fragments   # unexpected shape — fall back
@@ -279,37 +279,11 @@ JSON array:"""
 
     bullets = _batch_translate(all_fragments, target_role)
 
-    # ── AI skill extraction from the full resume text ────────────────────────
-    # Non-fatal: quota / API errors fall back to regex-parsed resume_skills.
-    try:
-        ai_result = extract_resume_skills(
-            resume_text=resume_text,
-            service_branch=service_branch,
-            specialty_code=specialty_code,
-        )
-        if ai_result.get("pii_warning"):
-            return {"error": ai_result["pii_warning"]}
-    except Exception:
-        ai_result = {"skills": None}
-
-    ai_skills_raw = ai_result.get("skills") or []
-    if ai_skills_raw:
-        seen_lower: set[str] = set()
-        final_skills: list[str] = []
-        for s in ai_skills_raw:
-            name = (s.get("skill_name") or "").strip() if isinstance(s, dict) else str(s).strip()
-            if name and name.lower() not in seen_lower:
-                seen_lower.add(name.lower())
-                final_skills.append(name)
-    else:
-        # AI call failed or returned nothing — fall back to regex-parsed skills
-        seen_lower = {s.lower() for s in resume_skills}
-        final_skills = list(resume_skills)
-
+    # Skills: use regex-parsed skills directly — avoids a second LLM call in step 2
+    # which would exhaust token quota before step 3 runs.
     # O*NET crosswalk skills are NOT appended here — they are generic work-activity
-    # descriptors (e.g. "Critical Thinking", "Active Listening") that pollute the
-    # user-facing skills display.  They are used downstream in map_military_skills
-    # (step 4) where they serve as target vocabulary for the LLM, not as claimed skills.
+    # descriptors that pollute the display; they are used downstream in map_military_skills.
+    final_skills = list(resume_skills)
 
     return {
         "summary":       summary_text,
