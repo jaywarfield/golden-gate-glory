@@ -1223,6 +1223,7 @@
       STATE.summary          = result.summary          || '';
       STATE.translatedBullets = result.bullets          || [];
       STATE.resumeSkills      = result.resume_skills    || [];
+      STATE._step2CompletedAt = Date.now();   // used by step 3 to enforce quota cooldown
       if (!STATE.translatedBullets.length) { showStepError('s2', 'No accomplishments found. The resume needs at least one experience block or summary sentence.'); return; }
       renderStep2();
     } catch (e) { showStepError('s2', `Could not translate accomplishments: ${e.message}`); }
@@ -1383,26 +1384,47 @@
       if (USE_MOCK) {
         STATE.jobAnalysis = mockJobAnalysis(jd, STATE.skills);
       } else {
-        // Auto-retry once on quota errors — quota resets every ~60 s.
-        // Show a live countdown so the user knows to wait.
+        const spinnerSpan = document.querySelector('#s3-spinner span');
+        const origText = spinnerSpan ? spinnerSpan.textContent : '';
+
+        // Proactive cooldown: if step 2 finished within the last 65 s, the
+        // per-minute quota may not have reset yet. Wait out the remainder
+        // before making the first call rather than reacting to a quota error.
+        const QUOTA_WINDOW_MS = 65000;
+        if (STATE._step2CompletedAt) {
+          const elapsed = Date.now() - STATE._step2CompletedAt;
+          const remaining = QUOTA_WINDOW_MS - elapsed;
+          if (remaining > 0) {
+            let secs = Math.ceil(remaining / 1000);
+            if (spinnerSpan) spinnerSpan.textContent = `Waiting for quota reset… ${secs}s`;
+            const tick = setInterval(() => {
+              secs--;
+              if (spinnerSpan) spinnerSpan.textContent = `Waiting for quota reset… ${secs}s`;
+              if (secs <= 0) clearInterval(tick);
+            }, 1000);
+            await delay(remaining);
+            clearInterval(tick);
+            if (spinnerSpan) spinnerSpan.textContent = origText;
+          }
+        }
+
+        // Make the call; if quota still hits, auto-retry once after a full 65 s.
         const _doCall = () => apiCall({ step: 'analyze_job', input: { job_description: jd, veteran_skills_json: JSON.stringify(STATE.skills) } });
         try {
           STATE.jobAnalysis = await _doCall();
         } catch (e1) {
           if (/quota/i.test(e1.message)) {
-            // Show countdown notice inside the spinner area
-            const spinnerSpan = document.querySelector('#s3-spinner span');
-            const origText = spinnerSpan ? spinnerSpan.textContent : '';
-            let secs = 75;
+            let secs = 65;
+            if (spinnerSpan) spinnerSpan.textContent = `Token quota — retrying in ${secs}s…`;
             const tick = setInterval(() => {
               secs--;
               if (spinnerSpan) spinnerSpan.textContent = `Token quota — retrying in ${secs}s…`;
               if (secs <= 0) clearInterval(tick);
             }, 1000);
-            await delay(75000);
+            await delay(65000);
             clearInterval(tick);
             if (spinnerSpan) spinnerSpan.textContent = origText;
-            STATE.jobAnalysis = await _doCall(); // second attempt — let it throw if still failing
+            STATE.jobAnalysis = await _doCall(); // second attempt — throw if still failing
           } else {
             throw e1;
           }
