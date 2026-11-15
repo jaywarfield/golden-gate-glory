@@ -812,6 +812,14 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
         # Drop any multi-word token whose first word matches the action verb list.
         if len(words) >= 2 and _ACTION_VERB_RE.match(words[0]):
             return True
+        # Sub-section heading phrases: "Primary Responsibilities and Accomplishments",
+        # "Selected Leadership Accomplishments", "Duties and Responsibilities", etc.
+        if re.search(
+            r'\b(responsibilities|accomplishments|duties|highlights|overview'
+            r'|selected|primary|additional|key responsibilities|scope of duties)\b',
+            tok, re.IGNORECASE
+        ):
+            return True
         return False
 
     def _add_token(tok: str, skill_tokens: list, seen: set) -> None:
