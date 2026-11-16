@@ -49,8 +49,9 @@
   .arrow { text-align: center; font-size: 16px; color: #94a3b8; padding: 2px 0; }
   .option-label-a { font-size: 11px; font-weight: 700; color: #1d4ed8; margin-bottom: 3px; }
   .option-label-b { font-size: 11px; font-weight: 700; color: #1d4ed8; margin-bottom: 3px; }
-  .option-label-c { font-size: 11px; font-weight: 700; color: #166534; margin-bottom: 3px; }
-  .option-label-d { font-size: 11px; font-weight: 700; color: #9f1239; margin-bottom: 3px; }
+  .option-label-c { font-size: 11px; font-weight: 700; color: #0369a1; margin-bottom: 3px; }
+  .option-label-d { font-size: 11px; font-weight: 700; color: #166534; margin-bottom: 3px; }
+  .option-label-e { font-size: 11px; font-weight: 700; color: #9f1239; margin-bottom: 3px; }
 
   .inputs-row { font-size: 10.5px; color: #374151; margin-top: 8px; padding: 5px 8px; background: #f9fafb; border-radius: 4px; border: 1px solid #e5e7eb; line-height: 1.6; }
   .gate-warning { background: #7f1d1d; color: #fff; border-radius: 4px; padding: 8px 10px; font-size: 11px; margin-top: 8px; }
@@ -83,21 +84,27 @@
   <div class="band-content">
     <div class="section section-blue">
       <div class="section-title">Veteran Career Navigator — Chat UI</div>
+      <!-- Option A — full width on its own row -->
+      <div style="margin-bottom:8px">
+        <div class="option-label-a">Option A — watsonx Orchestrate webchat</div>
+        <div style="font-size:11px;color:#374151;line-height:1.5">PII reminder panel · session-scoped, no data persistence</div>
+      </div>
+      <!-- Options B–E — four columns -->
       <div class="col4">
-        <div>
-          <div class="option-label-a">Option A — watsonx Orchestrate webchat</div>
-          <div style="font-size:11px;color:#374151;line-height:1.5">PII reminder panel · session-scoped, no data persistence</div>
-        </div>
         <div>
           <div class="option-label-b">Option B — web/index.html on GitHub Pages</div>
           <div style="font-size:11px;color:#374151;line-height:1.5">Static SPA · best for demos, sharing, hackathon judging · <span class="code">USE_MOCK=false +</span> empty <span class="code">API_BASE → 403</span> on POST; needs Code Engine URL, OpenShift URL, Railway URL, or mock mode</div>
         </div>
         <div>
-          <div class="option-label-c">Option C — web/index.html on OpenShift</div>
+          <div class="option-label-c">Option C — web/index.html on Code Engine</div>
+          <div style="font-size:11px;color:#374151;line-height:1.5">IBM Cloud Code Engine · serverless container · auto-scales to zero · <span class="code">API_BASE</span> injected via env var · no cluster management · best for IBM Cloud-native deployments</div>
+        </div>
+        <div>
+          <div class="option-label-d">Option D — web/index.html on OpenShift</div>
           <div style="font-size:11px;color:#374151;line-height:1.5">Ingress pod + route · best for enterprise cluster, air-gapped, OpenShift AI integration · <span class="code">USE_MOCK=false</span></div>
         </div>
         <div>
-          <div class="option-label-d">Option D — web/index.html on Railway</div>
+          <div class="option-label-e">Option E — web/index.html on Railway</div>
           <div style="font-size:11px;color:#374151;line-height:1.5">Docker container · <span class="code">start.sh</span> injects <span class="code">window.API_BASE</span> from <span class="code">RAILWAY_PUBLIC_DOMAIN</span> + flips <span class="code">USE_MOCK=false</span> before uvicorn starts</div>
         </div>
       </div>
