@@ -17,7 +17,7 @@ except ImportError:
     def tool(**_kw): return lambda f: f          # no-op decorator
     class ToolPermission: READ_ONLY = None       # noqa: E701
 
-_MODEL_ID = "meta-llama/llama-3-3-70b-instruct"  # step 2 — separate quota pool from Granite 4 (steps 3-7)
+_MODEL_ID = "ibm/granite-4-h-small"
 
 
 @tool(permission=ToolPermission.READ_ONLY)

@@ -256,9 +256,7 @@ Military accomplishments:
 
 JSON array:"""
 
-        # Llama 3.3 quota pool is separate from Granite 4 (steps 3-7),
-        # so this never causes quota collisions with the downstream steps.
-        _BATCH_MODEL = "meta-llama/llama-3-3-70b-instruct"
+        _BATCH_MODEL = "ibm/granite-4-h-small"
         try:
             raw = llm_generate(prompt, _BATCH_MODEL, max_tokens=min(60 * len(fragments), 600))
             parsed = parse_llm_json(raw, "batch_translate")
