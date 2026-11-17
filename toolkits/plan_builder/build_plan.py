@@ -43,8 +43,8 @@ def analyze_job_description(job_description: str) -> dict:
     if contains_pii(job_description):
         return {"error": None, "pii_warning": pii_warning_message()}
 
-    # Truncate to ~3000 chars to cap token usage on very long postings
-    job_description = job_description[:3000]
+    # Truncate to ~1200 chars (~300 tokens) to cap token usage on long postings
+    job_description = job_description[:1200]
 
     prompt = f"""You are an expert job description analyst.
 
