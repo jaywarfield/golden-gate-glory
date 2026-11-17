@@ -330,6 +330,10 @@
   <div class="notice">
     <strong>User goal:</strong> Review welcome, provide consent, and chose draft storage.
   </div>
+
+  <div class="notice">
+    <strong>User instructions:</strong> Select Continue to proceed to next screen, select 1 to 7 to review screens already visited.
+  </div>
 <!--
   <div class="notice warn">
     <strong>PII Reminder:</strong> Do not include full names, Social Security numbers, recruiter names, company contact details,
@@ -538,6 +542,7 @@
     <!-- Shared: selected-job banner (USAJobs only) + textarea (both sources) -->
     <div class="field" style="margin-top:10px">
       <label for="s3-jd">Job description <span class="req">*</span></label>
+      <div id="s3-jd-container" style="min-height:40px"></div>
       <div id="s3-selected-job" style="display:none;margin-bottom:10px;padding:10px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;font-size:13px">
         <span style="font-weight:600" id="s3-selected-title"></span>
         <span style="color:#57606a" id="s3-selected-meta"></span>
