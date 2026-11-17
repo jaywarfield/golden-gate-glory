@@ -200,6 +200,7 @@ def groq_generate(prompt: str, model_id: str = "llama-3.3-70b-versatile", max_to
         headers={
             "Content-Type": "application/json",
             "Authorization": f"Bearer {api_key}",
+            "User-Agent": "mission-veteran-ai/1.0",
         },
     )
     try:
