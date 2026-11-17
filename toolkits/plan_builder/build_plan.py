@@ -20,7 +20,7 @@ except ImportError:
     def tool(**_kw): return lambda f: f          # no-op decorator
     class ToolPermission: READ_ONLY = None       # noqa: E701
 
-_MODEL_ID_JD = "openai/gpt-oss-120b"   # Groq — separate quota from watsonx.ai
+_MODEL_ID_JD = "qwen/qwen3.8-27b"   # Groq — separate quota from watsonx.ai
 _MODEL_ID    = "ibm/granite-4-h-small"
 
 
