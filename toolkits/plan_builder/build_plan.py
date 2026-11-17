@@ -158,14 +158,15 @@ IMPORTANT RULES:
   inputs. Do NOT include skills only mentioned in the job description. Do NOT include
   category labels (Technical, Leadership, Operations, Communication, Analytical) as skill names.
 
-Return ONLY a valid JSON object with this structure:
+Return ONLY a valid JSON object — NOT an array — with EXACTLY this structure:
 {{
   "summary": [ {{"tag": "EVIDENCED|INFERRED|MISSING", "text": "..."}} ],
   "skills": [ {{"tag": "...", "text": "..."}} ],
   "experience": [ {{"tag": "...", "text": "..."}} ],
   "education_certifications": [ {{"tag": "...", "text": "..."}} ]
 }}
-No preamble, no markdown fences.
+The top-level value MUST be a single JSON object starting with {{ and ending with }}.
+Do NOT return a JSON array. No preamble, no markdown fences.
 
 {context_block}
 
@@ -183,12 +184,19 @@ JSON object:"""
         if isinstance(sections, list):
             recovered = {}
             for item in sections:
-                if isinstance(item, dict):
-                    for key in ("summary", "experience", "skills", "education_certifications"):
-                        if key in item:
-                            recovered.setdefault(key, [])
-                            val = item[key]
-                            recovered[key] += val if isinstance(val, list) else [val]
+                if not isinstance(item, dict):
+                    continue
+                # Shape 1: array of section-wrapper dicts — {"summary": [...], ...}
+                for key in ("summary", "experience", "skills", "education_certifications"):
+                    if key in item:
+                        recovered.setdefault(key, [])
+                        val = item[key]
+                        recovered[key] += val if isinstance(val, list) else [val]
+                # Shape 2: flat array of tagged items with a "section" key
+                sec = item.get("section", "")
+                if sec in ("summary", "experience", "skills", "education_certifications"):
+                    recovered.setdefault(sec, [])
+                    recovered[sec].append({"tag": item.get("tag", "INFERRED"), "text": item.get("text", "")})
             if recovered:
                 sections = recovered
             else:

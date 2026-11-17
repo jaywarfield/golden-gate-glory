@@ -87,16 +87,20 @@ the service summary and O*NET crosswalk data provided below.
 
 STRICT RULES — violation produces a fabricated resume:
 1. ONLY include a skill if it is explicitly supported by a word, phrase, or statement
-   in the service summary above. Do not infer skills from the MOS/AFSC code alone.
+   in the service summary. Do not infer skills from the MOS/AFSC code alone.
 2. Do NOT add skills because they are common for this MOS/AFSC in general.
    If this veteran's summary does not mention it, do not include it.
-3. Do NOT pad the list. If only 4 skills are directly supported, return 4.
+3. Hard cap: return AT MOST 15 skills. Prefer fewer, higher-confidence entries.
    Quality and accuracy matter more than quantity.
 4. Each skill MUST map to the O*NET required skills list when possible, but only if
    that skill is also evidenced in the service summary.
+5. A skill name MUST be a noun or noun phrase (e.g. "Network Administration", "Team Leadership").
+   Do NOT write verb phrases or activity descriptions as skill names
+   (e.g. "Employee Training On IT Systems", "Managing Active Directory", "Troubleshooting Networks"
+   are INVALID — these are activities, not skill names).
 
 Return ONLY a valid JSON array. Each element must have exactly these keys:
-  "skill"    — the civilian skill name (prefer O*NET vocabulary)
+  "skill"    — the civilian skill name (prefer O*NET vocabulary, noun/noun phrase only)
   "category" — one of: Leadership, Technical, Operations, Communication, Analytical
   "evidence" — a verbatim short quote (≤15 words) from the service summary that
                supports this skill, OR "O*NET crosswalk: <civilian_title>" if the
