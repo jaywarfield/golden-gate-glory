@@ -332,7 +332,7 @@
   </div>
 
   <div class="notice">
-    <strong>Instructions:</strong> Select Continue to proceed to next screen, select 1 to 7 to review screens already visited.
+    <strong>Note:</strong> Select Continue to proceed to next screen, select 1 to 7 to review screens already visited.
   </div>
 <!--
   <div class="notice warn">
@@ -405,6 +405,10 @@
     <strong>Goal:</strong> Select branch, speciality code, and veteran resume.
   </div>
 
+  <div class="notice warn">
+    <strong>PII Reminder:</strong> No name, email, phone, SSN, ID, location, unit, dates, etc.
+  </div>
+
   <div class="card">
     <div class="card-title">Service Profile</div>
     <div class="field-row">
@@ -425,9 +429,6 @@
     </div>
     <div class="field">
       <label>Service resume <span class="req">*</span></label>
-      <div class="notice warn" style="margin-bottom:8px;font-size:12px">
-        <strong>PII Reminder:</strong> No name, email, phone, SSN, ID, location, unit, dates, etc.
-      </div>
       <div class="drop-zone" id="s2-drop-zone" onclick="document.getElementById('s2-file-input').click()"
            ondragover="s2DragOver(event)" ondragleave="s2DragLeave(event)" ondrop="s2Drop(event)">
         <input type="file" id="s2-file-input" accept=".txt,.docx" onchange="s2FileSelected(event)">
@@ -472,6 +473,10 @@
     <strong>Goal:</strong> Select job description, extract skills and ATS keywords.
   </div>
 
+  <div class="notice warn">
+    <strong>PII Reminder:</strong> No name, email, phone, SSN, ID, location, unit, dates, etc.
+  </div>
+
   <div class="card">
     <div class="card-title">Civilian Goals</div>
     <div class="field">
@@ -513,10 +518,7 @@
 
     <!-- User-provided panel: drop zone only -->
     <div id="s3-panel-user">
-      <div class="notice warn" style="margin-bottom:8px;font-size:12px">
-        <strong>PII Reminder:</strong> No name, email, phone, SSN, ID, location, unit, dates, etc.
-      </div>
-      <div class="drop-zone" id="s3-drop-zone" onclick="document.getElementById('s3-file-input').click()"
+       <div class="drop-zone" id="s3-drop-zone" onclick="document.getElementById('s3-file-input').click()"
            ondragover="s3DragOver(event)" ondragleave="s3DragLeave(event)" ondrop="s3Drop(event)">
         <input type="file" id="s3-file-input" accept=".txt,.docx" onchange="s3FileSelected(event)">
         <div class="drop-zone-icon">📄</div>
@@ -545,7 +547,7 @@
       <span style="color:#57606a" id="s3-selected-meta"></span>
       <button onclick="s3ClearJob()" style="float:right;background:none;border:none;color:#57606a;cursor:pointer;font-size:12px;padding:0">✕ Clear</button>
     </div>
-    <textarea id="s3-jd" rows="5" maxlength="2000" style="display:none;margin-top:10px"
+    <textarea id="s3-jd" rows="12" maxlength="8000" style="display:none;margin-top:10px"
       placeholder="Job description text will appear here. You can edit it before proceeding."></textarea>
 
     <div class="spinner" id="s3-spinner"><div class="spinner-ring"></div><span>Analyzing with IBM Granite 4…</span></div>
