@@ -497,46 +497,60 @@
   </div>
 
   <div class="card">
-    <div class="card-title">Find Jobs on USAJobs <span style="font-size:11px;font-weight:400;color:#57606a">(federal civilian roles)</span></div>
-    <div style="font-size:13px;color:#57606a;margin-bottom:10px">
-      Searches USAJobs.gov using <strong id="s3-path-hint">—</strong> and <strong id="s3-role-hint">—</strong>.
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-secondary" id="s3-search-btn" onclick="step3SearchJobs()">🔍 Search USAJobs</button>
-    </div>
-    <div class="spinner" id="s3-search-spinner"><div class="spinner-ring"></div><span>Searching USAJobs.gov…</span></div>
-    <div class="notice pii" id="s3-search-error" style="display:none"><strong>Error:</strong> <span id="s3-search-error-text"></span></div>
-    <div id="s3-job-list" style="display:none;margin-top:10px"></div>
-  </div>
-
-  <div class="card">
     <div class="card-title">Target Job Description</div>
-    <div class="field">
-      <label for="s3-jd">Job description <span class="req">*</span></label>
-      <div class="notice warn" style="margin-bottom:8px;font-size:12px">
-        <strong>PII Reminder:</strong> No name, email, phone, SSN, ID, location, unit, dates, etc.
-      </div>
-      <div id="s3-selected-job" style="display:none;margin-bottom:10px;padding:10px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;font-size:13px">
-        <span style="font-weight:600" id="s3-selected-title"></span>
-        <span style="color:#57606a" id="s3-selected-meta"></span>
-        <button onclick="s3ClearJob()" style="float:right;background:none;border:none;color:#57606a;cursor:pointer;font-size:12px;padding:0">✕ Clear</button>
-      </div>
-      <div class="drop-zone" id="s3-drop-zone" onclick="document.getElementById('s3-file-input').click()"
-           ondragover="s3DragOver(event)" ondragleave="s3DragLeave(event)" ondrop="s3Drop(event)">
-        <input type="file" id="s3-file-input" accept=".txt,.docx" onchange="s3FileSelected(event)">
-        <div class="drop-zone-icon">📄</div>
-        <div class="drop-zone-text"><strong>Drag &amp; drop</strong> a job description, or <strong>click to browse</strong></div>
-        <div class="drop-zone-hint">Accepts .txt · .docx &nbsp;·&nbsp; Text will be extracted and shown below</div>
-      </div>
-      <div id="s3-file-name" style="font-size:11px;color:#57606a;margin-top:5px;display:none"></div>
-      <textarea id="s3-jd" rows="5" maxlength="2000" style="margin-top:10px;display:none"
-        placeholder="Job description text will appear here. You can edit it before proceeding."></textarea>
+
+    <!-- Source toggle -->
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button id="s3-src-user-btn" class="btn btn-primary"
+              onclick="s3SetSource('user')" style="flex:1">User-provided</button>
+      <button id="s3-src-usajobs-btn" class="btn btn-secondary"
+              onclick="s3SetSource('usajobs')" style="flex:1">USAJobs</button>
     </div>
-    <div class="btn-row">
-      <button class="btn btn-primary" id="s3-btn" onclick="step3Analyze()">Analyze Job Description</button>
+
+    <!-- User-provided panel -->
+    <div id="s3-panel-user">
+      <div class="field">
+        <label for="s3-jd">Job description <span class="req">*</span></label>
+        <div class="notice warn" style="margin-bottom:8px;font-size:12px">
+          <strong>PII Reminder:</strong> No name, email, phone, SSN, ID, location, unit, dates, etc.
+        </div>
+        <div id="s3-selected-job" style="display:none;margin-bottom:10px;padding:10px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;font-size:13px">
+          <span style="font-weight:600" id="s3-selected-title"></span>
+          <span style="color:#57606a" id="s3-selected-meta"></span>
+          <button onclick="s3ClearJob()" style="float:right;background:none;border:none;color:#57606a;cursor:pointer;font-size:12px;padding:0">✕ Clear</button>
+        </div>
+        <div class="drop-zone" id="s3-drop-zone" onclick="document.getElementById('s3-file-input').click()"
+             ondragover="s3DragOver(event)" ondragleave="s3DragLeave(event)" ondrop="s3Drop(event)">
+          <input type="file" id="s3-file-input" accept=".txt,.docx" onchange="s3FileSelected(event)">
+          <div class="drop-zone-icon">📄</div>
+          <div class="drop-zone-text"><strong>Drag &amp; drop</strong> a job description, or <strong>click to browse</strong></div>
+          <div class="drop-zone-hint">Accepts .txt · .docx &nbsp;·&nbsp; Text will be extracted and shown below</div>
+        </div>
+        <div id="s3-file-name" style="font-size:11px;color:#57606a;margin-top:5px;display:none"></div>
+        <textarea id="s3-jd" rows="5" maxlength="2000" style="margin-top:10px;display:none"
+          placeholder="Job description text will appear here. You can edit it before proceeding."></textarea>
+      </div>
     </div>
+
+    <!-- USAJobs panel -->
+    <div id="s3-panel-usajobs" style="display:none">
+      <div style="font-size:13px;color:#57606a;margin-bottom:10px">
+        Searches USAJobs.gov using <strong id="s3-path-hint">—</strong> and <strong id="s3-role-hint">—</strong>.
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="s3-search-btn" onclick="step3SearchJobs()">🔍 Search USAJobs</button>
+      </div>
+      <div class="spinner" id="s3-search-spinner"><div class="spinner-ring"></div><span>Searching USAJobs.gov…</span></div>
+      <div class="notice pii" id="s3-search-error" style="display:none"><strong>Error:</strong> <span id="s3-search-error-text"></span></div>
+      <div id="s3-job-list" style="display:none;margin-top:10px"></div>
+    </div>
+
     <div class="spinner" id="s3-spinner"><div class="spinner-ring"></div><span>Analyzing with IBM Granite 4…</span></div>
     <div class="notice pii" id="s3-error" style="display:none"><strong>Error:</strong> <span id="s3-error-text"></span></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" id="s3-btn" onclick="step3Analyze()">Analyze Job Description</button>
   </div>
 
   <div id="s3-output" style="display:none">
@@ -963,6 +977,27 @@
       const reader = new FileReader();
       reader.onload = ev => s2ShowText(ev.target.result);
       reader.readAsText(file);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // STEP 3 — Source toggle (User-provided / USAJobs)
+  // ═══════════════════════════════════════════════════════════════════
+  function s3SetSource(src) {
+    const userPanel     = document.getElementById('s3-panel-user');
+    const usajobsPanel  = document.getElementById('s3-panel-usajobs');
+    const userBtn       = document.getElementById('s3-src-user-btn');
+    const usajobsBtn    = document.getElementById('s3-src-usajobs-btn');
+    if (src === 'user') {
+      userPanel.style.display    = '';
+      usajobsPanel.style.display = 'none';
+      userBtn.className    = 'btn btn-primary';
+      usajobsBtn.className = 'btn btn-secondary';
+    } else {
+      userPanel.style.display    = 'none';
+      usajobsPanel.style.display = '';
+      userBtn.className    = 'btn btn-secondary';
+      usajobsBtn.className = 'btn btn-primary';
     }
   }
 
