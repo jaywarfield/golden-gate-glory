@@ -38,8 +38,7 @@ def analyze_job_description(job_description: str) -> dict:
         job_description: Full text of the civilian job posting (PII-free).
 
     Returns:
-        A dict with keys: required_skills, preferred_skills, keywords,
-        role_level, industry, pii_warning (if any), error (if any).
+        A dict with keys: required_skills, pii_warning (if any), error (if any).
     """
     if contains_pii(job_description):
         return {"error": None, "pii_warning": pii_warning_message()}
@@ -49,12 +48,8 @@ def analyze_job_description(job_description: str) -> dict:
 
     prompt = f"""You are an expert job description analyst.
 
-Analyse the job description below and return ONLY a valid JSON object with these keys:
-  "required_skills": array of must-have skill strings — list EVERY distinct skill explicitly stated as required; do NOT merge, combine, or summarise related skills into one entry,
-  "preferred_skills": array of nice-to-have or preferred skill strings — list each one separately,
-  "keywords": array of ATS keyword strings,
-  "role_level": one of "Entry", "Mid", "Senior", "Manager", "Director",
-  "industry": industry sector string (e.g. "Defense Contracting", "Technology").
+Analyse the job description below and return ONLY a valid JSON object with this key:
+  "required_skills": array of skill strings — list EVERY distinct skill explicitly stated as required; do NOT merge, combine, or summarise related skills into one entry.
 Each skill must be its own string entry. If the JD lists "Network Administration" and "Network Infrastructure" separately, they must appear as two separate entries.
 No preamble, no explanation, no markdown fences.
 
@@ -65,7 +60,7 @@ JSON object:"""
 
     t0 = time.monotonic()
     try:
-        raw = llm_generate(prompt, _MODEL_ID_JD, max_tokens=800)
+        raw = llm_generate(prompt, _MODEL_ID_JD, max_tokens=400)
         latency_ms = (time.monotonic() - t0) * 1000
         result = parse_llm_json(raw, "analyze_job_description")
         result["pii_warning"] = None
@@ -80,8 +75,6 @@ JSON object:"""
             response=raw,
             input_data={"jd_length": len(job_description)},
             output_data={
-                "role_level": result.get("role_level"),
-                "industry": result.get("industry"),
                 "required_skill_count": len(result.get("required_skills", [])),
                 "error": None,
             },

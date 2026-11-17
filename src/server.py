@@ -256,7 +256,7 @@ Military accomplishments:
 
 JSON array:"""
 
-        _BATCH_MODEL = "ibm/granite-4-h-small"
+        _BATCH_MODEL = "meta-llama/llama-3-3-70b-instruct"
         try:
             raw = llm_generate(prompt, _BATCH_MODEL, max_tokens=min(60 * len(fragments), 600))
             parsed = parse_llm_json(raw, "batch_translate")
