@@ -205,8 +205,10 @@ JSON object:"""
                 sections = recovered
             else:
                 raise ValueError(
-                    "Model returned a JSON array instead of the expected object. "
-                    "Please try again — this is a transient model output issue."
+                    f"Model returned a JSON array instead of the expected object. "
+                    f"Array length: {len(sections)}. "
+                    f"First item keys: {list(sections[0].keys()) if sections and isinstance(sections[0], dict) else sections[:2]!r}. "
+                    "Please try again."
                 )
 
         # ── Grounding check: verify every EVIDENCED tag ────────────────────
