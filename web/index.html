@@ -507,32 +507,22 @@
               onclick="s3SetSource('usajobs')" style="flex:1">USAJobs</button>
     </div>
 
-    <!-- User-provided panel -->
+    <!-- User-provided panel: drop zone only -->
     <div id="s3-panel-user">
-      <div class="field">
-        <label for="s3-jd">Job description <span class="req">*</span></label>
-        <div class="notice warn" style="margin-bottom:8px;font-size:12px">
-          <strong>PII Reminder:</strong> No name, email, phone, SSN, ID, location, unit, dates, etc.
-        </div>
-        <div id="s3-selected-job" style="display:none;margin-bottom:10px;padding:10px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;font-size:13px">
-          <span style="font-weight:600" id="s3-selected-title"></span>
-          <span style="color:#57606a" id="s3-selected-meta"></span>
-          <button onclick="s3ClearJob()" style="float:right;background:none;border:none;color:#57606a;cursor:pointer;font-size:12px;padding:0">✕ Clear</button>
-        </div>
-        <div class="drop-zone" id="s3-drop-zone" onclick="document.getElementById('s3-file-input').click()"
-             ondragover="s3DragOver(event)" ondragleave="s3DragLeave(event)" ondrop="s3Drop(event)">
-          <input type="file" id="s3-file-input" accept=".txt,.docx" onchange="s3FileSelected(event)">
-          <div class="drop-zone-icon">📄</div>
-          <div class="drop-zone-text"><strong>Drag &amp; drop</strong> a job description, or <strong>click to browse</strong></div>
-          <div class="drop-zone-hint">Accepts .txt · .docx &nbsp;·&nbsp; Text will be extracted and shown below</div>
-        </div>
-        <div id="s3-file-name" style="font-size:11px;color:#57606a;margin-top:5px;display:none"></div>
-        <textarea id="s3-jd" rows="5" maxlength="2000" style="margin-top:10px;display:none"
-          placeholder="Job description text will appear here. You can edit it before proceeding."></textarea>
+      <div class="notice warn" style="margin-bottom:8px;font-size:12px">
+        <strong>PII Reminder:</strong> No name, email, phone, SSN, ID, location, unit, dates, etc.
       </div>
+      <div class="drop-zone" id="s3-drop-zone" onclick="document.getElementById('s3-file-input').click()"
+           ondragover="s3DragOver(event)" ondragleave="s3DragLeave(event)" ondrop="s3Drop(event)">
+        <input type="file" id="s3-file-input" accept=".txt,.docx" onchange="s3FileSelected(event)">
+        <div class="drop-zone-icon">📄</div>
+        <div class="drop-zone-text"><strong>Drag &amp; drop</strong> a job description, or <strong>click to browse</strong></div>
+        <div class="drop-zone-hint">Accepts .txt · .docx &nbsp;·&nbsp; Text will be extracted and shown below</div>
+      </div>
+      <div id="s3-file-name" style="font-size:11px;color:#57606a;margin-top:5px;display:none"></div>
     </div>
 
-    <!-- USAJobs panel -->
+    <!-- USAJobs panel: search only -->
     <div id="s3-panel-usajobs" style="display:none">
       <div style="font-size:13px;color:#57606a;margin-bottom:10px">
         Searches USAJobs.gov using <strong id="s3-path-hint">—</strong> and <strong id="s3-role-hint">—</strong>.
@@ -543,6 +533,18 @@
       <div class="spinner" id="s3-search-spinner"><div class="spinner-ring"></div><span>Searching USAJobs.gov…</span></div>
       <div class="notice pii" id="s3-search-error" style="display:none"><strong>Error:</strong> <span id="s3-search-error-text"></span></div>
       <div id="s3-job-list" style="display:none;margin-top:10px"></div>
+    </div>
+
+    <!-- Shared: selected-job banner (USAJobs only) + textarea (both sources) -->
+    <div class="field" style="margin-top:10px">
+      <label for="s3-jd">Job description <span class="req">*</span></label>
+      <div id="s3-selected-job" style="display:none;margin-bottom:10px;padding:10px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;font-size:13px">
+        <span style="font-weight:600" id="s3-selected-title"></span>
+        <span style="color:#57606a" id="s3-selected-meta"></span>
+        <button onclick="s3ClearJob()" style="float:right;background:none;border:none;color:#57606a;cursor:pointer;font-size:12px;padding:0">✕ Clear</button>
+      </div>
+      <textarea id="s3-jd" rows="5" maxlength="2000" style="display:none"
+        placeholder="Job description text will appear here. You can edit it before proceeding."></textarea>
     </div>
 
     <div class="spinner" id="s3-spinner"><div class="spinner-ring"></div><span>Analyzing with IBM Granite 4…</span></div>
@@ -988,6 +990,15 @@
     const usajobsPanel  = document.getElementById('s3-panel-usajobs');
     const userBtn       = document.getElementById('s3-src-user-btn');
     const usajobsBtn    = document.getElementById('s3-src-usajobs-btn');
+
+    // Clear shared text area, file name, and selected-job banner on every switch
+    const ta = document.getElementById('s3-jd');
+    ta.value = '';
+    ta.style.display = 'none';
+    document.getElementById('s3-file-name').style.display    = 'none';
+    document.getElementById('s3-selected-job').style.display = 'none';
+    document.getElementById('s3-file-input').value           = '';
+
     if (src === 'user') {
       userPanel.style.display    = '';
       usajobsPanel.style.display = 'none';
