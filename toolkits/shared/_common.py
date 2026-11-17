@@ -177,8 +177,12 @@ def groq_generate(prompt: str, model_id: str = "qwen/qwen3.8-27b", max_tokens: i
     Call the Groq chat-completions API (OpenAI-compatible).
     Returns the generated text string.
     Raises RuntimeError on API errors or if GROQ_API_KEY is not set.
+
+    429 rate-limit errors are retried once after the wait time indicated in
+    the response (capped at 30 s) to handle Groq's per-minute output token limit.
     """
     import urllib.request
+    import time as _time
 
     api_key = os.environ.get("GROQ_API_KEY", "").strip()
     if not api_key:
@@ -194,21 +198,31 @@ def groq_generate(prompt: str, model_id: str = "qwen/qwen3.8-27b", max_tokens: i
         "temperature": temperature,
     }).encode()
 
-    req = urllib.request.Request(
-        "https://api.groq.com/openai/v1/chat/completions",
-        data=payload,
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {api_key}",
-            "User-Agent": "mission-veteran-ai/1.0",
-        },
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            body = json.loads(resp.read())
-    except urllib.error.HTTPError as e:
-        body_text = e.read().decode(errors="replace")
-        raise RuntimeError(f"Groq API error {e.code}: {body_text}") from e
+    MAX_RETRIES = 1
+    for attempt in range(MAX_RETRIES + 1):
+        req = urllib.request.Request(
+            "https://api.groq.com/openai/v1/chat/completions",
+            data=payload,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {api_key}",
+                "User-Agent": "mission-veteran-ai/1.0",
+            },
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                body = json.loads(resp.read())
+            break  # success — exit retry loop
+        except urllib.error.HTTPError as e:
+            body_text = e.read().decode(errors="replace")
+            if e.code == 429 and attempt < MAX_RETRIES:
+                # Parse retry-after from error message, e.g. "try again in 1.38s"
+                import re as _re
+                m = _re.search(r'try again in\s+([\d.]+)s', body_text)
+                wait = min(float(m.group(1)) + 1, 30) if m else 10
+                _time.sleep(wait)
+                continue
+            raise RuntimeError(f"Groq API error {e.code}: {body_text}") from e
 
     try:
         return body["choices"][0]["message"]["content"]
