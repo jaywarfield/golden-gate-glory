@@ -160,6 +160,9 @@ IMPORTANT RULES:
 - The "skills" array must contain ONLY skills the veteran has DEMONSTRATED based on the
   inputs. Do NOT include skills only mentioned in the job description. Do NOT include
   category labels (Technical, Leadership, Operations, Communication, Analytical) as skill names.
+- No redundancy: every item within a section must be meaningfully distinct.
+  If two items express the same idea, keep only the stronger one and omit the other.
+  Example of redundancy to AVOID: "IT Infrastructure Support" and "supporting enterprise IT infrastructure" — these are the same; include only one.
 
 Return ONLY a valid JSON object — NOT an array — with EXACTLY this structure:
 {{
