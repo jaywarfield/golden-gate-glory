@@ -1477,7 +1477,14 @@
         gapResult   = mockGapAnalysis(skillResult.skills, STATE.careerPath);
       } else {
         skillResult = await apiCall({ step: 'map_skills', input: { service_branch: STATE.branch, specialty_code: STATE.specialty, service_summary: STATE.summary, target_career_path: STATE.careerPath, job_description: STATE.jobDescription } });
-        gapResult   = await apiCall({ step: 'gap_analysis', input: { veteran_skills_json: JSON.stringify(skillResult.skills), target_career_path: STATE.careerPath, job_description: STATE.jobDescription } });
+        // Combine mapped skills + resume skill tokens for a richer veteran profile
+        const veteranSkillsForGap = [
+          ...(skillResult.skills || []),
+          ...(STATE.resumeSkills || []).map(s => ({ skill: s, category: '', evidence: 'resume' })),
+        ];
+        // Use the already-extracted required_skills list (not raw JD) for more accurate matching
+        const requiredSkillsForGap = (STATE.jobAnalysis?.required_skills || []).join(', ');
+        gapResult = await apiCall({ step: 'gap_analysis', input: { veteran_skills_json: JSON.stringify(veteranSkillsForGap), target_career_path: STATE.careerPath, job_description: requiredSkillsForGap || STATE.jobDescription } });
       }
       STATE.skills = skillResult.skills || [];
       STATE.gapResult = gapResult;

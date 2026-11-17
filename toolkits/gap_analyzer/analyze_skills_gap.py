@@ -58,19 +58,22 @@ def analyze_skills_gap(
 
     prompt = f"""You are a veteran career transition expert and skills gap analyst.
 
-Given the veteran's skill inventory and the job description below, produce a gap analysis.
+Compare the veteran's skill inventory against the required job skills below.
+Use fuzzy/semantic matching — e.g. "Network Administration" covers "network administration", "LAN/WAN Administration", "networking".
+A veteran skill covers a job skill if they describe the same competency, even if worded differently.
+
 Return ONLY a valid JSON object with exactly these keys:
-  "covered_skills": array of skill strings the veteran already has that match the JD,
-  "gap_skills": array of skill strings required by the JD but not in the veteran's inventory,
-  "coverage_pct": integer 0-100 representing percentage of JD skills covered.
+  "covered_skills": array of skill name strings the veteran already has that match a required job skill,
+  "gap_skills": array of skill name strings required by the job but NOT covered by the veteran's inventory,
+  "coverage_pct": integer 0-100 representing percentage of required job skills covered.
 No preamble, no explanation, no markdown fences.
 
 Target career path: {target_career_path}
 
-Veteran skill inventory:
+Veteran skill inventory (JSON — each item has a "skill" field):
 {veteran_skills_json}
 
-Job description:
+Required job skills:
 {job_description}
 
 JSON object:"""
