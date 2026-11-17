@@ -9,7 +9,7 @@ import json
 import os
 import time
 
-from shared._common import contains_pii, pii_warning_message, llm_generate
+from shared._common import contains_pii, pii_warning_message, groq_generate
 from shared.governance import log_inference, get_subscription_ids
 
 try:
@@ -18,7 +18,7 @@ except ImportError:
     def tool(**_kw): return lambda f: f          # no-op decorator
     class ToolPermission: READ_ONLY = None       # noqa: E701
 
-_MODEL_ID = "ibm/granite-4-h-small"
+_MODEL_ID = "qwen/qwen3.8-27b"   # Groq — separate quota from watsonx.ai
 
 
 @tool(permission=ToolPermission.READ_ONLY)
@@ -72,7 +72,7 @@ Civilian resume bullet:"""
 
     t0 = time.monotonic()
     try:
-        response = llm_generate(prompt, _MODEL_ID, max_tokens=80, temperature=0.3)
+        response = groq_generate(prompt, _MODEL_ID, max_tokens=80, temperature=0.3)
         latency_ms = (time.monotonic() - t0) * 1000
         translated = response.strip().lstrip("•-– ").strip()
 

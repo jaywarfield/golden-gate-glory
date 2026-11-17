@@ -12,7 +12,7 @@ import os
 import time
 
 from shared._common import (
-    contains_pii, pii_warning_message, parse_llm_json, llm_generate,
+    contains_pii, pii_warning_message, parse_llm_json, groq_generate,
     lookup_crosswalk, load_onet_occupation_skills,
 )
 from shared.governance import log_inference, get_subscription_ids
@@ -23,7 +23,7 @@ except ImportError:
     def tool(**_kw): return lambda f: f          # no-op decorator
     class ToolPermission: READ_ONLY = None       # noqa: E701
 
-_MODEL_ID = "ibm/granite-4-h-small"
+_MODEL_ID = "qwen/qwen3.8-27b"   # Groq — separate quota from watsonx.ai
 
 
 @tool(permission=ToolPermission.READ_ONLY)
@@ -116,7 +116,7 @@ JSON array:"""
 
     t0 = time.monotonic()
     try:
-        raw = llm_generate(prompt, _MODEL_ID, max_tokens=600)
+        raw = groq_generate(prompt, _MODEL_ID, max_tokens=600)
         latency_ms = (time.monotonic() - t0) * 1000
         parsed = parse_llm_json(raw, "map_military_skills")
 

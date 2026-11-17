@@ -11,7 +11,7 @@ import json
 import os
 import time
 
-from shared._common import contains_pii, pii_warning_message, parse_llm_json, llm_generate, groq_generate
+from shared._common import contains_pii, pii_warning_message, parse_llm_json, groq_generate
 from shared.governance import log_inference, get_subscription_ids
 
 try:
@@ -21,7 +21,7 @@ except ImportError:
     class ToolPermission: READ_ONLY = None       # noqa: E701
 
 _MODEL_ID_JD = "qwen/qwen3.8-27b"   # Groq — separate quota from watsonx.ai
-_MODEL_ID    = "ibm/granite-4-h-small"
+_MODEL_ID    = "qwen/qwen3.8-27b"   # Groq — separate quota from watsonx.ai
 
 
 # ---------------------------------------------------------------------------
@@ -173,7 +173,7 @@ JSON object:"""
 
     t0_draft = time.monotonic()
     try:
-        raw = llm_generate(prompt, _MODEL_ID, max_tokens=1200)
+        raw = groq_generate(prompt, _MODEL_ID, max_tokens=1200)
         latency_ms_draft = (time.monotonic() - t0_draft) * 1000
         sections = parse_llm_json(raw, "build_resume_draft")
 
@@ -231,7 +231,7 @@ EVIDENCED ITEMS TO CHECK:
 JSON array:"""
 
             t0_check = time.monotonic()
-            check_raw = llm_generate(check_prompt, _MODEL_ID, max_tokens=800)
+            check_raw = groq_generate(check_prompt, _MODEL_ID, max_tokens=800)
             latency_ms_check = (time.monotonic() - t0_check) * 1000
 
             if check_raw.startswith("```"):
