@@ -169,6 +169,53 @@ def llm_generate(prompt: str, model_id: str, max_tokens: int = 800, temperature:
 
 
 # ---------------------------------------------------------------------------
+# Groq inference helper (OpenAI-compatible chat completions)
+# ---------------------------------------------------------------------------
+
+def groq_generate(prompt: str, model_id: str = "llama-3.3-70b-versatile", max_tokens: int = 500, temperature: float = 0.2) -> str:
+    """
+    Call the Groq chat-completions API (OpenAI-compatible).
+    Returns the generated text string.
+    Raises RuntimeError on API errors or if GROQ_API_KEY is not set.
+    """
+    import urllib.request
+
+    api_key = os.environ.get("GROQ_API_KEY", "").strip()
+    if not api_key:
+        raise RuntimeError(
+            "GROQ_API_KEY environment variable is not set. "
+            "Get a free key at https://console.groq.com/keys and add it to Railway → Variables."
+        )
+
+    payload = json.dumps({
+        "model": model_id,
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": max_tokens,
+        "temperature": temperature,
+    }).encode()
+
+    req = urllib.request.Request(
+        "https://api.groq.com/openai/v1/chat/completions",
+        data=payload,
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            body = json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        body_text = e.read().decode(errors="replace")
+        raise RuntimeError(f"Groq API error {e.code}: {body_text}") from e
+
+    try:
+        return body["choices"][0]["message"]["content"]
+    except (KeyError, IndexError) as e:
+        raise RuntimeError(f"Unexpected Groq response format: {body}") from e
+
+
+# ---------------------------------------------------------------------------
 # LLM JSON parser
 # ---------------------------------------------------------------------------
 

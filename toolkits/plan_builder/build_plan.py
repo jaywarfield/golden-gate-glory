@@ -11,7 +11,7 @@ import json
 import os
 import time
 
-from shared._common import contains_pii, pii_warning_message, parse_llm_json, llm_generate
+from shared._common import contains_pii, pii_warning_message, parse_llm_json, llm_generate, groq_generate
 from shared.governance import log_inference, get_subscription_ids
 
 try:
@@ -20,7 +20,7 @@ except ImportError:
     def tool(**_kw): return lambda f: f          # no-op decorator
     class ToolPermission: READ_ONLY = None       # noqa: E701
 
-_MODEL_ID_JD = "ibm/granite-4-h-small"
+_MODEL_ID_JD = "llama-3.3-70b-versatile"   # Groq — separate quota from watsonx.ai
 _MODEL_ID    = "ibm/granite-4-h-small"
 
 
@@ -43,8 +43,8 @@ def analyze_job_description(job_description: str) -> dict:
     if contains_pii(job_description):
         return {"error": None, "pii_warning": pii_warning_message()}
 
-    # Truncate to ~1200 chars (~300 tokens) to cap token usage on long postings
-    job_description = job_description[:1200]
+    # Truncate to ~3000 chars — Groq has generous token limits
+    job_description = job_description[:3000]
 
     prompt = f"""You are an expert job description analyst.
 
@@ -60,7 +60,7 @@ JSON object:"""
 
     t0 = time.monotonic()
     try:
-        raw = llm_generate(prompt, _MODEL_ID_JD, max_tokens=200)
+        raw = groq_generate(prompt, _MODEL_ID_JD, max_tokens=400)
         latency_ms = (time.monotonic() - t0) * 1000
         result = parse_llm_json(raw, "analyze_job_description")
         result["pii_warning"] = None
