@@ -720,7 +720,7 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
 
     # Headers that signal a structured skills section (and their IT subheaders)
     SKILLS_HDR = re.compile(
-        r'\b(skill|qualification|certification|competenc|proficienc|technical|tool|technolog'
+        r'\b(skill|certification|competenc|proficienc|technical|tool|technolog'
         r'|networking|network|cybersecurity|cyber|information technology|system admin'
         r'|operating system|database|cloud|software|hardware|security|leadership|operation'
         r'|programming|language|platform|infrastructure)\b',
@@ -884,7 +884,7 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
     # e.g. "awards" matches "award", "certifications" matches "certification".
     EDU_AWARDS_HDR = re.compile(
         r'\b(educat|train|school|certif|licens|award|honor|decorat'
-        r'|achieve|commend|recognit|clearance|volunteer|reference)',
+        r'|achieve|commend|recognit|clearance|volunteer|reference|qualif)',
         re.IGNORECASE
     )
 
