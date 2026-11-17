@@ -107,7 +107,7 @@ JSON array:"""
 
     t0 = time.monotonic()
     try:
-        raw = groq_generate(prompt, _MODEL_ID, max_tokens=400)
+        raw = groq_generate(prompt, _MODEL_ID, max_tokens=400, json_object=True)
         latency_ms = (time.monotonic() - t0) * 1000
         parsed = parse_llm_json(raw, "map_military_skills")
 

@@ -77,7 +77,7 @@ JSON object:"""
 
     t0 = time.monotonic()
     try:
-        raw = groq_generate(prompt, _MODEL_ID, max_tokens=600)
+        raw = groq_generate(prompt, _MODEL_ID, max_tokens=600, json_object=True)
         latency_ms = (time.monotonic() - t0) * 1000
         result = parse_llm_json(raw, "analyze_skills_gap")
 

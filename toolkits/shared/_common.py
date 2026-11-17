@@ -172,7 +172,7 @@ def llm_generate(prompt: str, model_id: str, max_tokens: int = 800, temperature:
 # Groq inference helper (OpenAI-compatible chat completions)
 # ---------------------------------------------------------------------------
 
-def groq_generate(prompt: str, model_id: str = "qwen/qwen3.8-27b", max_tokens: int = 500, temperature: float = 0.2) -> str:
+def groq_generate(prompt: str, model_id: str = "qwen/qwen3.8-27b", max_tokens: int = 500, temperature: float = 0.2, json_object: bool = False) -> str:
     """
     Call the Groq chat-completions API (OpenAI-compatible).
     Returns the generated text string.
@@ -180,6 +180,9 @@ def groq_generate(prompt: str, model_id: str = "qwen/qwen3.8-27b", max_tokens: i
 
     429 rate-limit errors are retried once after the wait time indicated in
     the response (capped at 30 s) to handle Groq's per-minute output token limit.
+
+    Set json_object=True to enable response_format: json_object (guarantees a
+    JSON object in the response — requires the word "json" to appear in the prompt).
     """
     import urllib.request
     import time as _time
@@ -191,12 +194,16 @@ def groq_generate(prompt: str, model_id: str = "qwen/qwen3.8-27b", max_tokens: i
             "Get a free key at https://console.groq.com/keys and add it to Railway → Variables."
         )
 
-    payload = json.dumps({
+    body = {
         "model": model_id,
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": max_tokens,
         "temperature": temperature,
-    }).encode()
+    }
+    if json_object:
+        body["response_format"] = {"type": "json_object"}
+
+    payload = json.dumps(body).encode()
 
     MAX_RETRIES = 1
     for attempt in range(MAX_RETRIES + 1):

@@ -63,7 +63,7 @@ JSON object:"""
 
     t0 = time.monotonic()
     try:
-        raw = groq_generate(prompt, _MODEL_ID_JD, max_tokens=800)
+        raw = groq_generate(prompt, _MODEL_ID_JD, max_tokens=800, json_object=True)
         latency_ms = (time.monotonic() - t0) * 1000
         result = parse_llm_json(raw, "analyze_job_description")
         result["pii_warning"] = None
@@ -177,7 +177,7 @@ JSON object:"""
 
     t0_draft = time.monotonic()
     try:
-        raw = groq_generate(prompt, _MODEL_ID, max_tokens=1200)
+        raw = groq_generate(prompt, _MODEL_ID, max_tokens=1200, json_object=True)
         latency_ms_draft = (time.monotonic() - t0_draft) * 1000
         sections = parse_llm_json(raw, "build_resume_draft")
 
@@ -244,7 +244,7 @@ EVIDENCED ITEMS TO CHECK:
 JSON array:"""
 
             t0_check = time.monotonic()
-            check_raw = groq_generate(check_prompt, _MODEL_ID, max_tokens=800)
+            check_raw = groq_generate(check_prompt, _MODEL_ID, max_tokens=800, json_object=True)
             latency_ms_check = (time.monotonic() - t0_check) * 1000
 
             if check_raw.startswith("```"):
