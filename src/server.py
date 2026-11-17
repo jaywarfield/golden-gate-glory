@@ -941,10 +941,18 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
         is_skills = has_skills_hint or short_line_ratio >= 0.7
 
         if is_skills and not is_edu_awards:
-            # Structured skills block: split on commas/semicolons, extract each token
+            # Structured skills block: split on commas/semicolons, extract each token.
+            # When a line has a "Label: content" pattern, also add the label itself as a
+            # skill token (e.g. "Systems Administration: Windows, AD" adds both
+            # "Systems Administration" and the comma-split content tokens).
             for l in b['lines']:
                 m_label = re.match(r'^[A-Za-z0-9 /&\-]{2,40}:\s*(.+)$', l)
-                content = m_label.group(1) if m_label else l
+                if m_label:
+                    label = l[:l.index(':')].strip()
+                    _add_token(label, skill_tokens, seen)
+                    content = m_label.group(1)
+                else:
+                    content = l
                 for tok in re.split(r'[,;•·]\s*', content):
                     _add_token(tok, skill_tokens, seen)
             continue
