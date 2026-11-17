@@ -60,7 +60,7 @@ JSON object:"""
 
     t0 = time.monotonic()
     try:
-        raw = groq_generate(prompt, _MODEL_ID_JD, max_tokens=400)
+        raw = groq_generate(prompt, _MODEL_ID_JD, max_tokens=800)
         latency_ms = (time.monotonic() - t0) * 1000
         result = parse_llm_json(raw, "analyze_job_description")
         result["pii_warning"] = None
