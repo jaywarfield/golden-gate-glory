@@ -48,9 +48,13 @@ def analyze_job_description(job_description: str) -> dict:
 
     prompt = f"""You are an expert job description analyst.
 
-Analyse the job description below and return ONLY a valid JSON object with this key:
-  "required_skills": array of skill strings — list EVERY distinct skill explicitly stated as required; do NOT merge, combine, or summarise related skills into one entry.
-Each skill must be its own string entry. If the JD lists "Network Administration" and "Network Infrastructure" separately, they must appear as two separate entries.
+Analyse the job description below and return ONLY a valid JSON object with exactly these keys:
+  "required_skills":  array of skill strings explicitly stated as required (each skill its own entry, no merging)
+  "preferred_skills": array of skill strings stated as preferred or nice-to-have (empty array if none)
+  "keywords":         array of important ATS keyword strings from the posting (job titles, technologies, tools)
+  "industry":         single string — the industry or sector (e.g. "Information Technology", "Healthcare")
+  "role_level":       single string — seniority level (e.g. "Entry", "Mid", "Senior", "Manager")
+
 No preamble, no explanation, no markdown fences.
 
 Job description:

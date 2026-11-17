@@ -80,47 +80,34 @@ def map_military_skills(
         if onet_required else ""
     )
 
-    prompt = f"""You are a veteran career transition expert grounded in O*NET occupational data.
+    prompt = f"""You are a veteran career transition expert.
 
-Your task: identify ONLY the civilian skills this veteran has DIRECTLY DEMONSTRATED based on
-the service summary and O*NET crosswalk data provided below.
+Read the SERVICE SUMMARY below and extract ONLY skills the veteran has directly demonstrated.
 
-STRICT RULES — violation produces a fabricated resume:
-1. ONLY include a skill if it is explicitly supported by a word, phrase, or statement
-   in the service summary. Do not infer skills from the MOS/AFSC code alone.
-2. Do NOT add skills because they are common for this MOS/AFSC in general.
-   If this veteran's summary does not mention it, do not include it.
-3. Hard cap: return AT MOST 15 skills. Prefer fewer, higher-confidence entries.
-   Quality and accuracy matter more than quantity.
-4. Each skill MUST map to the O*NET required skills list when possible, but only if
-   that skill is also evidenced in the service summary.
-5. A skill name MUST be a noun or noun phrase (e.g. "Network Administration", "Team Leadership").
-   Do NOT write verb phrases or activity descriptions as skill names
-   (e.g. "Employee Training On IT Systems", "Managing Active Directory", "Troubleshooting Networks"
-   are INVALID — these are activities, not skill names).
+RULES:
+1. Source: Every skill MUST come from a specific word or phrase in the SERVICE SUMMARY.
+   Do NOT use the O*NET crosswalk or career path as a source of skills to list.
+2. Hard cap: return AT MOST 12 skills total. Fewer is better.
+3. Skill names must be short noun phrases (2–4 words).
+   INVALID examples: "Employee Training On IT Systems", "Troubleshooting Networks", "Managing Active Directory".
+   VALID examples: "Network Administration", "Team Leadership", "Active Directory".
+4. Do NOT list variants of the same skill separately
+   (e.g. "Desktop Installation", "Laptop Installation", "Server Installation" → just "Hardware Installation").
 
-Return ONLY a valid JSON array. Each element must have exactly these keys:
-  "skill"    — the civilian skill name (prefer O*NET vocabulary, noun/noun phrase only)
-  "category" — one of: Leadership, Technical, Operations, Communication, Analytical
-  "evidence" — a verbatim short quote (≤15 words) from the service summary that
-               supports this skill, OR "O*NET crosswalk: <civilian_title>" if the
-               skill derives from the crosswalk match and the summary supports the role.
+Return ONLY a valid JSON array, no preamble, no markdown fences.
+Each element: {{"skill": "...", "category": "Leadership|Technical|Operations|Communication|Analytical", "evidence": "verbatim quote ≤10 words from summary"}}
 
-No preamble, no explanation, no markdown fences.
-
-Service branch: {service_branch}
-Specialty code: {specialty_code}
-Target career path: {target_career_path}
-{crosswalk_context}
-{onet_context}
-Service summary:
+SERVICE SUMMARY:
 {service_summary}
+
+O*NET context (reference only — do NOT copy these as skills):
+{crosswalk_context}
 
 JSON array:"""
 
     t0 = time.monotonic()
     try:
-        raw = groq_generate(prompt, _MODEL_ID, max_tokens=600)
+        raw = groq_generate(prompt, _MODEL_ID, max_tokens=400)
         latency_ms = (time.monotonic() - t0) * 1000
         parsed = parse_llm_json(raw, "map_military_skills")
 
