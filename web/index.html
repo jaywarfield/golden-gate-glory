@@ -1443,22 +1443,20 @@
     const ja = STATE.jobAnalysis;
     const body = document.getElementById('s3-analysis-body');
     const al = ja.alignment || {};
+    const toTitleCase = s => s.replace(/\b([a-z])([a-z]*)/g, (_, f, r) => f.toUpperCase() + r);
     body.innerHTML = `
-      <div style="margin-bottom:10px"><strong style="font-size:15px">${esc(ja.role_title||'—')}</strong></div>
       <div style="margin-bottom:12px">
         <div class="field-hint">Industry</div><strong>${esc(ja.industry||'—')}</strong>
       </div>
+      <div style="margin-bottom:12px">
+        <div class="field-hint">Seniority</div><strong>${esc(ja.seniority_level||'—')}</strong>
+      </div>
       ${al.alignment_pct !== undefined ? `<div class="field-hint" style="margin-bottom:10px">Skill alignment: <strong>${al.alignment_pct}%</strong></div>` : ''}
       <div class="skill-section-title">Required Skills</div>
-      ${(ja.required_skills||[]).map(s=>`<div class="bullet-row"><span style="color:#57606a">▸</span><span class="bullet-text">${esc(s.replace(/\b\w/g, c => c.toUpperCase()))}</span></div>`).join('')}
-      ${(ja.preferred_skills||[]).length ? `
-      <div class="skill-section-title">Preferred Skills</div>
-      ${(ja.preferred_skills||[]).map(s=>`<div class="bullet-row"><span style="color:#57606a">▸</span><span class="bullet-text">${esc(s.replace(/\b\w/g, c => c.toUpperCase()))}</span></div>`).join('')}` : ''}
-      ${(ja.optional_skills||[]).length ? `
-      <div class="skill-section-title">Optional Skills</div>
-      ${(ja.optional_skills||[]).map(s=>`<div class="bullet-row"><span style="color:#57606a">▸</span><span class="bullet-text">${esc(s.replace(/\b\w/g, c => c.toUpperCase()))}</span></div>`).join('')}` : ''}
-      <div class="skill-section-title">ATS Keywords</div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">${(ja.ats_keywords||[]).map(k=>`<span class="badge badge-medium">${esc(k)}</span>`).join('')}</div>
+      ${(ja.required_skills||[]).map(s=>`<div class="bullet-row"><span style="color:#57606a">▸</span><span class="bullet-text">${esc(toTitleCase(s))}</span></div>`).join('')}
+      ${(ja.ats_keywords||[]).length ? `
+      <div class="skill-section-title" style="margin-top:12px">ATS Keywords</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">${(ja.ats_keywords||[]).map(k=>`<span class="badge badge-medium">${esc(k)}</span>`).join('')}</div>` : ''}
     `;
     document.getElementById('s3-output').style.display = 'block';
   }
@@ -1497,8 +1495,8 @@
     // — computed after requiredSkills is built below; placeholder for now.
 
     // ── Helpers ───────────────────────────────────────────────────────
-    // Title-case: uppercase first char of each word, lowercase the rest.
-    const capWords = s => (s||'').split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+    // Title-case: uppercase first char of each lowercase word only — preserves ALL-CAPS acronyms.
+    const capWords = s => (s||'').replace(/\b([a-z])([a-z]*)/g, (_, f, r) => f.toUpperCase() + r);
     const isTechnicalOnly = s => /^\s*technical\s*$/i.test(s||'');
     // Strip a leading "Technical" word from a skill name (e.g. "Technical Network Administration" → "Network Administration")
     const stripTechnical = s => (s||'').replace(/^\s*technical\s+/i, '').trim() || s;

@@ -50,6 +50,7 @@ def analyze_job_description(job_description: str) -> dict:
 
 Analyse the job description below and return ONLY a valid JSON object with exactly these keys:
   "required_skills": array of skill strings explicitly stated as required (each skill its own entry, no merging)
+  "keywords":        array of up to 8 important ATS keyword strings (job titles, tools, technologies, certifications)
   "industry":        single string — the industry or sector (e.g. "Information Technology", "Healthcare")
   "role_level":      single string — seniority level (e.g. "Entry", "Mid", "Senior", "Manager")
 
