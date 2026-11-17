@@ -540,17 +540,13 @@
     </div>
 
     <!-- Shared: selected-job banner (USAJobs only) + textarea (both sources) -->
-    <div class="field" style="margin-top:10px">
-      <label for="s3-jd">Job description <span class="req">*</span></label>
-      <div id="s3-jd-container" style="min-height:40px"></div>
-      <div id="s3-selected-job" style="display:none;margin-bottom:10px;padding:10px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;font-size:13px">
-        <span style="font-weight:600" id="s3-selected-title"></span>
-        <span style="color:#57606a" id="s3-selected-meta"></span>
-        <button onclick="s3ClearJob()" style="float:right;background:none;border:none;color:#57606a;cursor:pointer;font-size:12px;padding:0">✕ Clear</button>
-      </div>
-      <textarea id="s3-jd" rows="5" maxlength="2000" style="display:none"
-        placeholder="Job description text will appear here. You can edit it before proceeding."></textarea>
+    <div id="s3-selected-job" style="display:none;margin-top:10px;padding:10px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;font-size:13px">
+      <span style="font-weight:600" id="s3-selected-title"></span>
+      <span style="color:#57606a" id="s3-selected-meta"></span>
+      <button onclick="s3ClearJob()" style="float:right;background:none;border:none;color:#57606a;cursor:pointer;font-size:12px;padding:0">✕ Clear</button>
     </div>
+    <textarea id="s3-jd" rows="5" maxlength="2000" style="display:none;margin-top:10px"
+      placeholder="Job description text will appear here. You can edit it before proceeding."></textarea>
 
     <div class="spinner" id="s3-spinner"><div class="spinner-ring"></div><span>Analyzing with IBM Granite 4…</span></div>
     <div class="notice pii" id="s3-error" style="display:none"><strong>Error:</strong> <span id="s3-error-text"></span></div>
