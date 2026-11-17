@@ -172,7 +172,7 @@ def llm_generate(prompt: str, model_id: str, max_tokens: int = 800, temperature:
 # Groq inference helper (OpenAI-compatible chat completions)
 # ---------------------------------------------------------------------------
 
-def groq_generate(prompt: str, model_id: str = "llama-3.3-70b-versatile", max_tokens: int = 500, temperature: float = 0.2) -> str:
+def groq_generate(prompt: str, model_id: str = "openai/gpt-oss-120b", max_tokens: int = 500, temperature: float = 0.2) -> str:
     """
     Call the Groq chat-completions API (OpenAI-compatible).
     Returns the generated text string.
