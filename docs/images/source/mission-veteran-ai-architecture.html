@@ -91,26 +91,29 @@
         <div style="font-size:11px;color:#374151;line-height:1.5">PII reminder panel · session-scoped, no data persistence</div>
       </div>
       <!-- Options B–F — five columns -->
+      <!-- B–F all exist for the same reason: to run server.py with WATSONX_API_KEY, GROQ_API_KEY,   -->
+      <!-- and USAJOBS_API_KEY set in the environment. USE_MOCK=false just tells the browser to make  -->
+      <!-- real HTTP calls — those calls need server.py running with the keys to do anything useful.  -->
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:10px">
         <div>
           <div class="option-label-b">Option B — Local</div>
-          <div style="font-size:11px;color:#374151;line-height:1.5"><span class="code">python src/server.py</span> + open <span class="code">web/index.html</span> in browser · set <span class="code">USE_MOCK=false</span> · no cloud, no container · best for development and local demos · requires <span class="code">.env</span> with API keys</div>
+          <div style="font-size:11px;color:#374151;line-height:1.5">Set <span class="code">WATSONX_API_KEY</span>, <span class="code">GROQ_API_KEY</span>, <span class="code">USAJOBS_API_KEY</span> in <span class="code">.env</span> · run <span class="code">python src/server.py</span> · open <span class="code">web/index.html</span> in browser with <span class="code">USE_MOCK=false</span> · no cloud, no container required</div>
         </div>
         <div>
-          <div class="option-label-c">Option C — web/index.html on GitHub Pages</div>
-          <div style="font-size:11px;color:#374151;line-height:1.5">Static SPA · best for demos, sharing, hackathon judging · set <span class="code">API_BASE</span> secret to point at a running server; leave unset for <span class="code">USE_MOCK=true</span></div>
+          <div class="option-label-c">Option C — GitHub Pages</div>
+          <div style="font-size:11px;color:#374151;line-height:1.5">Static SPA only — no server runtime · set <span class="code">API_BASE</span> GitHub secret pointing at a separately running server.py (B, D, E, or F) to enable live mode; leave unset for <span class="code">USE_MOCK=true</span></div>
         </div>
         <div>
-          <div class="option-label-d">Option D — web/index.html on Code Engine</div>
-          <div style="font-size:11px;color:#374151;line-height:1.5">IBM Cloud Code Engine · serverless container · auto-scales to zero · <span class="code">API_BASE</span> injected via env var · no cluster management · best for IBM Cloud-native deployments</div>
+          <div class="option-label-d">Option D — Code Engine</div>
+          <div style="font-size:11px;color:#374151;line-height:1.5">IBM Cloud serverless container · set <span class="code">WATSONX_API_KEY</span>, <span class="code">GROQ_API_KEY</span>, <span class="code">USAJOBS_API_KEY</span> as Code Engine env vars · <span class="code">API_BASE</span> injected at runtime · auto-scales to zero</div>
         </div>
         <div>
-          <div class="option-label-e">Option E — web/index.html on OpenShift</div>
-          <div style="font-size:11px;color:#374151;line-height:1.5">Ingress pod + route · best for enterprise cluster, air-gapped, OpenShift AI integration · <span class="code">USE_MOCK=false</span></div>
+          <div class="option-label-e">Option E — OpenShift</div>
+          <div style="font-size:11px;color:#374151;line-height:1.5">Ingress pod + route · set <span class="code">WATSONX_API_KEY</span>, <span class="code">GROQ_API_KEY</span>, <span class="code">USAJOBS_API_KEY</span> as OpenShift secrets · best for enterprise cluster or air-gapped deployment</div>
         </div>
         <div>
-          <div class="option-label-f">Option F — web/index.html on Railway</div>
-          <div style="font-size:11px;color:#374151;line-height:1.5">Docker container · <span class="code">start.sh</span> injects <span class="code">window.API_BASE</span> from <span class="code">RAILWAY_PUBLIC_DOMAIN</span> + flips <span class="code">USE_MOCK=false</span> before uvicorn starts</div>
+          <div class="option-label-f">Option F — Railway</div>
+          <div style="font-size:11px;color:#374151;line-height:1.5">Docker container · set <span class="code">WATSONX_API_KEY</span>, <span class="code">GROQ_API_KEY</span>, <span class="code">USAJOBS_API_KEY</span> as Railway env vars · <span class="code">start.sh</span> injects <span class="code">API_BASE</span> + flips <span class="code">USE_MOCK=false</span> at startup</div>
         </div>
       </div>
       <div class="inputs-row">
