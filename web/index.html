@@ -361,7 +361,7 @@
     <div class="field">
       <label>Consent choice <span class="req">*</span></label>
       <label style="font-weight:400;display:flex;align-items:center;gap:8px;margin-top:4px">
-        <input type="checkbox" id="s1-consent">
+        <input type="checkbox" id="s1-consent" onchange="var b=document.getElementById('s1-continue-btn');b.disabled=!this.checked;b.style.opacity=this.checked?'':'0.45';b.style.cursor=this.checked?'':'not-allowed'">
         I understand and agree
       </label>
     </div>
@@ -383,7 +383,7 @@
       <strong>Output:</strong> Consent choice and a new career-intake draft.
     </div>
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="step1Next()">Continue to Intake →</button>
+      <button class="btn btn-primary" id="s1-continue-btn" onclick="step1Next()" disabled style="opacity:0.45;cursor:not-allowed">Continue to Intake →</button>
     </div>
     <div class="notice pii" id="s1-error" style="display:none">
       <strong>Error:</strong> <span id="s1-error-text"></span>
@@ -837,6 +837,9 @@
       // Re-select "Save draft" radio since they had it saved
       document.getElementById('s1-storage-save').checked = true;
       document.getElementById('s1-consent').checked = true;
+      document.getElementById('s1-continue-btn').disabled = false;
+      document.getElementById('s1-continue-btn').style.opacity = '';
+      document.getElementById('s1-continue-btn').style.cursor  = '';
       document.getElementById('s1-restore-banner').style.display = 'none';
       // Repopulate form fields from restored STATE
       if (STATE.branch) {
