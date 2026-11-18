@@ -1498,11 +1498,7 @@
 
   function renderStep4() {
     const gr  = STATE.gapResult;
-    const pct = gr.coverage_pct || 0;
-    document.getElementById('s4-pct').textContent = `${pct}%`;
-    document.getElementById('s4-bar').style.width  = `${pct}%`;
-    // Coverage bar counts only Required job skills (not preferred/optional)
-    // — computed after requiredSkills is built below; placeholder for now.
+    // Coverage bars are computed from allRows below (same logic as the table).
 
     // ── Helpers ───────────────────────────────────────────────────────
     // Title-case: uppercase first char of each lowercase word only — preserves ALL-CAPS acronyms.
@@ -1557,28 +1553,8 @@
     const preferredSkills = (ja.preferred_skills || []).filter(s => !isTechnicalOnly(s));
     const optionalSkills  = (ja.optional_skills  || []).filter(s => !isTechnicalOnly(s));
 
-    // Required coverage bar
-    const reqCovered = requiredSkills.filter(js => {
-      const jsL = js.toLowerCase();
-      return !inGap(jsL) && (coveredNames.has(jsL) || !!getCiv(jsL));
-    }).length;
-    document.getElementById('s4-sub').textContent =
-      `${reqCovered} of ${requiredSkills.length} required skills covered`;
-
-    // Preferred coverage bar — only shown if there are preferred skills
-    if (preferredSkills.length > 0) {
-      const prefCovered = preferredSkills.filter(js => {
-        const jsL = js.toLowerCase();
-        return !inGap(jsL) && (coveredNames.has(jsL) || !!getCiv(jsL));
-      }).length;
-      const prefPct = Math.round((prefCovered / preferredSkills.length) * 100);
-      document.getElementById('s4-pref-pct').textContent  = `${prefPct}%`;
-      document.getElementById('s4-pref-bar').style.width  = `${prefPct}%`;
-      document.getElementById('s4-pref-sub').textContent  = `${prefCovered} of ${preferredSkills.length} preferred skills covered`;
-      document.getElementById('s4-pref-row').style.display = 'block';
-    } else {
-      document.getElementById('s4-pref-row').style.display = 'none';
-    }
+    // Coverage bars — computed AFTER allRows so they use the same covered logic as the table.
+    // (Counts are derived from allRows below once it is built.)
 
     // ── Shared table style helpers ────────────────────────────────────
     const th = (w, label) =>
@@ -1607,6 +1583,25 @@
       ...buildRows(preferredSkills, 'Preferred'),
       ...buildRows(optionalSkills,  'Optional'),
     ];
+
+    // ── Coverage bars (derived from allRows — same logic as the table) ─
+    const reqRows  = allRows.filter(r => r.tierKey === 'Required');
+    const prefRows = allRows.filter(r => r.tierKey === 'Preferred');
+    const pct = reqRows.length ? Math.round(reqRows.filter(r => r.covered).length / reqRows.length * 100) : 0;
+    document.getElementById('s4-pct').textContent      = `${pct}%`;
+    document.getElementById('s4-bar').style.width      = `${pct}%`;
+    document.getElementById('s4-sub').textContent      =
+      `${reqRows.filter(r => r.covered).length} of ${reqRows.length} required skills covered`;
+    if (prefRows.length > 0) {
+      const prefCovered = prefRows.filter(r => r.covered).length;
+      const prefPct = Math.round(prefCovered / prefRows.length * 100);
+      document.getElementById('s4-pref-pct').textContent = `${prefPct}%`;
+      document.getElementById('s4-pref-bar').style.width = `${prefPct}%`;
+      document.getElementById('s4-pref-sub').textContent = `${prefCovered} of ${prefRows.length} preferred skills covered`;
+      document.getElementById('s4-pref-row').style.display = 'block';
+    } else {
+      document.getElementById('s4-pref-row').style.display = 'none';
+    }
 
     // ── Skill Mapping table ───────────────────────────────────────────
     let html = `<table style="width:100%;border-collapse:collapse">
