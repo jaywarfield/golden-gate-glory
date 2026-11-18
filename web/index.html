@@ -1451,6 +1451,9 @@
       ${al.alignment_pct !== undefined ? `<div class="field-hint" style="margin-bottom:10px">Skill alignment: <strong>${al.alignment_pct}%</strong></div>` : ''}
       <div class="skill-section-title">Required Skills</div>
       ${(ja.required_skills||[]).map(s=>`<div class="bullet-row"><span style="color:#57606a">▸</span><span class="bullet-text">${esc(toTitleCase(s))}</span></div>`).join('')}
+      ${(ja.preferred_skills||[]).length ? `
+      <div class="skill-section-title" style="margin-top:12px">Preferred Skills</div>
+      ${(ja.preferred_skills||[]).map(s=>`<div class="bullet-row"><span style="color:#57606a">▸</span><span class="bullet-text">${esc(toTitleCase(s))}</span></div>`).join('')}` : ''}
       ${(ja.ats_keywords||[]).length ? `
       <div class="skill-section-title" style="margin-top:12px">ATS Keywords</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">${(ja.ats_keywords||[]).map(k=>`<span class="badge badge-medium">${esc(k)}</span>`).join('')}</div>` : ''}
