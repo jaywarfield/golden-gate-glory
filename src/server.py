@@ -1149,8 +1149,9 @@ async def _step_search_jobs(inp: dict) -> dict:
             # Collapse 3+ consecutive newlines to 2
             text = _re.sub(r'\n{3,}', '\n\n', text)
             # If still one long line (no newlines), break on sentence boundaries
+            # with a blank line between each sentence for readability in the textarea.
             if '\n' not in text:
-                text = _re.sub(r'(?<=[.!?])\s+(?=[A-Z])', '\n', text)
+                text = _re.sub(r'(?<=[.!?])\s+(?=[A-Z])', '\n\n', text)
             return text.strip()
 
         qual = _html_to_text(mv.get("QualificationSummary", ""))
