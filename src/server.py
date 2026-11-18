@@ -1132,9 +1132,26 @@ async def _step_search_jobs(inp: dict) -> dict:
             elif codes:
                 grade_str = "/".join(codes)
 
-        # Full job description text — concatenate all QualificationSummary fields
-        qual = mv.get("QualificationSummary", "")
-        user_area_desc = (
+        # Full job description text — concatenate QualificationSummary + JobSummary.
+        # USAJobs returns these as HTML strings; convert <br>, <p>, <li> to newlines
+        # so the textarea shows readable multi-line text instead of one long sentence.
+        import re as _re
+        def _html_to_text(html: str) -> str:
+            if not html:
+                return ""
+            # Block-level tags → newline
+            text = _re.sub(r'<br\s*/?>|</p>|</li>|</div>', '\n', html, flags=_re.IGNORECASE)
+            # Strip all remaining tags
+            text = _re.sub(r'<[^>]+>', '', text)
+            # Decode common HTML entities
+            text = text.replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>') \
+                       .replace('&nbsp;', ' ').replace('&#39;', "'").replace('&quot;', '"')
+            # Collapse 3+ consecutive newlines to 2
+            text = _re.sub(r'\n{3,}', '\n\n', text)
+            return text.strip()
+
+        qual = _html_to_text(mv.get("QualificationSummary", ""))
+        user_area_desc = _html_to_text(
             mv.get("UserArea", {})
               .get("Details", {})
               .get("JobSummary", "")

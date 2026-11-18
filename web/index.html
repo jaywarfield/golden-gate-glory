@@ -1448,9 +1448,6 @@
       <div style="margin-bottom:12px">
         <div class="field-hint">Industry</div><strong>${esc(ja.industry||'—')}</strong>
       </div>
-      <div style="margin-bottom:12px">
-        <div class="field-hint">Role Level</div><strong>${esc(ja.seniority_level||'—')}</strong>
-      </div>
       ${al.alignment_pct !== undefined ? `<div class="field-hint" style="margin-bottom:10px">Skill alignment: <strong>${al.alignment_pct}%</strong></div>` : ''}
       <div class="skill-section-title">Required Skills</div>
       ${(ja.required_skills||[]).map(s=>`<div class="bullet-row"><span style="color:#57606a">▸</span><span class="bullet-text">${esc(toTitleCase(s))}</span></div>`).join('')}
@@ -1912,25 +1909,28 @@
     document.getElementById('s7-output').style.display = 'block';
   }
 
-  // Returns veteran-mapped skills only (from STATE.skills — the skill inventory
-  // built in step 2). Drops:
-  //   • empty strings
-  //   • bare category labels the LLM sometimes emits as skill names
-  //     (Technical, Leadership, Operations, Communication, Analytical)
-  //   • anything that starts with "Technical" (e.g. "Technical Skills", "Technical Proficiency")
-  //   • short job-title lines ≤ 3 words that match the target role (e.g. "Network Administrator")
+  // Returns the full veteran skill set for display in Step 5.
+  // Combines:
+  //   • STATE.skills — mapped skills from map_military_skills (step 4), keyed skill_name
+  //   • STATE.resumeSkills — regex-parsed skill tokens from the resume (step 2)
+  // Drops bare category labels, empty strings, and the target role title.
   const _CATEGORY_LABEL_RE = /^\s*(technical|leadership|operations|communication|analytical)\b/i;
   function _veteranSkills() {
     const targetLower = (STATE.targetRole||'').toLowerCase();
-    return (STATE.skills||[])
-      .map(s => (s.skill_name||'').trim())
-      .filter(s => {
-        if (!s) return false;
-        if (_CATEGORY_LABEL_RE.test(s)) return false;
-        // drop if it matches the target role title exactly (job title leaked in as a skill)
-        if (targetLower && s.toLowerCase() === targetLower) return false;
-        return true;
-      });
+    const seen = new Set();
+    const all = [
+      ...(STATE.skills||[]).map(s => (s.skill_name||s.skill||'').trim()),
+      ...(STATE.resumeSkills||[]).map(s => (s||'').trim()),
+    ];
+    return all.filter(s => {
+      if (!s) return false;
+      if (_CATEGORY_LABEL_RE.test(s)) return false;
+      if (targetLower && s.toLowerCase() === targetLower) return false;
+      const key = s.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
   }
 
   function renderFinalPackage() {
