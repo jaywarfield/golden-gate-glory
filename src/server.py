@@ -351,6 +351,15 @@ def _step_map_skills(inp: dict) -> dict:
         r'provided|utilized|supported|assisted|handled)\s+',
         _re.IGNORECASE,
     )
+    # Verbose LLM noun-phrase prefixes — strip these so "experience in IT Support"
+    # becomes "IT Support", "knowledge of networking" becomes "Networking", etc.
+    _VERBOSE_PREFIX = _re.compile(
+        r'^(experience in|experience with|knowledge of|knowledge in|'
+        r'ability to|familiarity with|proficiency in|proficiency with|'
+        r'expertise in|expertise with|skills in|understanding of|'
+        r'background in|background with|competency in|competency with)\s+',
+        _re.IGNORECASE,
+    )
     # Category labels the LLM sometimes emits verbatim as skill names — not useful skills.
     # Also drop "Technical*" prefix entries (e.g. "Technical Skills", "Technical Proficiency").
     _CATEGORY_LABEL = _re.compile(
@@ -359,24 +368,32 @@ def _step_map_skills(inp: dict) -> dict:
     )
 
     def _clean_skill_name(raw: str) -> str:
-        return _LEADING_VERB.sub('', (raw or '').strip()).strip()
+        s = (raw or '').strip()
+        s = _LEADING_VERB.sub('', s).strip()
+        s = _VERBOSE_PREFIX.sub('', s).strip()
+        return s
 
     raw_skills = result.get("skills") or []
-    skills = [
-        {
-            "skill_name": _clean_skill_name(s if isinstance(s, str) else s.get("skill", s.get("skill_name", ""))),
+    _seen_normalized: set = set()
+    skills = []
+    for s in raw_skills:
+        name = _clean_skill_name(s if isinstance(s, str) else s.get("skill", s.get("skill_name", "")))
+        if not name:
+            continue
+        if _CATEGORY_LABEL.match(name):
+            continue
+        norm = name.lower()
+        if norm in _seen_normalized:
+            continue
+        _seen_normalized.add(norm)
+        skills.append({
+            "skill_name": name,
             "category":   "" if isinstance(s, str) else s.get("category", ""),
             "confidence": "High" if isinstance(s, str) else (
                 "High" if not s.get("evidence", "").startswith("O*NET crosswalk") else "Medium"
             ),
             "evidence":   "" if isinstance(s, str) else s.get("evidence", ""),
-        }
-        for s in raw_skills
-        if _clean_skill_name(s if isinstance(s, str) else s.get("skill", s.get("skill_name", "")))
-        and not _CATEGORY_LABEL.match(
-            _clean_skill_name(s if isinstance(s, str) else s.get("skill", s.get("skill_name", "")))
-        )
-    ]
+        })
 
     return {
         "skills":          skills,
