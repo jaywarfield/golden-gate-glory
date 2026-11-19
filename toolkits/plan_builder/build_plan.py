@@ -51,6 +51,7 @@ def analyze_job_description(job_description: str) -> dict:
 Analyse the job description below and return ONLY a valid JSON object with exactly these keys:
   "required_skills":  array of skill strings explicitly stated as required (each skill its own entry, no merging)
   "preferred_skills": array of skill strings stated as preferred or nice-to-have (empty array if none)
+  "optional_skills":  array of skill strings that are beneficial but clearly optional or bonus (empty array if none)
   "keywords":         array of up to 8 important ATS keyword strings (job titles, tools, technologies, certifications)
   "industry":         single string — the industry or sector (e.g. "Information Technology", "Healthcare")
 

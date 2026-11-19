@@ -311,6 +311,7 @@ def _step_analyze_job(inp: dict) -> dict:
         "industry":         result.get("industry", ""),
         "required_skills":  result.get("required_skills", []),
         "preferred_skills": result.get("preferred_skills", []),
+        "optional_skills":  result.get("optional_skills", []),
         "ats_keywords":     result.get("keywords", []),
         "seniority_level":  result.get("role_level", ""),
         "alignment":        {},
