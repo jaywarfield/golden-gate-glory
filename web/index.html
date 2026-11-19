@@ -1621,10 +1621,10 @@
       // Col 2: job skill name — strip leading "Technical", then title-case
       const jobCell = r.tierKey === 'Veteran' ? '' : esc(capWords(stripTechnical(r.js)));
 
-      // Col 3: matched veteran skill name — strip leading "Technical", title-case; or N/A
+      // Col 3: Covered / ✕ Gap in tier colour
       const vetCell = r.covered
-        ? esc(capWords(stripTechnical(r.civ ? r.civ.skill_name : r.js)))
-        : `<span style="color:#57606a">N/A</span>`;
+        ? `<span style="color:#166534;font-weight:600">✓ Covered</span>`
+        : `<span style="color:${tier.color};font-weight:600">✕ Gap</span>`;
 
       html += `<tr style="background:${bg}">
         ${td(typeCell)}
