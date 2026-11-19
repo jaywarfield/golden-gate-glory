@@ -139,7 +139,7 @@
     .coverage-row { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
     .coverage-pct { font-size: 28px; font-weight: 700; color: #1e3a8a; white-space: nowrap; }
     .bar-track { flex: 1; height: 10px; background: #e5e7eb; border-radius: 5px; overflow: hidden; }
-    .bar-fill   { height: 100%; background: #1e3a8a; border-radius: 5px; transition: width 0.4s; }
+    .bar-fill   { height: 100%; background: #DC2626; border-radius: 5px; transition: width 0.4s; }
     .skill-section-title {
       font-size: 12px; font-weight: 700; text-transform: uppercase;
       letter-spacing: 0.05em; color: #57606a;
@@ -606,8 +606,17 @@
         <div style="display:flex;align-items:center;gap:10px">
           <div style="font-size:18px;font-weight:700;color:#1f2328;min-width:36px" id="s4-pref-pct">–</div>
           <div style="flex:1">
-            <div class="bar-track"><div class="bar-fill" id="s4-pref-bar" style="width:0%;background:#92400e"></div></div>
+            <div class="bar-track"><div class="bar-fill" id="s4-pref-bar" style="width:0%;background:#D97706"></div></div>
             <div style="font-size:12px;color:#57606a;margin-top:3px" id="s4-pref-sub"></div>
+          </div>
+        </div>
+      </div>
+      <div id="s4-opt-row" style="display:none;margin-top:10px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="font-size:18px;font-weight:700;color:#1f2328;min-width:36px" id="s4-opt-pct">–</div>
+          <div style="flex:1">
+            <div class="bar-track"><div class="bar-fill" id="s4-opt-bar" style="width:0%;background:#2563EB"></div></div>
+            <div style="font-size:12px;color:#57606a;margin-top:3px" id="s4-opt-sub"></div>
           </div>
         </div>
       </div>
@@ -1601,6 +1610,17 @@
       document.getElementById('s4-pref-row').style.display = 'block';
     } else {
       document.getElementById('s4-pref-row').style.display = 'none';
+    }
+    const optRows = allRows.filter(r => r.tierKey === 'Optional');
+    if (optRows.length > 0) {
+      const optCovered = optRows.filter(r => r.covered).length;
+      const optPct = Math.round(optCovered / optRows.length * 100);
+      document.getElementById('s4-opt-pct').textContent = `${optPct}%`;
+      document.getElementById('s4-opt-bar').style.width = `${optPct}%`;
+      document.getElementById('s4-opt-sub').textContent = `${optCovered} of ${optRows.length} optional skills covered`;
+      document.getElementById('s4-opt-row').style.display = 'block';
+    } else {
+      document.getElementById('s4-opt-row').style.display = 'none';
     }
 
     // ── Skill Mapping table ───────────────────────────────────────────
