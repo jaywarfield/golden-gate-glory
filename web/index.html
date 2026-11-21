@@ -676,13 +676,13 @@
       <div id="s5-tag-counts"></div>
     </div>
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="goStep(6)">Continue to Interview Prep →</button>
+      <button class="btn btn-primary" onclick="goStep(6)">Continue to Interview Preparation →</button>
     </div>
   </div>
 </div>
 
 <!-- ════════════════════════════════════════════════════════════════
-     STEP 6 — INTERVIEW PREP
+     STEP 6 — INTERVIEW PREPARATION
      ════════════════════════════════════════════════════════════════ -->
 <div class="section" id="section-6">
   <div class="step-header">
@@ -696,9 +696,9 @@
   </div>
 
   <div class="card">
-    <div class="card-title">Generate Interview Questions</div>
+    <div class="card-title">Generate Q&A</div>
     <div class="btn-row">
-      <button class="btn btn-primary" id="s6-btn" onclick="step6Prep()">Generate Interview Prep</button>
+      <button class="btn btn-primary" id="s6-btn" onclick="step6Prep()">Generate Q&A</button>
     </div>
     <div class="spinner" id="s6-spinner"><div class="spinner-ring"></div><span>Generating interview questions with IBM Granite 4…</span></div>
     <div class="notice pii" id="s6-error" style="display:none"><strong>Error:</strong> <span id="s6-error-text"></span></div>
@@ -758,7 +758,7 @@
         </div>
       </div>
       <div class="card" id="s7-interview-card" style="display:none">
-        <div class="card-title">Interview Prep</div>
+        <div class="card-title">Interview Q&A</div>
         <div id="s7-interview-body"></div>
         <div class="btn-row" style="margin-top:16px">
           <button class="btn btn-secondary" onclick="exportInterviewTxt()">⬇ Save as .txt</button>
@@ -1807,7 +1807,7 @@
   }
 
   // ═══════════════════════════════════════════════════════════════════
-  // STEP 6 — Interview Prep
+  // STEP 6 — Interview Preparation
   // ═══════════════════════════════════════════════════════════════════
   async function step6Prep() {
     document.getElementById('s6-error').style.display = 'none';
@@ -2250,7 +2250,7 @@
 
     const children = [
       new Paragraph({
-        children: [new TextRun({ text: `Interview Prep — ${target}`, bold: true, size: 28 })],
+        children: [new TextRun({ text: `Interview Q&A — ${target}`, bold: true, size: 28 })],
         alignment: AlignmentType.CENTER,
         spacing: { after: 200 },
       }),
