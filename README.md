@@ -7,15 +7,18 @@
 Mission Veteran AI (by Golden Gate Glory or G3) is an AI-powered career chatbot, made with IBM Bob, for veterans and transitioning service members with military computer and IT experience.  Veterans describe responsibilities and achievements, the chatbot then identifies transferable skills in computer systems, IT support, data analysis, and cybersecurity, and drafts civilian-ready résumé accomplishments, preserving measurable results and allowing veterans to market their technical experience and improve opportunities to obtain civilian jobs.
 
 <p align="center">
+  <img src="docs/images/missionveteranqr.png" alt="First Image" width="85%" />
+</p>
+
+<p align="center">
   <img src="docs/images/ibmbobusage.png" alt="First Image" width="85%" />
 </p>
 
-
-| Index | IBM Product | Description | Documentation |
+| Index | IBM Product | Description | Document |
 | :---: | :---:       | :---:       | :---: |
 | 1 | Bob | Development assistant throughout. | |
-| 2 | watsonx Orchestrate | Agent coordination with 4 subagents react_core style, four registered toolkits. | [Agents](docs/agents.md) [Tools](docs/tools.md) | 
-| 3 | watsonx.governance | Bias & Fairness monitoring, Model Drift detection, Content Safecty on every inference, Explainability, and an immuitable Audit Trail. | [Guards](docs/guards.md) [Monitors](docs/monitors.md) |
+| 2 | watsonx Orchestrate | Agent coordination with 4 subagents react_core style, four registered toolkits. | [Agents](docs/agents.md), [Tools](docs/tools.md) | 
+| 3 | watsonx.governance | Bias & Fairness monitoring, Model Drift detection, Content Safecty on every inference, Explainability, and an immuitable Audit Trail. | [Guards](docs/guards.md), [Monitors](docs/monitors.md) |
 | 4 | watsonx.ai | Model host and REST inference API. |
 | 5 | Granite & RAG | ibm/granite-4-h-small via watsonx.ai as the primary LLM for all five inference steps with Groq as a fallback, and 12 RAG sources. | [RAG](docs/rag.md) |
 | 6 | Code Engine | Optional deployment target implemented to host FastAPI bridge server container. | |
