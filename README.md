@@ -23,12 +23,12 @@ Mission Veteran AI (by Golden Gate Glory or G3) is an AI-powered career chatbot,
 | Index | IBM Product | Description | Document |
 | :---: | :---:       | :---:       | :---: |
 | 1 | Bob | Development assistant throughout. | |
-| 2 | watsonx Orchestrate | Agent coordination with 4 subagents react_core style, four registered toolkits. | [Agents](docs/agents.md), [Tools](docs/tools.md) | 
-| 3 | watsonx.governance | Bias & Fairness monitoring, Model Drift detection, Content Safecty on every inference, Explainability, and an immuitable Audit Trail. | [Guards](docs/guards.md), [Monitors](docs/monitors.md) |
+| 2 | watsonx Orchestrate | Coordinator agent, four subagents, four toolkits. | [Agents](docs/agents.md), [Tools](docs/tools.md) | 
+| 3 | watsonx.governance | Monitoring, Drift detection, Content Safety, Explainability, Audit Trail. | [Guards](docs/guards.md), [Monitors](docs/monitors.md) |
 | 4 | watsonx.ai | Model host and REST inference API. |
-| 5 | Granite & RAG | ibm/granite-4-h-small via watsonx.ai as the primary LLM for all five inference steps with Groq as a fallback, and 12 RAG sources. | [RAG](docs/rag.md) |
-| 6 | Code Engine | Optional deployment target implemented to host FastAPI bridge server container. | |
-| 7 | OpenShift | Optional deployment target implemented to host FastAPI bridge server container. | |
+| 5 | Granite & RAG | Primary LLM and 12 RAG sources. | [RAG](docs/rag.md) |
+| 6 | Code Engine | Optional container for FastAPI bridge server. | |
+| 7 | OpenShift | Optional container for FastAPI bridge server. | |
 | 8 | SkillsBuild | RAG knowledge source for course recommendations. | |
 | 9 | Terraform | Agents, Toolkits, Governance, deployment targets provisioned with Terraform. | |
 | 10 | Jupyter Notebooks | Seven notebooks used for standalone step testing. | [Notebooks](docs/notebooks.md) |
