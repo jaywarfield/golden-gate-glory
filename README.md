@@ -1,14 +1,13 @@
 # **Mission Veteran AI** *by G3*
 
+<p>
 <img src="docs/images/missionveteranlogo1.png" alt="Logo Image" width="45%" align="center"/>
+<img src="docs/images/missionveteranqr.png" alt="QR Image" width="10%" align="center" />
+</p
 
 <p>
-Mission Veteran AI (by Golden Gate Glory or G3) is an AI-powered career chatbot, made with IBM Bob, for veterans and transitioning service members with military computer and IT experience.  Veterans describe responsibilities and achievements, the chatbot then identifies transferable skills in computer systems, IT support, data analysis, and cybersecurity, and drafts civilian-ready résumé, preserving measurable results and allowing veterans to market their technical experience and improve opportunities to obtain civilian jobs.
+Mission Veteran AI (by Golden Gate Glory or G3) is an AI-powered career chatbot, made with IBM Bob, for veterans and transitioning service members with military computer and IT experience.  Veterans describe responsibilities and achievements, the chatbot then identifies transferable skills in computer systems, IT support, data analysis, and cybersecurity, and drafts civilian-ready résumé accomplishments, preserving measurable results and allowing veterans to market their technical experience and improve opportunities to obtain civilian jobs.
 </p>`
-
-<p>
-  <img src="docs/images/missionveteranqr.png" alt="QR Image" width="10%" align="center" />
-</p>
 
 <p align="center">
   <img src="docs/images/ibmbobusage.png" alt="First Image" width="85%" />
