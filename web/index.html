@@ -445,7 +445,7 @@
   <div class="btn-row">
     <button class="btn btn-primary" id="s2-btn" onclick="step2Translate()">Analyze Service Profile</button>
   </div>
-  <div class="spinner" id="s2-spinner"><div class="spinner-ring"></div><span>Translating with IBM Granite 4 (Groq fallback)…</span></div>
+  <div class="spinner" id="s2-spinner"><div class="spinner-ring"></div><span>Translating using IBM Granite 4…</span></div>
   <div class="notice pii" id="s2-error" style="display:none"><strong>Error:</strong> <span id="s2-error-text"></span></div>
 
   <div id="s2-output" style="display:none">
@@ -550,7 +550,7 @@
     <textarea id="s3-jd" rows="12" maxlength="8000" style="display:none;margin-top:10px"
       placeholder="Job description text will appear here. You can edit it before proceeding."></textarea>
 
-    <div class="spinner" id="s3-spinner"><div class="spinner-ring"></div><span>Analyzing with IBM Granite 4 (Groq fallback)…</span></div>
+    <div class="spinner" id="s3-spinner"><div class="spinner-ring"></div><span>Analyzing using IBM Granite 4…</span></div>
     <div class="notice pii" id="s3-error" style="display:none"><strong>Error:</strong> <span id="s3-error-text"></span></div>
   </div>
 
@@ -588,7 +588,7 @@
     <div class="btn-row">
       <button class="btn btn-primary" id="s4-btn" onclick="step4Analyze()">Map Skills &amp; Analyze Gaps</button>
     </div>
-    <div class="spinner" id="s4-spinner"><div class="spinner-ring"></div><span>Mapping skills with IBM Granite 4 (Groq fallback)…</span></div>
+    <div class="spinner" id="s4-spinner"><div class="spinner-ring"></div><span>Mapping skills using IBM Granite 4…</span></div>
     <div class="notice pii" id="s4-error" style="display:none"><strong>Error:</strong> <span id="s4-error-text"></span></div>
   </div>
 
@@ -654,7 +654,7 @@
     <div class="btn-row">
       <button class="btn btn-primary" id="s5-btn" onclick="step5Build()">Build Tagged Resume Draft</button>
     </div>
-    <div class="spinner" id="s5-spinner"><div class="spinner-ring"></div><span>Building resume draft with IBM Granite 4 (Groq fallback)…</span></div>
+    <div class="spinner" id="s5-spinner"><div class="spinner-ring"></div><span>Building resume draft using IBM Granite 4…</span></div>
     <div class="notice pii" id="s5-error" style="display:none"><strong>Error:</strong> <span id="s5-error-text"></span></div>
   </div>
 
@@ -700,7 +700,7 @@
     <div class="btn-row">
       <button class="btn btn-primary" id="s6-btn" onclick="step6Prep()">Generate Q&A</button>
     </div>
-    <div class="spinner" id="s6-spinner"><div class="spinner-ring"></div><span>Generating interview questions with IBM Granite 4 (Groq fallback)…</span></div>
+    <div class="spinner" id="s6-spinner"><div class="spinner-ring"></div><span>Generating interview questions using IBM Granite 4…</span></div>
     <div class="notice pii" id="s6-error" style="display:none"><strong>Error:</strong> <span id="s6-error-text"></span></div>
   </div>
 
@@ -804,21 +804,7 @@
     resumeDraft: null,       // from build_resume_draft
     interviewPrep: null,     // from generate_interview_prep
     gateResult: null,        // from evaluate_export_gate
-    modelUsed: {},           // step → "granite" | "groq"
   };
-
-  // ── Model badge helper ─────────────────────────────────────────────
-  function modelBadge(step) {
-    const m = STATE.modelUsed[step];
-    if (!m) return '';
-    const label  = m === 'granite' ? 'IBM Granite 4' : 'Groq (fallback)';
-    const color  = m === 'granite' ? '#1d4ed8' : '#7c3aed';
-    const bg     = m === 'granite' ? '#eff6ff' : '#f5f3ff';
-    const border = m === 'granite' ? '#bfdbfe' : '#ddd6fe';
-    return `<div style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:${color};background:${bg};border:1px solid ${border};border-radius:4px;padding:2px 7px;margin-bottom:10px">
-      <span style="font-weight:600">🤖 ${label}</span>
-    </div>`;
-  }
 
   // ── Draft persistence ──────────────────────────────────────────────
   const DRAFT_KEY = 'mvai_draft_v1';
@@ -1298,7 +1284,6 @@
       STATE.summary           = result.summary          || '';
       STATE.translatedBullets = result.bullets          || [];
       STATE.resumeSkills      = result.resume_skills    || [];
-      STATE.modelUsed['s2']   = result.model_used       || 'granite';
       if (!STATE.translatedBullets.length) { showStepError('s2', 'No accomplishments found. The resume needs at least one experience block or summary sentence.'); return; }
       renderStep2();
     } catch (e) { showStepError('s2', `Could not translate accomplishments: ${e.message}`); }
@@ -1313,7 +1298,7 @@
     const specEntry = branchEntries.find(e => e[0] === STATE.specialty);
     const specLabel = specEntry ? specEntry[1] : STATE.specialty;
 
-    let html = modelBadge('s2');
+    let html = '';
 
     // Branch / specialty banner
     html += `<div style="margin-bottom:14px;padding:10px 12px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:5px;font-size:13px">
@@ -1461,7 +1446,6 @@
       } else {
         STATE.jobAnalysis = await apiCall({ step: 'analyze_job', input: { job_description: jd, veteran_skills_json: JSON.stringify(STATE.skills) } });
       }
-      STATE.modelUsed['s3'] = STATE.jobAnalysis?.model_used || 'granite';
       renderStep3();
     } catch (e) { showStepError('s3', `Could not analyze job description: ${e.message}`); }
     finally { setStepLoading('s3', false); }
@@ -1472,7 +1456,7 @@
     const body = document.getElementById('s3-analysis-body');
     const al = ja.alignment || {};
     const toTitleCase = s => s.replace(/\b([a-z])([a-z]*)/g, (_, f, r) => f.toUpperCase() + r);
-    body.innerHTML = modelBadge('s3') + `
+    body.innerHTML = `
       <div style="margin-bottom:12px">
         <div class="field-hint">Industry</div><strong>${esc(ja.industry||'—')}</strong>
       </div>
@@ -1516,7 +1500,6 @@
       }
       STATE.skills = skillResult.skills || [];
       STATE.gapResult = gapResult;
-      STATE.modelUsed['s4'] = gapResult?.model_used || skillResult?.model_used || 'granite';
       renderStep4();
     } catch (e) { showStepError('s4', `Skill analysis failed: ${e?.message ?? String(e)}`); }
     finally { setStepLoading('s4', false); }
@@ -1641,7 +1624,7 @@
     }
 
     // ── Skill Mapping table ───────────────────────────────────────────
-    let html = modelBadge('s4') + `<table style="width:100%;border-collapse:collapse">
+    let html = `<table style="width:100%;border-collapse:collapse">
       <thead><tr>
         ${th('14%','Type')}
         ${th('43%','Job Skills')}
@@ -1706,7 +1689,6 @@
         }});
       }
       STATE.resumeDraft = result;
-      STATE.modelUsed['s5'] = result?.model_used || 'granite';
       renderStep5();
     } catch (e) { showStepError('s5', `Could not build resume draft: ${e.message}`); }
     finally { setStepLoading('s5', false); }
@@ -1758,7 +1740,7 @@
 
     // Model badge + Summary row
     const sum = rd.summary || {};
-    document.getElementById('s5-summary').innerHTML = modelBadge('s5') + itemRow('summary', 0, sum);
+    document.getElementById('s5-summary').innerHTML = itemRow('summary', 0, sum);
 
     // Experience bullets
     document.getElementById('s5-bullets').innerHTML = (rd.bullets||[]).map((b, i) => itemRow('bullet', i, b)).join('');
