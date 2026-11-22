@@ -11,33 +11,28 @@ Mission Veteran AI (by Golden Gate Glory or G3) is an AI-powered career chatbot,
 </p>
 
 
-| Index | IBM Product | Description |
-| :---: | :---:       | :---:       |
-| 1 | Bob | Development assistant throughout. |
-| 2 | watsonx Orchestrate | Agent coordination with 4 subagents react_core style, four registered toolkits. |
-| 3 | watsonx.governance | Bias & Fairness monitoring, Model Drift detection, Content Safecty on every inference, Explainability, and an immuitable Audit Trail. |
+| Index | IBM Product | Description | Documentation |
+| :---: | :---:       | :---:       | :---: |
+| 1 | Bob | Development assistant throughout. | |
+| 2 | watsonx Orchestrate | Agent coordination with 4 subagents react_core style, four registered toolkits. | [Agents](docs/agents.md) [Tools](docs/tools.md) | 
+| 3 | watsonx.governance | Bias & Fairness monitoring, Model Drift detection, Content Safecty on every inference, Explainability, and an immuitable Audit Trail. | [Guards](docs/guards.md) [Monitors](docs/monitors.md) |
 | 4 | watsonx.ai | Model host and REST inference API. |
-| 5 | Granite & RAG | ibm/granite-4-h-small via watsonx.ai as the primary LLM for all five inference steps with Groq as a fallback, and 12 RAG sources. |
-| 6 | Code Engine | Optional deployment target implemented to host FastAPI bridge server container. |
-| 7 | OpenShift | Optional deployment target implemented to host FastAPI bridge server container. |
-| 8 | SkillsBuild | RAG knowledge source for course recommendations. |
-| 9 | Terraform | Deployment targets provisioned with Terraform. |
-| 10 | Jupyter Notebooks | Seven notebooks used for standalone step testing. |
+| 5 | Granite & RAG | ibm/granite-4-h-small via watsonx.ai as the primary LLM for all five inference steps with Groq as a fallback, and 12 RAG sources. | [RAG](docs/rag.md) |
+| 6 | Code Engine | Optional deployment target implemented to host FastAPI bridge server container. | |
+| 7 | OpenShift | Optional deployment target implemented to host FastAPI bridge server container. | |
+| 8 | SkillsBuild | RAG knowledge source for course recommendations. | |
+| 9 | Terraform | Agents, Toolkits, Governance, deployment targets provisioned with Terraform. | |
+| 10 | Jupyter Notebooks | Seven notebooks used for standalone step testing. | [Notebooks](docs/notebooks.md) |
 
-
+<!--
 | Index | Component | Document | Products Used | IBM Bob Contributions |
 | :---: | :---:     | :---:    | :---:         | :---: |
-| 1 | Main Agent & Subagents | [Agents](docs/agents.md) | IBM Bob, watsonx Orchestrate | Created coordinator agent & 4 subagents. |
-| 2 | Toolkits/Tools | [Tools](docs/tools.md) | IBM Bob, watsonx Orchestrate | Created 7 tools R& repackaged into toolkits. |
-| 3 | Guards & Safety | [Guards](docs/guards.md) | IBM Bob, watsonx.governance | Created PII guard (regex) & Content Safety Monitor. |
 | 4 | UI Screens | [Screens](docs/screens.md) | IBM Bob | Created 7 screens corresponding to steps. | 
-| 5 | Factsheets & Monitors | [Monitors](docs/monitors.md) | IBM Bob, watsonx.governance | Created AI Factsheets & monitors. |
-| 6 | Granite & RAG | [RAG](docs/rag.md) | IBM Bob, watsonx Orchestrate | Found 12 RAG sources including SkillsBuild. |
-| 7 | Jupyter Notebooks | [Notebooks](docs/notebooks.md) | IBM Bob, watsonx.ai | Created 7 notebooks. |
 | 8 | Environments | [Environment](docs/environment.md) | IBM Bob | Created separate build & test environments for parallel use. |
 | 9 | Deployment | [Deployment](docs/deployment.md) | IBM Bob, Make, Terraform | Created make files, scripts & Terraform files to easily deploy everything. |
 | 10 | Public Hosting | [Hosting](docs/hosting.md) | IBM Bob, GitHub Pages, OpenShift | Created static SPA hosted on GitHub Pages and OpenShift. |
 | 11 | Diagrams | [Architecture](docs/architecture.md)<br>[Environment](docs/environment.md) | IBM Bob | Created low-level architecture diagram and environment diagram showing layout of development and test environments. |
+-->
 
 ---
 
