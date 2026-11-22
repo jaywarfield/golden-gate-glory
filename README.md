@@ -24,14 +24,14 @@ Mission Veteran AI (by Golden Gate Glory or G3) is an AI-powered career chatbot,
 | :---: | :---:       | :---:       | :---: |
 | 1 | Bob | Development assistant throughout. | |
 | 2 | watsonx Orchestrate | Coordinator agent, four subagents, four toolkits. | [Agents](docs/agents.md), [Tools](docs/tools.md) | 
-| 3 | watsonx.governance | Monitoring, Drift detection, Content Safety, Explainability, Audit Trail. | [Guards](docs/guards.md), [Monitors](docs/monitors.md) |
+| 3 | watsonx.governance | Monitoring, Drift Detection, Content Safety, Explainability, Audit Trail. | [Guards](docs/guards.md), [Monitors](docs/monitors.md) |
 | 4 | watsonx.ai | Model host and REST inference API. |
 | 5 | Granite & RAG | Primary LLM and 12 RAG sources. | [RAG](docs/rag.md) |
 | 6 | Code Engine | Optional container for FastAPI bridge server. | |
 | 7 | OpenShift | Optional container for FastAPI bridge server. | |
 | 8 | SkillsBuild | RAG knowledge source for course recommendations. | |
-| 9 | Terraform | Agents, Toolkits, Governance, deployment targets provisioned with Terraform. | |
-| 10 | Jupyter Notebooks | Seven notebooks used for standalone step testing. | [Notebooks](docs/notebooks.md) |
+| 9 | Terraform | Deployment via Terraform. | |
+| 10 | Jupyter Notebooks | Seven notebooks for standalone step testing. | [Notebooks](docs/notebooks.md) |
 
 <!--
 | Index | Component | Document | Products Used | IBM Bob Contributions |
