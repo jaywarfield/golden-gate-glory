@@ -8,7 +8,7 @@
 
 import time
 
-from shared._common import contains_pii, pii_warning_message, parse_llm_json, groq_generate
+from shared._common import contains_pii, pii_warning_message, parse_llm_json, llm_with_fallback
 from shared.governance import log_inference, get_subscription_ids
 
 try:
@@ -17,7 +17,7 @@ except ImportError:
     def tool(**_kw): return lambda f: f          # no-op decorator
     class ToolPermission: READ_ONLY = None       # noqa: E701
 
-_MODEL_ID = "qwen/qwen3.8-27b"   # Groq — separate quota from watsonx.ai
+_MODEL_ID = "ibm/granite-4-h-small"   # Granite-first; Groq fallback via llm_with_fallback
 
 
 @tool(permission=ToolPermission.READ_ONLY)
@@ -91,7 +91,7 @@ JSON array:"""
 
     t0 = time.monotonic()
     try:
-        raw = groq_generate(prompt, _MODEL_ID, max_tokens=800)
+        raw, model_used = llm_with_fallback(prompt, max_tokens=800)
         latency_ms = (time.monotonic() - t0) * 1000
         parsed = parse_llm_json(raw, "extract_resume_skills")
 
@@ -168,6 +168,7 @@ JSON array:"""
         result = {
             "skills":      skills,
             "skill_count": len(skills),
+            "model_used":  model_used,
             "pii_warning": None,
             "error":       None,
         }
@@ -176,7 +177,7 @@ JSON array:"""
         subs = get_subscription_ids()
         log_inference(
             tool_name="extract_resume_skills",
-            model_id=_MODEL_ID,
+            model_id=f"{_MODEL_ID}→{model_used}",
             prompt=prompt,
             response=raw,
             input_data={

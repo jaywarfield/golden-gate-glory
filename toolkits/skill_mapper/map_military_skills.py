@@ -12,7 +12,7 @@ import os
 import time
 
 from shared._common import (
-    contains_pii, pii_warning_message, parse_llm_json, groq_generate,
+    contains_pii, pii_warning_message, parse_llm_json, llm_with_fallback,
     lookup_crosswalk, load_onet_occupation_skills,
 )
 from shared.governance import log_inference, get_subscription_ids
@@ -23,7 +23,7 @@ except ImportError:
     def tool(**_kw): return lambda f: f          # no-op decorator
     class ToolPermission: READ_ONLY = None       # noqa: E701
 
-_MODEL_ID = "qwen/qwen3.8-27b"   # Groq — separate quota from watsonx.ai
+_MODEL_ID = "ibm/granite-4-h-small"   # Granite-first; Groq fallback via llm_with_fallback
 
 
 @tool(permission=ToolPermission.READ_ONLY)
@@ -107,7 +107,7 @@ JSON array:"""
 
     t0 = time.monotonic()
     try:
-        raw = groq_generate(prompt, _MODEL_ID, max_tokens=400, json_object=True)
+        raw, model_used = llm_with_fallback(prompt, max_tokens=400, json_object=True)
         latency_ms = (time.monotonic() - t0) * 1000
         parsed = parse_llm_json(raw, "map_military_skills")
 
@@ -138,6 +138,7 @@ JSON array:"""
             "onet_soc": onet_soc,
             "civilian_title": civilian_title,
             "onet_required_skills": onet_required,
+            "model_used": model_used,
             "disclaimer": (
                 "DRAFT – Review before use. Confirm every skill claim against "
                 "your service record before submitting to an employer. "
@@ -154,7 +155,7 @@ JSON array:"""
         subs = get_subscription_ids()
         log_inference(
             tool_name="map_military_skills",
-            model_id=_MODEL_ID,
+            model_id=f"{_MODEL_ID}→{model_used}",
             prompt=prompt,
             response=raw,
             input_data={

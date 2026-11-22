@@ -172,7 +172,10 @@ def llm_generate(prompt: str, model_id: str, max_tokens: int = 800, temperature:
 # Groq inference helper (OpenAI-compatible chat completions)
 # ---------------------------------------------------------------------------
 
-def groq_generate(prompt: str, model_id: str = "qwen/qwen3.8-27b", max_tokens: int = 500, temperature: float = 0.2, json_object: bool = False) -> str:
+_GROQ_FALLBACK_MODEL = "qwen/qwen3.8-27b"
+_GRANITE_MODEL_ID    = "ibm/granite-4-h-small"
+
+def groq_generate(prompt: str, model_id: str = _GROQ_FALLBACK_MODEL, max_tokens: int = 500, temperature: float = 0.2, json_object: bool = False) -> str:
     """
     Call the Groq chat-completions API (OpenAI-compatible).
     Returns the generated text string.
@@ -235,6 +238,36 @@ def groq_generate(prompt: str, model_id: str = "qwen/qwen3.8-27b", max_tokens: i
         return body["choices"][0]["message"]["content"]
     except (KeyError, IndexError) as e:
         raise RuntimeError(f"Unexpected Groq response format: {body}") from e
+
+
+# ---------------------------------------------------------------------------
+# Granite-first / Groq-fallback helper
+# ---------------------------------------------------------------------------
+
+def llm_with_fallback(
+    prompt: str,
+    max_tokens: int = 500,
+    json_object: bool = False,
+    temperature: float = 0.2,
+) -> tuple[str, str]:
+    """
+    Try IBM Granite (watsonx.ai) first; fall back to Groq on any error.
+
+    Returns:
+        (text, model_used) where model_used is "granite" or "groq".
+
+    Raises:
+        RuntimeError — only if Groq also fails (after its own 1-retry on 429).
+    """
+    try:
+        text = llm_generate(prompt, _GRANITE_MODEL_ID, max_tokens=max_tokens, temperature=temperature)
+        return text, "granite"
+    except Exception as granite_err:
+        logger.warning("Granite failed (%s: %s) — falling back to Groq", type(granite_err).__name__, granite_err)
+
+    # Groq fallback — may raise RuntimeError if it also fails
+    text = groq_generate(prompt, _GROQ_FALLBACK_MODEL, max_tokens=max_tokens, temperature=temperature, json_object=json_object)
+    return text, "groq"
 
 
 # ---------------------------------------------------------------------------

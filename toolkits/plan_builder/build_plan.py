@@ -11,7 +11,7 @@ import json
 import os
 import time
 
-from shared._common import contains_pii, pii_warning_message, parse_llm_json, groq_generate
+from shared._common import contains_pii, pii_warning_message, parse_llm_json, llm_with_fallback
 from shared.governance import log_inference, get_subscription_ids
 
 try:
@@ -20,8 +20,8 @@ except ImportError:
     def tool(**_kw): return lambda f: f          # no-op decorator
     class ToolPermission: READ_ONLY = None       # noqa: E701
 
-_MODEL_ID_JD = "qwen/qwen3.8-27b"   # Groq — separate quota from watsonx.ai
-_MODEL_ID    = "qwen/qwen3.8-27b"   # Groq — separate quota from watsonx.ai
+_MODEL_ID_JD = "ibm/granite-4-h-small"   # Granite-first; Groq fallback via llm_with_fallback
+_MODEL_ID    = "ibm/granite-4-h-small"   # Granite-first; Groq fallback via llm_with_fallback
 
 
 # ---------------------------------------------------------------------------
@@ -64,17 +64,18 @@ JSON object:"""
 
     t0 = time.monotonic()
     try:
-        raw = groq_generate(prompt, _MODEL_ID_JD, max_tokens=800, json_object=True)
+        raw, model_used = llm_with_fallback(prompt, max_tokens=800, json_object=True)
         latency_ms = (time.monotonic() - t0) * 1000
         result = parse_llm_json(raw, "analyze_job_description")
         result["pii_warning"] = None
+        result["model_used"] = model_used
         result["error"] = None
 
         # ── Governance: log inference fact ────────────────────────────────
         subs = get_subscription_ids()
         log_inference(
             tool_name="analyze_job_description",
-            model_id=_MODEL_ID_JD,
+            model_id=f"{_MODEL_ID_JD}→{model_used}",
             prompt=prompt,
             response=raw,
             input_data={"jd_length": len(job_description)},
@@ -181,7 +182,7 @@ JSON object:"""
 
     t0_draft = time.monotonic()
     try:
-        raw = groq_generate(prompt, _MODEL_ID, max_tokens=1200, json_object=True)
+        raw, model_used = llm_with_fallback(prompt, max_tokens=1200, json_object=True)
         latency_ms_draft = (time.monotonic() - t0_draft) * 1000
         sections = parse_llm_json(raw, "build_resume_draft")
 
@@ -248,7 +249,7 @@ EVIDENCED ITEMS TO CHECK:
 JSON array:"""
 
             t0_check = time.monotonic()
-            check_raw = groq_generate(check_prompt, _MODEL_ID, max_tokens=800, json_object=True)
+            check_raw, _check_model = llm_with_fallback(check_prompt, max_tokens=800, json_object=True)
             latency_ms_check = (time.monotonic() - t0_check) * 1000
 
             if check_raw.startswith("```"):
@@ -307,6 +308,7 @@ JSON array:"""
                     "All EVIDENCED items passed the grounding check."
                 )
             ),
+            "model_used": model_used,
             "pii_warning": None,
             "error": None,
         }
@@ -315,7 +317,7 @@ JSON array:"""
         subs = get_subscription_ids()
         log_inference(
             tool_name="build_resume_draft",
-            model_id=_MODEL_ID,
+            model_id=f"{_MODEL_ID}→{model_used}",
             prompt=prompt,
             response=raw,
             input_data={"service_branch": service_branch},
