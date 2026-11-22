@@ -10,6 +10,22 @@ Mission Veteran AI (by Golden Gate Glory or G3) is an AI-powered career chatbot,
   <img src="docs/images/ibmbobusage.png" alt="First Image" width="85%" />
 </p>
 
+
+| Index | IBM Product | Description |
+| :---: | :---:       | :---:       |
+
+| 1 | Bob | Development assistant throughout. |
+| 2 | watsonx Orchestrate | Agent coordination with 4 subagents react_core style, four registered toolkits. |
+| 3 | watsonx.governance | Bias & Fairness monitoring, Model Drift detection, Content Safecty on every inference, Explainability, and an immuitable Audit Trail. |
+| 4 | watsonx.ai | Model host and REST inference API. |
+| 5 | Granite & RAG | ibm/granite-4-h-small via watsonx.ai as the primary LLM for all five inference steps with Groq as a fallback, and 12 RAG sources. |
+| 6 | Code Engine | Optional deployment target implemented to host FastAPI bridge server container. |
+| 7 | OpenShift | Optional deployment target implemented to host FastAPI bridge server container. |
+| 8 | SkillsBuild | RAG knowledge source for course recommendations. |
+| 9 | Terraform | Deployment targets provisioned with Terraform. |
+| 10 | Jupyter Notebooks | Seven notebooks used for standalone step testing. |
+
+
 | Index | Component | Document | Products Used | IBM Bob Contributions |
 | :---: | :---:     | :---:    | :---:         | :---: |
 | 1 | Main Agent & Subagents | [Agents](docs/agents.md) | IBM Bob, watsonx Orchestrate | Created coordinator agent & 4 subagents. |
