@@ -2,7 +2,7 @@
 
 <p>
   <img src="docs/images/missionveteranlogo1.png" alt="Logo Image" width="45%" />
-  <img src="docs/images/missionveteranqr.png" alt="QR Image" width="15%" />
+  <img src="docs/images/missionveteranqr.png" alt="QR Image" width="15%" align="top" />
 </p>
 
 <p>
