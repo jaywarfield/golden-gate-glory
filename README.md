@@ -5,7 +5,7 @@
 </p
 
 <p align="center">
-  <img src="docs/images/missionveteranlogo1.png" alt="Logo Image" width="45%"/>
+  <img src="docs/images/missionveteranlogo1.png" alt="Logo Image" width="200"/>
 </p
 
 <p>
