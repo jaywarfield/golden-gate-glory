@@ -221,16 +221,16 @@ def _step_translate_resume(inp: dict) -> dict:
     # Cap fragments to 12 to bound token usage
     all_fragments = (summary_sentences + exp_texts)[:12]
 
-    def _batch_translate(fragments: list[str], role: str) -> list[str]:
+    def _batch_translate(fragments: list[str], role: str) -> tuple[list[str], str]:
         """
-        Translate all fragments in one LLM call using Llama 3.3
-        (separate quota pool from Granite 4 steps 3-7).
-        Falls back to the original fragments on any error.
+        Translate all fragments in one LLM call.
+        Tries IBM Granite first via llm_with_fallback; falls back to Groq.
+        Returns (translated_bullets, model_used).
         """
         if not fragments:
-            return []
+            return [], "granite"
 
-        from shared._common import llm_generate, parse_llm_json
+        from shared._common import llm_with_fallback, parse_llm_json
 
         numbered = "\n".join(f'{i+1}. {f}' for i, f in enumerate(fragments))
         prompt = f"""You are an expert resume writer helping a U.S. military veteran transition to civilian employment.
@@ -256,12 +256,11 @@ Military accomplishments:
 
 JSON array:"""
 
-        _BATCH_MODEL = "meta-llama/llama-3-3-70b-instruct"
         try:
-            raw = llm_generate(prompt, _BATCH_MODEL, max_tokens=min(60 * len(fragments), 600))
+            raw, model_used = llm_with_fallback(prompt, max_tokens=min(60 * len(fragments), 600))
             parsed = parse_llm_json(raw, "batch_translate")
             if not isinstance(parsed, list):
-                return fragments   # unexpected shape — fall back
+                return fragments, model_used   # unexpected shape — fall back
             results = []
             for item in parsed:
                 text = str(item).strip().lstrip("•-– ").strip()
@@ -270,16 +269,17 @@ JSON array:"""
                 cleaned = _clean_bullet(text)
                 if cleaned:
                     results.append(cleaned)
-            return results if results else fragments
+            return (results if results else fragments), model_used
         except Exception:
-            return fragments   # any error — return originals untranslated
+            return fragments, "groq"   # any error — return originals untranslated
 
-    bullets = _batch_translate(all_fragments, target_role)
+    bullets, model_used = _batch_translate(all_fragments, target_role)
 
     return {
         "summary":       summary_text,
         "bullets":       bullets,
         "resume_skills": list(resume_skills),
+        "model_used":    model_used,
     }
 
 
@@ -315,6 +315,7 @@ def _step_analyze_job(inp: dict) -> dict:
         "ats_keywords":     result.get("keywords", []),
         "seniority_level":  result.get("role_level", ""),
         "alignment":        {},
+        "model_used":       result.get("model_used", "granite"),
     }
 
 
@@ -402,6 +403,7 @@ def _step_map_skills(inp: dict) -> dict:
         "civilian_title":  result.get("civilian_title"),
         "gap_skills":      [],   # filled by gap_analysis step
         "alignment_pct":   0,    # filled by gap_analysis step
+        "model_used":      result.get("model_used", "granite"),
     }
 
 
@@ -470,6 +472,7 @@ def _step_gap_analysis(inp: dict) -> dict:
         "alignment_pct":              result.get("coverage_pct", 0),
         "skillsbuild_recommendations": result.get("skillsbuild_recommendations", []),
         "skillbridge_programs":        result.get("skillbridge_programs", []),
+        "model_used":                  result.get("model_used", "granite"),
     }
 
 
@@ -544,6 +547,7 @@ def _step_build_resume(inp: dict) -> dict:
         "evidenced_count": result.get("evidenced_count", 0),
         "grounding_warnings": result.get("grounding_warnings", []),
         "disclaimer":      result.get("disclaimer", ""),
+        "model_used":      result.get("model_used", "granite"),
     }
 
 
