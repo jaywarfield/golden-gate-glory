@@ -2,7 +2,7 @@
 
 #### OpenShift
 
-##### What it deploys and where it fits
+##### What OpenShift is in this solution
 
 OpenShift is Option E in a spectrum of six deployment targets for the solution's web/index.html front-end and src/server.py FastAPI bridge server. The full option set is A (watsonx Orchestrate webchat), B (local), C (GitHub Pages), D (IBM Code Engine), E (OpenShift), and F (Railway). OpenShift is the most enterprise-grade of these and is explicitly called out in the architecture as "best for enterprise cluster or air-gapped deployment".
 

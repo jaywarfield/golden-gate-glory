@@ -2,7 +2,7 @@
 
 #### Code Engine
 
-##### What it is in this solution
+##### What Code Engine is in this solution
 
 Code Engine is Option D — the primary cloud deployment target for src/server.py, the FastAPI bridge server. It is the most tightly integrated of the hosted deployment options, with its own dedicated block of Makefile targets, configurable variables, and a full create/update/destroy lifecycle wired into the project's toolchain.
 
