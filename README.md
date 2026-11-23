@@ -33,12 +33,9 @@ Mission Veteran AI (by Golden Gate Glory or G3) is an AI-powered career chatbot,
 | 9 | Terraform | Deployment via Terraform. | |
 | 10 | Jupyter Notebooks | Seven notebooks for standalone step testing. | [Notebooks](docs/notebooks.md) |
 
-| Other Documents |
-| :---:    |
-| [Full Architecture](docs/architecture.md) |
-| [Environment](docs/environment.md) |
-| [Screens](docs/screens.md) | 
-| [Public Hosting](docs/hosting.md) |
+<p>
+Other documents: [Full Architecture](docs/architecture.md), [Environment](docs/environment.md), [Screens](docs/screens.md), [Public Hosting](docs/hosting.md)
+</p>
 
 ---
 
