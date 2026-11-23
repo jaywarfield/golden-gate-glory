@@ -37,7 +37,6 @@ Other documents:
 - [Full Architecture](docs/architecture.md)
 - [Environment](docs/environment.md)
 - [Screens](docs/screens.md)
-- [Public Hosting](docs/hosting.md)
 
 ---
 
