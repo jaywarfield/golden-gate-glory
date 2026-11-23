@@ -29,6 +29,31 @@ After terraform apply, outputs.tf surfaces the values the application actually n
 
 This creates a clean handoff: Terraform owns the infrastructure lifecycle; the Python scripts own the logical configuration on top of it.
 
+##### What Terraform does not cover
+
+The IBM provider doesn't yet expose resources for Governance use cases or monitor subscriptions. That gap is documented explicitly in main.tf:
+
+```
+    "Use case and monitor registration is handled post-apply by
+     python governance/register_factsheets.py"
+```
+
+This is an honest, forward-looking design — the Terraform layer handles what the provider supports today, and the Python layer handles the rest, with no pretense that Terraform does everything.
+
+##### Why including Terraform is a strong signal for a submission like this
+
+1. Infrastructure reproducibility — anyone with an IBM Cloud account and an API key can run terraform apply and get an identical environment in minutes. Without it, the submission requires manual UI clicks that are fragile, undocumented, and hard to verify.
+
+2. Separation of concerns — infrastructure lifecycle (create, update, destroy) is decoupled from application logic. terraform destroy cleanly tears down both IBM Cloud instances without touching any application code.
+
+3. Hackathon-safe destroy semantics — the terraform destroy comment in main.tf explicitly notes it "destroys both instances and all agents inside them", which is the correct behavior for cost cleanup after a demo.
+
+4. Demonstrates production-readiness thinking — a solution that provisions its own cloud infrastructure via code is architecturally closer to a real enterprise deployment than one that hardcodes service URLs or requires manual setup. It signals that the team thought beyond the demo.
+
+5. Version-pinned module — version = "1.2.1" on the Orchestrate module means the infrastructure is deterministic. Running terraform apply a month later will not silently pick up a breaking module update.
+
+6. Input validation — variables.tf uses validation blocks on region and plan, so invalid inputs fail fast with a descriptive error rather than propagating into a broken IBM Cloud API call.
+
 # License
 
 This application is licensed under the Apache License, Version 2.  Separate third-party code objects invoked by this application are licensed by their respective providers pursuant to their own separate licenses.  Contributions are subject to the [Developer Certificate of Origin, Version 1.1](https://developercertificate.org/) and the [Apache License, Version 2](https://www.apache.org/licenses/LICENSE-2.0.txt).
