@@ -1,6 +1,6 @@
 # **Mission Veteran AI** *by G3*
 
-#### Problem and Solution Statement
+#### Problem and Solution
 
 Military career transition is a personal productivity crisis at national scale. Every year, 200,000 U.S. service members transition to civilian life — and the federal government's own hiring systems cannot read their résumés. Military job titles, rank structure, and MOS/AFSC codes are invisible to the ATS systems used by federal agencies and government contractors. A veteran with 8 years managing enterprise networks and $2M in infrastructure registers as zero matches for "Network Administrator" — not because the experience is absent, but because the language does not translate. One in three veterans is under-employed in their first civilian role (Bureau of Labor Statistics). What previously took weeks of manual research — crosswalking a military specialty code to civilian skills, finding the right job description, identifying skill gaps, sourcing free training, and building an evidence-locked résumé — can now be completed in a single session.
   
