@@ -1,6 +1,6 @@
 # **Mission Veteran AI** *by G3*
 
-#### Technology
+#### Technology Used
 
 IBM products used: 
 - IBM Granite 4 (ibm/granite-4-h-small via watsonx.ai) as the primary LLM for all five inference steps, with Groq as a fallback.
