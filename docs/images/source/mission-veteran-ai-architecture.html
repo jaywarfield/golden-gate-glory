@@ -66,11 +66,11 @@
 
 <h1>Mission Veteran AI — Architecture</h1>
 <p class="subtitle">
-  Agent LLM: groq/openai/gpt-oss-120b (Orchestrate reasoning)  ·  Toolkit inference: ibm/granite-4-h-small (watsonx.ai)  ·  watsonx Governance  ·  Terraform-provisioned  ·  12 RAG sources
+  Agent LLM: ibm/granite-4-h-small (Orchestrate reasoning · watsonx.ai)  ·  watsonx Governance  ·  Terraform-provisioned  ·  12 RAG sources
 </p>
 
 <div class="legend">
-  <div class="legend-item"><div class="swatch-sq"></div> watsonx.ai + Orchestrate (LLM inference)</div>
+  <div class="legend-item"><div class="swatch-sq"></div> ibm/granite-4-h-small — watsonx.ai + Orchestrate (LLM inference)</div>
   <div class="legend-item"><div class="swatch" style="background:#e0e7ff;border-color:#a5b4fc"></div> watsonx Governance</div>
   <div class="legend-item"><div class="swatch" style="background:#f0fdfa;border-color:#5eead4"></div> Static / embedded RAG source</div>
   <div class="legend-item"><div class="swatch" style="background:#fef9c3;border-color:#fde047"></div> Pending / live API RAG source</div>
@@ -151,7 +151,7 @@
     <div class="col-left-right">
       <div class="section-dark">
         <div class="section-title" style="color:#fff">Coordinator Agent</div>
-        <div style="font-size:11px;color:#cbd5e1;line-height:1.5">watsonx Orchestrate · <span class="code" style="color:#93c5fd">groq/openai/gpt-oss-120b</span> · style: react_core</div>
+        <div style="font-size:11px;color:#cbd5e1;line-height:1.5">watsonx Orchestrate · <span class="code" style="color:#93c5fd">ibm/granite-4-h-small</span> · style: react_core</div>
         <div style="font-size:10px;color:#94a3b8;margin:6px 0;line-height:1.6" class="code">
           (service_branch, specialty_code,<br />
           service_summary, bullets,<br />
@@ -192,7 +192,7 @@
 
 <div class="arrow">↓</div>
 <div style="text-align:center;font-size:10px;color:#94a3b8;margin-bottom:4px">
-  groq/openai/gpt-oss-120b (all sub-agents · Orchestrate reasoning)  |  ibm/granite-4-h-small (all toolkit inference · watsonx.ai)
+  ibm/granite-4-h-small (all agents · Orchestrate reasoning + toolkit inference · watsonx.ai)
 </div>
 
 
