@@ -2,6 +2,8 @@
 
 #### Terraform
 
+##### What it provisions
+
 The terraform directory contains three files that together provision two IBM Cloud service instances as infrastructure-as-code:
 
 | Resource | Terraform construct | What it creates |

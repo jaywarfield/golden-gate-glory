@@ -30,7 +30,7 @@ Mission Veteran AI (by Golden Gate Glory or G3) is an AI-powered career chatbot,
 | 4 | watsonx.ai | Model host and REST inference API. |
 | 5 | Granite & RAG | Primary LLM and 12 RAG sources. | [RAG](docs/rag.md) |
 | 6 | Code Engine | Optional container for FastAPI bridge server. | |
-| 7 | OpenShift | Optional container for FastAPI bridge server. | |
+| 7 | OpenShift | Optional container for FastAPI bridge server. | [OpenShift](docs/openshift.md) |
 | 8 | SkillsBuild | RAG knowledge source for course recommendations. | [Link](https://skillsbuild.org) |
 | 9 | Terraform | Deployment via Terraform. | [Terraform](docs/terraform.md) |
 | 10 | Jupyter Notebooks | Seven notebooks for standalone step testing. | [Notebooks](docs/notebooks.md) |
