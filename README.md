@@ -39,7 +39,7 @@ Other documents:
 - [Problem and Solution](docs/problem.md)
 - [Technology Used](docs/technology.md)
 - [Full Architecture](docs/architecture.md)
-- [Environment](docs/environment.md)
+- [Dual Environments](docs/environment.md)
 - [Screens](docs/screens.md)
 
 ---
