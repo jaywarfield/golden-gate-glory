@@ -15,11 +15,11 @@ Mission Veteran AI (by Golden Gate Glory or G3) is an AI-powered career chatbot,
 </p>`
 
 <p align="center">
-  <img src="docs/images/ibmbobusage.png" alt="First Image" width="60%" />
+  <img src="docs/images/architecturecondensed.png" alt="Condensed Image" width="80%"/>
 </p>
 
 <p align="center">
-  <img src="docs/images/architecturecondensed.png" alt="Condensed Image" width="80%"/>
+  <img src="docs/images/ibmbobusage.png" alt="First Image" width="60%" />
 </p>
 
 | Index | IBM Product | Description | Document |
