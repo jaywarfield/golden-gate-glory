@@ -6,7 +6,7 @@
 
 OpenShift is Option E in a spectrum of six deployment targets for the solution's web/index.html front-end and src/server.py FastAPI bridge server. The full option set is A (watsonx Orchestrate webchat), B (local), C (GitHub Pages), D (IBM Code Engine), E (OpenShift), and F (Railway). OpenShift is the most enterprise-grade of these and is explicitly called out in the architecture as "best for enterprise cluster or air-gapped deployment".
 
-##### Two distinct things it can host
+##### Two distinct things OpenShift can host
 
 The solution documents two distinct OpenShift deployment shapes:
 
@@ -39,7 +39,7 @@ For live mode (real watsonx.ai calls), the bridge server container is deployed w
 - uvicorn src.server:app --port 8080 starts inside the container
 - USE_MOCK=false is set via env, flipping the front-end into live API mode
 
-##### How it integrates with the rest of the system
+##### How OpenShift integrates with the rest of the system
 
 OpenShift sits in the host layer — it is an alternative home for the bridge server, sitting alongside Code Engine and Railway. It exposes the same three endpoints as every other deployment target:
 
