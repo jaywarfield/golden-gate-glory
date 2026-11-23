@@ -1,8 +1,9 @@
 # **Mission Veteran AI** *by G3*
 
 <p align="center">
-  <img src="docs/images/missionveteranvideoqr.png" alt="QR Image" width="75"/>
-  <img src="docs/images/missionveterantoolqr.png" alt="QR Image" width="75"/>
+  <img src="docs/images/missionveteranvideoqr.png" alt="QR Image" width="100"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="docs/images/missionveterantoolqr.png" alt="QR Image" width="100"/>
 </p>
 
 <p align="center">
