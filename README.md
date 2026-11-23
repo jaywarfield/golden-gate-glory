@@ -33,15 +33,13 @@ Mission Veteran AI (by Golden Gate Glory or G3) is an AI-powered career chatbot,
 | 9 | Terraform | Deployment via Terraform. | |
 | 10 | Jupyter Notebooks | Seven notebooks for standalone step testing. | [Notebooks](docs/notebooks.md) |
 
-<!--
-| Index | Component | Document | Products Used | IBM Bob Contributions |
-| :---: | :---:     | :---:    | :---:         | :---: |
-| 4 | UI Screens | [Screens](docs/screens.md) | IBM Bob | Created 7 screens corresponding to steps. | 
-| 8 | Environments | [Environment](docs/environment.md) | IBM Bob | Created separate build & test environments for parallel use. |
-| 9 | Deployment | [Deployment](docs/deployment.md) | IBM Bob, Make, Terraform | Created make files, scripts & Terraform files to easily deploy everything. |
-| 10 | Public Hosting | [Hosting](docs/hosting.md) | IBM Bob, GitHub Pages, OpenShift | Created static SPA hosted on GitHub Pages and OpenShift. |
-| 11 | Diagrams | [Architecture](docs/architecture.md)<br>[Environment](docs/environment.md) | IBM Bob | Created low-level architecture diagram and environment diagram showing layout of development and test environments. |
--->
+| Other Documents |
+| :---:    |
+| [Full Architecture](docs/architecture.md) |
+| [Environment](docs/environment.md) |
+| [Deployment](docs/deployment.md) |
+| [Screens](docs/screens.md) | 
+| [Public Hosting](docs/hosting.md) |
 
 ---
 
