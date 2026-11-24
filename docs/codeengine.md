@@ -85,7 +85,8 @@ All variables are overridable on the command line: make bridge-deploy CE_REGION=
 
 6. Demonstrates full container discipline — building, tagging with a registry path (us.icr.io/mission-veteran-ai/mission-veteran-ai-bridge:latest), pushing to a private registry, and deploying from that registry is the full enterprise container workflow. It's a materially different level of maturity than docker run locally.
 
+---
+
 # License
 
 This application is licensed under the Apache License, Version 2.  Separate third-party code objects invoked by this application are licensed by their respective providers pursuant to their own separate licenses.  Contributions are subject to the [Developer Certificate of Origin, Version 1.1](https://developercertificate.org/) and the [Apache License, Version 2](https://www.apache.org/licenses/LICENSE-2.0.txt).
-

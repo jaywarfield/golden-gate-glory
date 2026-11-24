@@ -67,7 +67,8 @@ These are not code artifacts — they are polished, presentation-ready visual do
 
 5. The GETTING_STARTED.md instructions enable other IBM Bob users to reproduce the work. The setup, reset, and workspace-copy instructions are practical and specific. They show that the team understood IBM Bob well enough to document it for others — which is a different level of engagement than simply using it once.
 
+---
+
 # License
 
 This application is licensed under the Apache License, Version 2.  Separate third-party code objects invoked by this application are licensed by their respective providers pursuant to their own separate licenses.  Contributions are subject to the [Developer Certificate of Origin, Version 1.1](https://developercertificate.org/) and the [Apache License, Version 2](https://www.apache.org/licenses/LICENSE-2.0.txt).
-
