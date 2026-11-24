@@ -25,9 +25,9 @@ Mission Veteran AI (by Golden Gate Glory or G3) is an AI-powered career chatbot,
 | Index | Product | Description | 
 | :---: | :---:   | :---:       |
 | 1 | Bob | Development assistant throughout. |
-| 2 | [watsonx Orchestrate](docs/orchestrate.md) | Coordinator agent, four subagents, four toolkits. | 
-| 3 | [watsonx.governance](docs/governance.md) | Monitoring, Drift Detection, Content Safety, Explainability, Audit Trail. |
-| 4 | watsonx.ai | Model host and REST inference API. |
+| 2 | [watsonx Orchestrate](docs/watsonxorchestrate.md) | Coordinator agent, four subagents, four toolkits. | 
+| 3 | [watsonx.governance](docs/watsonxgovernance.md) | Monitoring, Drift Detection, Content Safety, Explainability, Audit Trail. |
+| 4 | [watsonx.ai](docs/watsonxai.md) | Model host and REST inference API. |
 | 5 | Granite & RAG | Primary LLM and 12 RAG sources. |
 | 6 | [Code Engine](docs/codeengine.md) | Option D for FastAPI bridge server container. |
 | 7 | [OpenShift](docs/openshift.md) | Option E for FastAPI bridge server container. |
