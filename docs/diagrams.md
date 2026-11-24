@@ -4,7 +4,7 @@
 
 [Architecture](architecture.md)
 
-[Environments](environments.md)
+[Environment](environment.md)
 
 ---
 
