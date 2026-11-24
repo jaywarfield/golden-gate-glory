@@ -38,10 +38,12 @@ Mission Veteran AI (by Golden Gate Glory or G3) is an AI-powered career chatbot,
 | 8 | [Notebooks](docs/notebooks.md) | Seven Jupyter notebooks for standalone step testing. |
 | 9 | [Diagrams](docs/diagrams.md) | Full architecture and dual environments. |
 | 10 | Chat Options | See option table below. |
+
 <br>
 <br>
 <br>
 <br>
+
 | Option | Product | Description | 
 | :---:  | :---:   | :---:       |
 | B | [Local Execution](docs/local.md) | FastAPI bridge server locally. |
