@@ -28,20 +28,20 @@ Mission Veteran AI (by Golden Gate Glory or G3) is an AI-powered career chatbot,
 | 2 | [watsonx Orchestrate](docs/watsonxorchestrate.md) | Coordinator agent, four subagents, four toolkits. | 
 | 3 | [watsonx.governance](docs/watsonxgovernance.md) | Monitoring, Drift Detection, Content Safety, Explainability, Audit Trail. |
 | 4 | [watsonx.ai](docs/watsonxai.md) | Model host and REST inference API. |
-| 5 | [RAG Sources](docs/rag.md) | Complete list of RAG knowledge sources. |
-| 6 | [SkillsBuild](docs/skillsbuild.md) | Complete details of RAG-003 knowledge source. |
+| 5 | [Granite](docs/granite.md) & [RAG](docs/rag.md) | Granite usage and RAG  sources including SkillsBuild. |
+| 6 | [UI Screens](docs/screens.md) | Detailed descriptions of each screen. |
 | 7 | [Code Engine](docs/codeengine.md) | Option D for FastAPI bridge server container. |
 | 8 | [OpenShift](docs/openshift.md) | Option E for FastAPI bridge server container. |
 | 9 | [Railway](docs/railway.md) | Option F for FastAPI bridge server container. |
 | 10 | [Terraform](docs/terraform.md) | Deployment via Terraform. |
 | 11 | [Notebooks](docs/notebooks.md) | Seven Jupyter notebooks for standalone step testing. |
+| 12 | [Diagrams](docs/diagrams.md) | Full architecture and dual environments. |
 
 Other documents: 
 - [Problem and Solution](docs/problem.md)
 - [Technology Used](docs/technology.md)
 - [Full Architecture](docs/architecture.md)
 - [Dual Environments](docs/environment.md)
-- [Screens](docs/screens.md)
 
 ---
 
