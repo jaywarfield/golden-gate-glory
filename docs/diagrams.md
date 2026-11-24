@@ -2,9 +2,9 @@
 
 #### Diagrams
 
-[Architecture](docs/architecture.md)
+[Architecture](architecture.md)
 
-[Environments](docs/environments.md)
+[Environments](environments.md)
 
 ---
 
