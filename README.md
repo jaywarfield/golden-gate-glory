@@ -45,6 +45,7 @@ Mission Veteran AI (by Golden Gate Glory or G3) is an AI-powered career chatbot,
 
 | Option | Product | Description | 
 | :---:  | :---:   | :---:       |
+| A | [Webchat](docs/webchat.md) | Native deployment surface. |
 | B | [Local Execution](docs/local.md) | FastAPI bridge server locally. |
 | C | [GitHub Pages](docs/pages.md) | Static CDN deployment. |
 | D | [Code Engine](docs/codeengine.md) | FastAPI bridge server container. |
