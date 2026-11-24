@@ -34,7 +34,7 @@ Mission Veteran AI (by Golden Gate Glory or G3) is an AI-powered career chatbot,
 | 8 | [OpenShift](docs/openshift.md) | Option E for FastAPI bridge server container. |
 | 9 | [Railway](docs/railway.md) | Option F for FastAPI bridge server container. |
 | 10 | [Terraform](docs/terraform.md) | Deployment via Terraform. |
-| 11 | [Jupyter Notebooks](docs/notebooks.md) | Seven notebooks for standalone step testing. |
+| 11 | [Notebooks](docs/notebooks.md) | Seven Jupyter notebooks for standalone step testing. |
 
 Other documents: 
 - [Problem and Solution](docs/problem.md)
