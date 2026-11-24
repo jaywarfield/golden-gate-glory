@@ -28,11 +28,11 @@ Mission Veteran AI (by Golden Gate Glory or G3) is an AI-powered career chatbot,
 | 2 | [watsonx Orchestrate](docs/watsonxorchestrate.md) | Coordinator agent, four subagents, four toolkits. | 
 | 3 | [watsonx.governance](docs/watsonxgovernance.md) | Monitoring, Drift Detection, Content Safety, Explainability, Audit Trail. |
 | 4 | [watsonx.ai](docs/watsonxai.md) | Model host and REST inference API. |
-| 5 | Granite & RAG | Primary LLM and 12 RAG sources. |
-| 6 | [Code Engine](docs/codeengine.md) | Option D for FastAPI bridge server container. |
-| 7 | [OpenShift](docs/openshift.md) | Option E for FastAPI bridge server container. |
-| 8 | [Railway](docs/railway.md) | Option F for FastAPI bridge server container. |
-| 9 | [SkillsBuild](docs/skillsbuild.md) | RAG-003 knowledge source for course recommendations. |
+| 5 | [SkillsBuild](docs/skillsbuild.md) | RAG-003 knowledge source for course recommendations. |
+| 6 | [RAG Sources](docs/rag.md) | Complete list of RAG knowledge sources. |
+| 7 | [Code Engine](docs/codeengine.md) | Option D for FastAPI bridge server container. |
+| 8 | [OpenShift](docs/openshift.md) | Option E for FastAPI bridge server container. |
+| 9 | [Railway](docs/railway.md) | Option F for FastAPI bridge server container. |
 | 10 | [Terraform](docs/terraform.md) | Deployment via Terraform. |
 | 11 | [Jupyter Notebooks](docs/notebooks.md) | Seven notebooks for standalone step testing. |
 
