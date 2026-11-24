@@ -45,7 +45,15 @@ Infrastructure and tooling
 - governance/register_factsheets.py, factsheets.yaml — the Governance AI use case and monitor registration scripts
 - knowledge-bases/ — all 12 RAG source JSON files
 
-Every file in docs/ — technology.md, problem.md, rag.md, notebooks.md, governance.md, environment.md, and the architecture HTML diagrams — was written by IBM Bob. The architecture diagram footer reads: "Made with IBM Bob."
+Every file in docs/ — technology.md, problem.md, rag.md, notebooks.md, governance.md, environment.md, and the architecture HTML diagrams — was written by IBM Bob. The architecture diagram footer reads: "Made with IBM Bob."  This includes the three visual deliverables created entirely in IBM Bob:
+
+- docs/images/source/mission-veteran-ai-architecture.html — the full system architecture diagram showing all six deployment options, the GUARD/ORCH/AGENTS/GOV/RAG/OUTPUT layer stack, Terraform annotations, Governance tags, and all 12 RAG source cards. The file's own footer reads: "Made with IBM Bob."
+
+- docs/images/source/mission-veteran-ai-environment-architecture.html — the environment and deployment-target architecture diagram, showing the split between local, Railway, Code Engine, OpenShift, and GitHub Pages, and how start.sh, API_BASE injection, and USE_MOCK wire them together. Its footer also reads: "Made with IBM Bob."
+
+ - Slide 6 of mission-veteran-ai-final-presentation-textonly.pptx — the condensed architecture slide for the competition presentation deck, authored and iteratively updated in IBM Bob using the office_edit tool.
+
+These are not code artifacts — they are polished, presentation-ready visual documents that required design judgment about layout, information density, labeling, and colour coding. Producing them in IBM Bob rather than a separate diagramming tool kept the entire project — code, documentation, diagrams, and presentation — within a single development environment.
 
 ##### Why including IBM Bob is a strong signal
 
