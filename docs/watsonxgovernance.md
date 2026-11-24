@@ -1,6 +1,6 @@
 # **Mission Veteran AI** *by G3*
 
-#### Governance
+#### watsonx.governance
 
 Governance is a strong fit precisely because of what this solution does and who it serves — a vulnerable population making high-stakes career decisions based on AI-generated output.
 
