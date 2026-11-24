@@ -4,9 +4,9 @@
 
 ##### Input Screens
 
-![inputstep1-2](missionveteraninputstep1-2.png)
-![inputstep3](missionveteraninputstep3.png)
-![inputstep4-7](missionveteraninputstep4-7.png)
+![inputstep1-2](docs/missionveteraninputstep1-2.png)
+![inputstep3](docs/missionveteraninputstep3.png)
+![inputstep4-7](docs/missionveteraninputstep4-7.png)
 
 ##### Output Screens
 
