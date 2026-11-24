@@ -2,9 +2,9 @@
 
 #### Diagrams
 
-[Architecture](architecture.md)
+[Full Architecture](architecture.md)
 
-[Environment](environment.md)
+[Dual Environments](environment.md)
 
 ---
 
