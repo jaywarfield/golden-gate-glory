@@ -165,6 +165,15 @@ IMPORTANT RULES:
 - No redundancy: every item within a section must be meaningfully distinct.
   If two items express the same idea, keep only the stronger one and omit the other.
   Example of redundancy to AVOID: "IT Infrastructure Support" and "supporting enterprise IT infrastructure" — these are the same; include only one.
+- CERTIFICATIONS: If a certification (e.g. CompTIA Security+, CompTIA Network+, CompTIA A+,
+  CCNA, CISSP, PMP, or any other cert) appears anywhere in the skill inventory, translated
+  bullets, or service summary, tag it [EVIDENCED]. Do NOT tag it [MISSING].
+- SECURITY CLEARANCE: If the specialty code or service summary indicates a clearance-required
+  role (e.g. MOS 25B, 35F, 17C, 25D, 68W, or any role with "intelligence", "cyber", "signals",
+  "communications", "cryptologic", or "classified" in its description), tag any security
+  clearance mention as [INFERRED] — not [MISSING]. The veteran held a clearance; the exact
+  level may require confirmation. Write: "[INFERRED] Held [Active/Secret] security clearance
+  commensurate with {specialty_code} duties — verify current status and exact level."
 
 Return ONLY a valid JSON object — NOT an array — with EXACTLY this structure:
 {{
@@ -232,6 +241,14 @@ JSON object:"""
 Below is the ORIGINAL SOURCE CONTEXT that a resume was built from, followed by a list
 of resume items that were tagged [EVIDENCED] — meaning they must be DIRECTLY supported
 by the source context.
+
+CHECKER RULES:
+- Certifications (CompTIA Security+, Network+, A+, CCNA, CISSP, PMP, etc.) that appear
+  anywhere in the source context must be CONFIRMED — do not DOWNGRADE them.
+- Security clearance items tagged [INFERRED] are NOT in this list — only [EVIDENCED] items
+  are checked here, so clearance items will not appear.
+- Skill names drawn from the skill inventory are CONFIRMED by definition — they were
+  extracted from the veteran's own service summary.
 
 For each item, respond ONLY with a JSON array. Each element must have:
   "index":    the same integer index provided in the input

@@ -59,8 +59,20 @@ def analyze_skills_gap(
     prompt = f"""You are a veteran career transition expert and skills gap analyst.
 
 Compare the veteran's skill inventory against the required job skills below.
-Use fuzzy/semantic matching — e.g. "Network Administration" covers "network administration", "LAN/WAN Administration", "networking".
-A veteran skill covers a job skill if they describe the same competency, even if worded differently.
+
+MATCHING RULES — apply all of these:
+1. Use fuzzy/semantic matching. A veteran skill covers a job skill if they describe the same competency,
+   even if worded differently. Examples:
+   - "Network Administration" covers "LAN/WAN administration", "networking", "network operations"
+   - "System Hardening" covers "security hardening", "endpoint hardening"
+   - "Access Control Management" covers "identity and access management", "IAM", "user provisioning"
+2. Military IT experience IS civilian IT experience. Do NOT list "Military IT Experience",
+   "Military IT Background", or similar phrases as a gap if the veteran's inventory contains
+   any IT, networking, cybersecurity, or systems skill — these are equivalent competencies.
+3. Items in the veteran inventory with evidence="resume" are verified skills from the veteran's
+   own resume document — treat them with the same weight as LLM-mapped skills.
+4. If a required job skill is a broad category (e.g. "IT experience", "technical background")
+   and the veteran has ANY skills in that domain, mark it as covered.
 
 Return ONLY a valid JSON object with exactly these keys:
   "covered_skills": array of skill name strings the veteran already has that match a required job skill,
@@ -70,7 +82,7 @@ No preamble, no explanation, no markdown fences.
 
 Target career path: {target_career_path}
 
-Veteran skill inventory (JSON — each item has a "skill" field):
+Veteran skill inventory (JSON — each item has a "skill" field; evidence="resume" means verified from resume):
 {veteran_skills_json}
 
 Required job skills:
