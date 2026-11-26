@@ -604,19 +604,19 @@
       </div>
       <div id="s4-pref-row" style="display:none;margin-top:10px">
         <div style="display:flex;align-items:center;gap:10px">
-          <div style="font-size:18px;font-weight:700;color:#1f2328;min-width:36px" id="s4-pref-pct">–</div>
+          <div style="font-size:18px;font-weight:700;color:#D97706;min-width:36px" id="s4-pref-pct">–</div>
           <div style="flex:1">
             <div class="bar-track"><div class="bar-fill" id="s4-pref-bar" style="width:0%;background:#D97706"></div></div>
-            <div style="font-size:12px;color:#57606a;margin-top:3px" id="s4-pref-sub"></div>
+            <div style="font-size:12px;color:#D97706;margin-top:3px" id="s4-pref-sub"></div>
           </div>
         </div>
       </div>
       <div id="s4-opt-row" style="display:none;margin-top:10px">
         <div style="display:flex;align-items:center;gap:10px">
-          <div style="font-size:18px;font-weight:700;color:#1f2328;min-width:36px" id="s4-opt-pct">–</div>
+          <div style="font-size:18px;font-weight:700;color:#2563EB;min-width:36px" id="s4-opt-pct">–</div>
           <div style="flex:1">
             <div class="bar-track"><div class="bar-fill" id="s4-opt-bar" style="width:0%;background:#2563EB"></div></div>
-            <div style="font-size:12px;color:#57606a;margin-top:3px" id="s4-opt-sub"></div>
+            <div style="font-size:12px;color:#2563EB;margin-top:3px" id="s4-opt-sub"></div>
           </div>
         </div>
       </div>
@@ -1573,19 +1573,16 @@
     };
 
     // Covered names set — LLM covered_skills authoritative source.
-    // Also seed with:
-    //   • all veteran skill names from civMap (handles live-mode skill field mismatch)
-    //   • STATE.resumeSkills (certs/skills extracted from step 2 resume upload — these
-    //     are verified resume items but only stored in STATE.resumeSkills, not in
-    //     STATE.skills / civMap, so preferred skills like CompTIA Security+/Network+
-    //     and Security Compliance would otherwise always show as gaps)
+    // Also seed with veteran skill names from civMap and resumeSkills.
+    // CLEARANCE is explicitly excluded from ALL sources here — it must always show as
+    // ✕ Gap in step 4 regardless of what the LLM or resume parser produced.
+    // The veteran confirms/removes it in step 5 via the INFERRED Add/Delete flow.
+    const _isClearanceTerm = s => /clearance/i.test(s);
     const coveredNames = new Set([
-      ...(gr.covered_skills||[]).map(s => (s.skill_name||s||'').toString().toLowerCase()),
-      ...Object.keys(civMap),
-      // Resume skills seed — exclude clearance so it always shows as Gap in step 4
-      // (the veteran holds a clearance but hasn't listed it directly on their resume;
-      // it appears as INFERRED in the step 5 skills section instead).
-      ...(STATE.resumeSkills||[]).filter(s => !/clearance/i.test(s)).map(s => s.toLowerCase()),
+      ...(gr.covered_skills||[]).map(s => (s.skill_name||s||'').toString().toLowerCase())
+                                 .filter(s => !_isClearanceTerm(s)),
+      ...Object.keys(civMap).filter(s => !_isClearanceTerm(s)),
+      ...(STATE.resumeSkills||[]).filter(s => !_isClearanceTerm(s)).map(s => s.toLowerCase()),
     ]);
 
     const vetHasClearance = CLEARANCE_CODES.has(STATE.specialty);
@@ -1613,6 +1610,8 @@
     const buildRows = (skills, tierKey) => skills.map(js => {
       const jsL = js.toLowerCase();
       const civ = getCiv(jsL);
+      // Clearance is always a Gap in step 4 — veteran confirms it in step 5 INFERRED flow.
+      if (_isClearanceTerm(jsL)) return { tierKey, js, civ, covered: false };
       // A skill is covered if:
       //   1. LLM said it's covered / it's in civMap / it's in resumeSkills (all in coveredNames)
       //   2. Any coveredNames entry loosely matches (substring or word-overlap)
