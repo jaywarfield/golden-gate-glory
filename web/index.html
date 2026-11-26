@@ -1466,6 +1466,9 @@
       ${(ja.preferred_skills||[]).length ? `
       <div class="skill-section-title" style="margin-top:12px">Preferred Skills</div>
       ${(ja.preferred_skills||[]).map(s=>`<div class="bullet-row"><span style="color:#57606a">▸</span><span class="bullet-text">${esc(toTitleCase(s))}</span></div>`).join('')}` : ''}
+      ${(ja.optional_skills||[]).length ? `
+      <div class="skill-section-title" style="margin-top:12px">Optional Skills</div>
+      ${(ja.optional_skills||[]).map(s=>`<div class="bullet-row"><span style="color:#57606a">▸</span><span class="bullet-text">${esc(toTitleCase(s))}</span></div>`).join('')}` : ''}
       ${(ja.ats_keywords||[]).length ? `
       <div class="skill-section-title" style="margin-top:12px">ATS Keywords</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">${(ja.ats_keywords||[]).map(k=>`<span class="badge badge-medium">${esc(k)}</span>`).join('')}</div>` : ''}
@@ -1494,9 +1497,13 @@
           ...(skillResult.skills || []),
           ...(STATE.resumeSkills || []).map(s => ({ skill: s, category: '', evidence: 'resume' })),
         ];
-        // Use the already-extracted required_skills list (not raw JD) for more accurate matching
-        const requiredSkillsForGap = (STATE.jobAnalysis?.required_skills || []).join(', ');
-        gapResult = await apiCall({ step: 'gap_analysis', input: { veteran_skills_json: JSON.stringify(veteranSkillsForGap), target_career_path: STATE.careerPath, job_description: requiredSkillsForGap || STATE.jobDescription } });
+        // Use the already-extracted skills lists (required + preferred + optional) for more accurate matching
+        const allJobSkillsForGap = [
+          ...(STATE.jobAnalysis?.required_skills  || []),
+          ...(STATE.jobAnalysis?.preferred_skills || []),
+          ...(STATE.jobAnalysis?.optional_skills  || []),
+        ].join(', ');
+        gapResult = await apiCall({ step: 'gap_analysis', input: { veteran_skills_json: JSON.stringify(veteranSkillsForGap), target_career_path: STATE.careerPath, job_description: allJobSkillsForGap || STATE.jobDescription } });
       }
       STATE.skills = skillResult.skills || [];
       STATE.gapResult = gapResult;
