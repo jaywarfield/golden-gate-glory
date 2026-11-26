@@ -445,20 +445,30 @@ def _step_gap_analysis(inp: dict) -> dict:
         return str(s)
 
     gap_skills_normalized = []
+    skillsbuild_recs = result.get("skillsbuild_recommendations") or []
     for skill in gap_skills_raw:
         sname = _skill_name(skill)
-        # Find any course that tags this skill
-        matching_courses = [
-            {
-                "title":            c["course_title"],
-                "credential_type":  c.get("credential", "Badge"),
-                "hours_estimate":   c.get("estimated_hours", 0),
-                "url":              c.get("url", "https://skillsbuild.org"),
-            }
-            for c in (result.get("skillsbuild_recommendations") or [])
-            if any(sname.lower() in tag.lower() or tag.lower() in sname.lower()
-                   for tag in c.get("skill_tags", []))
-        ]
+        sname_words = set(w[:5] for w in sname.lower().split() if len(w) > 3)
+        # Match courses by: skill_tags substring overlap OR word-stem overlap with skill name
+        matching_courses = []
+        for c in skillsbuild_recs:
+            tags = c.get("skill_tags", [])
+            tag_words = set(w[:5] for tag in tags for w in tag.lower().split() if len(w) > 3)
+            tag_text  = " ".join(tags).lower()
+            # Substring: any tag contains part of skill name or vice versa
+            tag_hit = any(
+                sname.lower() in tag.lower() or tag.lower() in sname.lower()
+                for tag in tags
+            )
+            # Word-stem overlap: share ≥1 significant stemmed word
+            stem_hit = bool(sname_words & tag_words)
+            if tag_hit or stem_hit:
+                matching_courses.append({
+                    "title":           c["course_title"],
+                    "credential_type": c.get("credential", "Badge"),
+                    "hours_estimate":  c.get("estimated_hours", 0),
+                    "url":             c.get("url", "https://skillsbuild.org"),
+                })
         gap_skills_normalized.append({
             "skill_name": sname,
             "priority":   "High",

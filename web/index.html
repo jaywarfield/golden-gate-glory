@@ -1606,6 +1606,26 @@
     // A skill is a gap ONLY if none of the coverage checks apply.
     // Security clearance from a clearance-required MOS shows as ✕ Gap here on step 4 —
     // it will appear as INFERRED in the step 5 skills section with Add/Delete buttons.
+    // All SkillsBuild recommendations from gap analysis (for fallback course lookup)
+    const sbRecs = gr.skillsbuild_recommendations || [];
+    const _sbCourses = jsL => {
+      // 1. Try gapMap first (gap skills with pre-matched courses from server)
+      const gapKey = Object.keys(gapMap).find(k => k === jsL || looseMatch(k, jsL) || wordOverlap(k, jsL));
+      if (gapKey && (gapMap[gapKey].courses||[]).length) return gapMap[gapKey].courses.slice(0,2);
+      // 2. Fall back to skillsbuild_recommendations — match by skill_tags word-stem overlap
+      const jsWords = new Set(jsL.split(/\W+/).filter(w=>w.length>3).map(w=>w.slice(0,5)));
+      return sbRecs.filter(c => {
+        const tags = (c.skill_tags||[]).join(' ').toLowerCase();
+        const tagWords = new Set(tags.split(/\W+/).filter(w=>w.length>3).map(w=>w.slice(0,5)));
+        return [...jsWords].some(w => tagWords.has(w));
+      }).slice(0,2).map(c => ({
+        title:           c.course_title,
+        credential_type: c.credential || 'Badge',
+        hours_estimate:  c.estimated_hours || 0,
+        url:             c.url || 'https://skillsbuild.org',
+      }));
+    };
+
     const buildRows = (skills, tierKey) => skills.map(js => {
       const jsL = js.toLowerCase();
       const civ = getCiv(jsL);
@@ -1618,9 +1638,7 @@
       const explicitlyCovered = coveredNames.has(jsL) ||
         [...coveredNames].some(c => looseMatch(c, jsL) || wordOverlap(c, jsL));
       const covered = explicitlyCovered || !!civ;
-      // Find SkillsBuild courses from gapMap for uncovered skills
-      const gapKey = Object.keys(gapMap).find(k => k === jsL || looseMatch(k, jsL) || wordOverlap(k, jsL));
-      const courses = (!covered && gapKey) ? (gapMap[gapKey].courses || []) : [];
+      const courses = covered ? [] : _sbCourses(jsL);
       return { tierKey, js, civ, covered, inferred: false, courses };
     });
 
