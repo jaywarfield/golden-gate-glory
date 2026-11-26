@@ -906,7 +906,7 @@ def _parse_resume(text: str) -> tuple[str, list[str], list[str]]:
     # e.g. "awards" matches "award", "certifications" matches "certification".
     EDU_AWARDS_HDR = re.compile(
         r'\b(educat|train|school|certif|licens|award|honor|decorat'
-        r'|achieve|commend|recognit|clearance|volunteer|reference|qualif)',
+        r'|achieve|commend|recognit|clearance|volunteer|reference)',
         re.IGNORECASE
     )
 
