@@ -1582,7 +1582,10 @@
     const coveredNames = new Set([
       ...(gr.covered_skills||[]).map(s => (s.skill_name||s||'').toString().toLowerCase()),
       ...Object.keys(civMap),
-      ...(STATE.resumeSkills||[]).map(s => s.toLowerCase()),
+      // Resume skills seed — exclude clearance so it always shows as Gap in step 4
+      // (the veteran holds a clearance but hasn't listed it directly on their resume;
+      // it appears as INFERRED in the step 5 skills section instead).
+      ...(STATE.resumeSkills||[]).filter(s => !/clearance/i.test(s)).map(s => s.toLowerCase()),
     ]);
 
     const vetHasClearance = CLEARANCE_CODES.has(STATE.specialty);
@@ -1783,7 +1786,7 @@
     if (!rd.skillItems) {
       const rawSkills = _veteranSkills().map(s => ({ text: s, tag: 'EVIDENCED' }));
       // Inject clearance as INFERRED when specialty code requires it
-      if (vetHasClearance && !rawSkills.some(s => /clearance/i.test(s.text))) {
+      if (CLEARANCE_CODES.has(STATE.specialty) && !rawSkills.some(s => /clearance/i.test(s.text))) {
         rawSkills.push({
           text: `Held security clearance commensurate with ${STATE.specialty} duties — verify current status and exact level before listing`,
           tag: 'INFERRED',
