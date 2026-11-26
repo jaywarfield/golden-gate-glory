@@ -1317,7 +1317,6 @@
           <div class="bullet-row">
             <span style="color:#57606a;font-size:12px;min-width:20px">${i+1}.</span>
             <span class="bullet-text">${esc(b)}</span>
-            <span class="tag tag-ev">EVIDENCED</span>
           </div>`).join('')}
       </div>`;
     }
@@ -1610,8 +1609,8 @@
     const buildRows = (skills, tierKey) => skills.map(js => {
       const jsL = js.toLowerCase();
       const civ = getCiv(jsL);
-      // Clearance is always a Gap in step 4 — veteran confirms it in step 5 INFERRED flow.
-      if (_isClearanceTerm(jsL)) return { tierKey, js, civ, covered: false };
+      // Clearance inferred from MOS — show as ~ Inferred (not ✕ Gap), courses empty.
+      if (_isClearanceTerm(jsL)) return { tierKey, js, civ, covered: false, inferred: true, courses: [] };
       // A skill is covered if:
       //   1. LLM said it's covered / it's in civMap / it's in resumeSkills (all in coveredNames)
       //   2. Any coveredNames entry loosely matches (substring or word-overlap)
@@ -1619,7 +1618,10 @@
       const explicitlyCovered = coveredNames.has(jsL) ||
         [...coveredNames].some(c => looseMatch(c, jsL) || wordOverlap(c, jsL));
       const covered = explicitlyCovered || !!civ;
-      return { tierKey, js, civ, covered };
+      // Find SkillsBuild courses from gapMap for uncovered skills
+      const gapKey = Object.keys(gapMap).find(k => k === jsL || looseMatch(k, jsL) || wordOverlap(k, jsL));
+      const courses = (!covered && gapKey) ? (gapMap[gapKey].courses || []) : [];
+      return { tierKey, js, civ, covered, inferred: false, courses };
     });
 
     const allRows = [
@@ -1676,10 +1678,22 @@
       // Col 2: job skill name — strip leading "Technical", then title-case
       const jobCell = r.tierKey === 'Veteran' ? '' : esc(capWords(stripTechnical(r.js)));
 
-      // Col 3: Covered / ✕ Gap
-      const vetCell = r.covered
-        ? `<span style="color:#166534;font-weight:600">✓ Covered</span>`
-        : `<span style="color:${tier.color};font-weight:600">✕ Gap</span>`;
+      // Col 3: Covered / ~ Inferred / ✕ Gap  +  SkillsBuild courses for gaps
+      let vetCell;
+      if (r.covered) {
+        vetCell = `<span style="color:#166534;font-weight:600">✓ Covered</span>`;
+      } else if (r.inferred) {
+        vetCell = `<span style="color:#92400e;font-weight:600">~ Inferred</span>`
+                + `<div style="font-size:11px;color:#57606a;margin-top:3px">Inferred from ${esc(STATE.specialty||'specialty code')} — confirm status before listing</div>`;
+      } else {
+        // Gap: show SkillsBuild courses if available
+        const courseCards = (r.courses||[]).map(c => `
+          <div style="margin-top:5px;padding:5px 8px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:4px;font-size:11px">
+            📚 <a href="${esc(c.url||'https://skillsbuild.org')}" target="_blank" style="color:#1d4ed8;font-weight:600;text-decoration:none">${esc(c.title||'IBM SkillsBuild Course')}</a>
+            <span style="color:#57606a;margin-left:6px">${esc(c.credential_type||'Badge')} · ${c.hours_estimate||''}${c.hours_estimate?' hrs':''}</span>
+          </div>`).join('');
+        vetCell = `<span style="color:${tier.color};font-weight:600">✕ Gap</span>${courseCards}`;
+      }
 
       html += `<tr style="background:${bg}">
         ${td(typeCell)}
@@ -1690,8 +1704,9 @@
 
     html += `</tbody></table>`;
 
-    // SkillsBuild note if any gaps exist
-    if (allRows.some(r => !r.covered)) {
+    // SkillsBuild footer note if any gaps without inline courses exist
+    const hasUncoveredNoCards = allRows.some(r => !r.covered && !r.inferred && !(r.courses||[]).length);
+    if (hasUncoveredNoCards) {
       html += `<div style="margin-top:10px;font-size:12px;color:#57606a;padding:6px 2px">
         📚 Close skill gaps with free courses at <a href="https://skillsbuild.org" target="_blank" style="color:#1d4ed8;text-decoration:none;font-weight:600">IBM SkillsBuild — skillsbuild.org</a>
       </div>`;
