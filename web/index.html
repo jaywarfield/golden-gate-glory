@@ -1524,10 +1524,12 @@
     };
 
     // Build lookup: civilian skill name (lower) → skill object
+    // Handles both live-mode (skill field) and mock-mode (skill_name field) shapes
     const civMap = {};
     (STATE.skills||[]).forEach(s => {
-      if (!isTechnicalOnly(s.skill_name))
-        civMap[stripTechnical((s.skill_name||'').toLowerCase())] = s;
+      const name = s.skill_name || s.skill || '';
+      if (!isTechnicalOnly(name))
+        civMap[stripTechnical(name.toLowerCase())] = s;
     });
 
     // Build lookup: gap skill name (lower) → gap object
@@ -1553,8 +1555,15 @@
       return k ? civMap[k] : null;
     };
 
-    // Covered names set
-    const coveredNames = new Set((gr.covered_skills||[]).map(s => (s.skill_name||s||'').toString().toLowerCase()));
+    // Covered names set — LLM covered_skills authoritative source.
+    // Also add all veteran skill names from civMap so that a job skill that
+    // word-overlaps a veteran skill is always treated as covered, even if
+    // the LLM incorrectly placed it in gap_skills (e.g. "Military IT Experience"
+    // when the veteran has "IT Support" or "Network Operations").
+    const coveredNames = new Set([
+      ...(gr.covered_skills||[]).map(s => (s.skill_name||s||'').toString().toLowerCase()),
+      ...Object.keys(civMap),
+    ]);
 
     // Job skill tiers
     const ja = STATE.jobAnalysis || {};
@@ -1577,12 +1586,13 @@
     const buildRows = (skills, tierKey) => skills.map(js => {
       const jsL = js.toLowerCase();
       const civ = getCiv(jsL);
-      // A skill is covered if coveredNames says so OR a vet skill loosely matches.
-      // A skill is a gap only if it's explicitly in gapMap AND NOT in coveredNames.
+      // A skill is covered if:
+      //   1. LLM said it's covered (coveredNames — includes all veteran skill names now)
+      //   2. Any covered/vet skill loosely matches (substring or word-overlap)
+      //   3. A vet skill in civMap matches (handles live-mode skill field)
+      // A skill is a gap ONLY if none of the above apply AND it's in gapMap.
       const explicitlyCovered = coveredNames.has(jsL) ||
         [...coveredNames].some(c => looseMatch(c, jsL) || wordOverlap(c, jsL));
-      const explicitlyGap = !explicitlyCovered && inGap(jsL);
-      // Also covered if a vet skill word-overlaps with the job skill, regardless of gap map
       const covered = explicitlyCovered || !!civ;
       return { tierKey, js, civ, covered };
     });
