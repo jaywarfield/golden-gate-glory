@@ -26,7 +26,6 @@ Mission Veteran AI (by Golden Gate Glory or G3) is an AI-powered career chatbot,
   <img src="docs/images/ibmbobusage.png" alt="First Image" width="100%" />
 </p>
 
-<!--
 | Index | Product | Description | 
 | :---: | :---:   | :---:       |
 | 1 | [IBM Bob](docs/ibmbob.md) | Development assistant throughout. |
@@ -52,7 +51,6 @@ Mission Veteran AI (by Golden Gate Glory or G3) is an AI-powered career chatbot,
 | D | [Code Engine](docs/codeengine.md) | FastAPI bridge server container. |
 | E | [OpenShift](docs/openshift.md) | FastAPI bridge server container. |
 | F | [Railway](docs/railway.md) | FastAPI bridge server container. |
--->
 
 ---
 
