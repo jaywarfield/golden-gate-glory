@@ -1476,6 +1476,16 @@
     document.getElementById('s3-output').style.display = 'block';
   }
 
+  // Specialty codes that require a security clearance — shared by step 4 and step 5.
+  const CLEARANCE_CODES = new Set([
+    '17A','17C','25B','25C','25D','25P','25Q','25S',   // Army
+    '1D7X1','1D7X2','17D','17S',                        // Air Force
+    'CWE','1820','1840','741A','742A','746A',            // Navy
+    '0621','0627','0631','0671','0681','1702','1721',    // Marine Corps
+    '1D7XXX',                                           // Space Force
+    'CMS',                                              // Coast Guard
+  ]);
+
   // ═══════════════════════════════════════════════════════════════════
   // STEP 4 — Skill Mapping + Gap Analysis
   // ═══════════════════════════════════════════════════════════════════
@@ -1575,22 +1585,6 @@
       ...(STATE.resumeSkills||[]).map(s => s.toLowerCase()),
     ]);
 
-    // Specialty codes that require a security clearance — used to infer clearance
-    // as COVERED (with an inferred note) rather than a gap.
-    const CLEARANCE_CODES = new Set([
-      // Army
-      '17A','17C','25B','25C','25D','25P','25Q','25S',
-      // Air Force
-      '1D7X1','1D7X2','17D','17S',
-      // Navy
-      'CWE','1820','1840','741A','742A','746A',
-      // Marine Corps
-      '0621','0627','0631','0671','0681','1702','1721',
-      // Space Force
-      '1D7XXX','17S',
-      // Coast Guard
-      'CMS',
-    ]);
     const vetHasClearance = CLEARANCE_CODES.has(STATE.specialty);
 
     // Job skill tiers
@@ -1608,20 +1602,14 @@
     const td = (content, extra='') =>
       `<td style="padding:8px 10px;border:1px solid #e5e7eb;vertical-align:middle;font-size:13px${extra ? ';'+extra : ''}">${content}</td>`;
 
-    // Build all rows: each job skill → { tierKey, js (original casing), civ, covered, inferred }
+    // Build all rows: each job skill → { tierKey, js (original casing), civ, covered }
     // coveredNames is the authoritative source — LLM covered_skills + civMap + resumeSkills.
     // A skill is a gap ONLY if none of the coverage checks apply.
+    // Security clearance from a clearance-required MOS shows as ✕ Gap here on step 4 —
+    // it will appear as INFERRED in the step 5 skills section with Add/Delete buttons.
     const buildRows = (skills, tierKey) => skills.map(js => {
       const jsL = js.toLowerCase();
       const civ = getCiv(jsL);
-
-      // Security clearance: if the veteran's specialty code requires a clearance,
-      // any JD skill matching "clearance" is INFERRED (held, verify status) not a gap.
-      const isClearanceSkill = /\bclearance\b/i.test(js);
-      if (isClearanceSkill && vetHasClearance) {
-        return { tierKey, js, civ, covered: true, inferred: true };
-      }
-
       // A skill is covered if:
       //   1. LLM said it's covered / it's in civMap / it's in resumeSkills (all in coveredNames)
       //   2. Any coveredNames entry loosely matches (substring or word-overlap)
@@ -1629,7 +1617,7 @@
       const explicitlyCovered = coveredNames.has(jsL) ||
         [...coveredNames].some(c => looseMatch(c, jsL) || wordOverlap(c, jsL));
       const covered = explicitlyCovered || !!civ;
-      return { tierKey, js, civ, covered, inferred: false };
+      return { tierKey, js, civ, covered };
     });
 
     const allRows = [
@@ -1686,12 +1674,10 @@
       // Col 2: job skill name — strip leading "Technical", then title-case
       const jobCell = r.tierKey === 'Veteran' ? '' : esc(capWords(stripTechnical(r.js)));
 
-      // Col 3: Covered / Inferred / ✕ Gap
-      const vetCell = !r.covered
-        ? `<span style="color:${tier.color};font-weight:600">✕ Gap</span>`
-        : r.inferred
-          ? `<span style="color:#92400e;font-weight:600">~ Inferred</span><span style="color:#57606a;font-size:11px;display:block;margin-top:2px">Clearance held — verify current status &amp; level</span>`
-          : `<span style="color:#166534;font-weight:600">✓ Covered</span>`;
+      // Col 3: Covered / ✕ Gap
+      const vetCell = r.covered
+        ? `<span style="color:#166534;font-weight:600">✓ Covered</span>`
+        : `<span style="color:${tier.color};font-weight:600">✕ Gap</span>`;
 
       html += `<tr style="background:${bg}">
         ${td(typeCell)}
@@ -1792,9 +1778,21 @@
     // Experience bullets
     document.getElementById('s5-bullets').innerHTML = (rd.bullets||[]).map((b, i) => itemRow('bullet', i, b)).join('');
 
-    // Skills (no tags — only veteran skills, no job-description skills or bare "Technical")
-    document.getElementById('s5-skills').innerHTML = _veteranSkills().map(s=>`
-      <div class="bullet-row"><span class="bullet-text">• ${esc(s)}</span></div>`).join('');
+    // Skills — render with tags and Add/Delete buttons.
+    // All veteran skills are EVIDENCED. Clearance from a clearance-required MOS is INFERRED.
+    if (!rd.skillItems) {
+      const rawSkills = _veteranSkills().map(s => ({ text: s, tag: 'EVIDENCED' }));
+      // Inject clearance as INFERRED when specialty code requires it
+      if (vetHasClearance && !rawSkills.some(s => /clearance/i.test(s.text))) {
+        rawSkills.push({
+          text: `Held security clearance commensurate with ${STATE.specialty} duties — verify current status and exact level before listing`,
+          tag: 'INFERRED',
+          source: `Inferred from specialty code ${STATE.specialty} — clearance-required MOS. Confirm current status with issuing authority.`,
+        });
+      }
+      rd.skillItems = rawSkills;
+    }
+    document.getElementById('s5-skills').innerHTML = (rd.skillItems||[]).map((s, i) => itemRow('skill', i, s)).join('');
 
     s5UpdateTagCounts();
     document.getElementById('s5-output').style.display = 'block';
@@ -1802,7 +1800,7 @@
 
   function s5UpdateTagCounts() {
     const rd = STATE.resumeDraft;
-    const allItems = [...(rd.bullets||[]), rd.summary||{}];
+    const allItems = [...(rd.bullets||[]), rd.summary||{}, ...(rd.skillItems||[])];
     let ev = 0, inf = 0, mis = 0;
     allItems.forEach(b => {
       const t = (b.tag||'').toUpperCase();
@@ -1836,6 +1834,8 @@
     const rd = STATE.resumeDraft;
     if (section === 'summary') {
       rd.summary.tag = 'EVIDENCED';
+    } else if (section === 'skill') {
+      if (rd.skillItems[idx]) rd.skillItems[idx].tag = 'EVIDENCED';
     } else {
       if (rd.bullets[idx]) rd.bullets[idx].tag = 'EVIDENCED';
     }
@@ -1847,6 +1847,8 @@
     const rd = STATE.resumeDraft;
     if (section === 'summary') {
       rd.summary = { text: '', tag: 'EVIDENCED' };
+    } else if (section === 'skill') {
+      rd.skillItems.splice(idx, 1);
     } else {
       rd.bullets.splice(idx, 1);
     }
