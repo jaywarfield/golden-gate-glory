@@ -1,12 +1,17 @@
 # **Mission Veteran AI** *by G3*
 
-<p align="center">
-  <img src="docs/images/missionveteranvideoqr.png" alt="QR Image" width="100"/><br>
-  <em>SCAN FOR VIDEO</em>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="docs/images/missionveterantoolqr.png" alt="QR Image" width="100"/><br>
-  <em>SCAN FOR TOOL</em>
-</p>
+<table>
+  <tr>
+    <td align="center" width="150">
+      <img src="docs/images/missionveteranvideoqr.png" alt="QR Image" width="100"/><br>
+      <em>SCAN FOR VIDEO</em>
+    </td>
+    <td align="center" width="150">
+      <img src="docs/images/missionveterantoolqr.png" alt="QR Image" width="100"/><br>
+      <em>SCAN FOR TOOL</em>
+    </td>
+  </tr>
+</table>
 
 <p align="center">
   <img src="docs/images/missionveteranlogo1.png" alt="Logo Image" width="400"/>
