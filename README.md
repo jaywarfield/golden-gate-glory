@@ -1,10 +1,10 @@
 # **Mission Veteran AI** *by G3*
 
 <p align="center">
-  *SCAN FOR VIDEO*
+  *SCAN FOR VIDEO*\
   <img src="docs/images/missionveteranvideoqr.png" alt="QR Image" width="100"/>
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  *SCAN FOR TOOL*
+  *SCAN FOR TOOL*\
   <img src="docs/images/missionveterantoolqr.png" alt="QR Image" width="100"/>
 </p>
 
