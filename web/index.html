@@ -765,6 +765,18 @@
           <button class="btn btn-primary"   onclick="exportInterviewDocx()">⬇ Save as .docx</button>
         </div>
       </div>
+      <div class="card" id="s7-skills-gap-card" style="display:none">
+        <div class="card-title">Skills Gap — IBM SkillsBuild Courses</div>
+        <div style="font-size:13px;color:#57606a;margin-bottom:10px">
+          Free IBM SkillsBuild courses to close the gaps identified in Step 4.
+          Complete these courses to earn digital badges you can add to your résumé.
+        </div>
+        <div id="s7-skills-gap-body"></div>
+        <div class="btn-row" style="margin-top:16px">
+          <button class="btn btn-secondary" onclick="exportSkillsGapTxt()">⬇ Save as .txt</button>
+          <button class="btn btn-primary"   onclick="exportSkillsGapDocx()">⬇ Save as .docx</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -2146,6 +2158,90 @@
         `<div class="export-body" style="white-space:normal">${ihtml}</div>`;
       document.getElementById('s7-interview-card').style.display = 'block';
     }
+
+    // ── Skills Gap / SkillsBuild courses section ─────────────────────
+    const gapRows = _gapCoursesData();
+    if (gapRows.length) {
+      const TIER_COLOR = { Required: '#DC2626', Preferred: '#D97706', Optional: '#2563EB' };
+      let ghtml = `<table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr>
+          <th style="width:14%;padding:7px 10px;background:#1e3a8a;color:#fff;text-align:left;border:1px solid #c8d0d9;font-size:11px;letter-spacing:0.04em">TYPE</th>
+          <th style="width:28%;padding:7px 10px;background:#1e3a8a;color:#fff;text-align:left;border:1px solid #c8d0d9;font-size:11px;letter-spacing:0.04em">SKILLS GAP</th>
+          <th style="width:58%;padding:7px 10px;background:#1e3a8a;color:#fff;text-align:left;border:1px solid #c8d0d9;font-size:11px;letter-spacing:0.04em">IBM SKILLSBUILD COURSES</th>
+        </tr></thead><tbody>`;
+      gapRows.forEach((r, i) => {
+        const bg    = i % 2 === 0 ? '#ffffff' : '#f7f8fa';
+        const color = TIER_COLOR[r.tier] || '#374151';
+        const courseHtml = r.courses.map(c =>
+          `<div style="margin-bottom:4px">
+            <a href="${esc(c.url)}" target="_blank" style="color:#1d4ed8;font-weight:600;text-decoration:none">${esc(c.title)}</a>
+            <span style="color:#57606a;font-size:11px;margin-left:6px">${esc(c.credential)} · ${c.hours} hrs</span>
+          </div>`).join('');
+        ghtml += `<tr style="background:${bg}">
+          <td style="padding:8px 10px;border:1px solid #e5e7eb;vertical-align:top"><span style="font-weight:700;color:${color}">${esc(r.tier)}</span></td>
+          <td style="padding:8px 10px;border:1px solid #e5e7eb;vertical-align:top">${esc(r.jobSkill)}</td>
+          <td style="padding:8px 10px;border:1px solid #e5e7eb;vertical-align:top">${courseHtml}</td>
+        </tr>`;
+      });
+      ghtml += `</tbody></table>`;
+      document.getElementById('s7-skills-gap-body').innerHTML =
+        `<div class="export-body" style="white-space:normal">${ghtml}</div>`;
+      document.getElementById('s7-skills-gap-card').style.display = 'block';
+    }
+  }
+
+  // ── Skills Gap data helper ───────────────────────────────────────────────
+  // Returns array of { jobSkill, tier, courses[] } for every gap row that has
+  // at least one SkillsBuild course — mirrors the _sbCourses logic in renderStep4.
+  function _gapCoursesData() {
+    const gr = STATE.gapResult || {};
+    const ja = STATE.jobAnalysis || {};
+    const allJobSkills = [
+      ...((ja.required_skills ||[]).map(s => ({ js: s, tier: 'Required'  }))),
+      ...((ja.preferred_skills||[]).map(s => ({ js: s, tier: 'Preferred' }))),
+      ...((ja.optional_skills ||[]).map(s => ({ js: s, tier: 'Optional'  }))),
+    ];
+
+    // Build coveredNames (simplified — same exclusions as renderStep4)
+    const civNames = new Set((STATE.skills||[]).map(s => (s.skill_name||s.skill||'').toLowerCase()));
+    const coveredNames = new Set([
+      ...(gr.covered_skills||[]).map(s => (s.skill_name||s||'').toString().toLowerCase()),
+      ...civNames,
+      ...(STATE.resumeSkills||[]).filter(s => !/clearance/i.test(s)).map(s => s.toLowerCase()),
+    ]);
+    const looseMatch   = (a, b) => a === b || a.includes(b) || b.includes(a);
+    const sigWords     = s => s.split(/\W+/).filter(w => w.length > 3).map(w => w.slice(0,5));
+    const wordOverlap  = (a, b) => sigWords(a).some(w => sigWords(b).includes(w));
+
+    // Same _sbCourses logic as renderStep4
+    const _sbCourses = jsL => {
+      const jsWords = new Set(jsL.split(/\W+/).filter(w=>w.length>2).map(w=>w.slice(0,5).toLowerCase()));
+      const scored = SKILLSBUILD_KB.map(c => {
+        const tagStr   = c.tags.join(' ').toLowerCase();
+        const tagWords = new Set(tagStr.split(/\W+/).filter(w=>w.length>2).map(w=>w.slice(0,5)));
+        const exactHit  = c.tags.some(t => t.toLowerCase() === jsL) ? 3 : 0;
+        const substrHit = !exactHit && (tagStr.includes(jsL) || jsL.split(' ').some(w=>w.length>2 && tagStr.includes(w))) ? 2 : 0;
+        const stemHit   = (!exactHit && !substrHit) ? [...jsWords].filter(w=>tagWords.has(w)).length : 0;
+        return { c, score: exactHit + substrHit + stemHit };
+      }).filter(x => x.score > 0).sort((a,b) => b.score - a.score);
+      return scored.slice(0,2).map(x => ({ title: x.c.title, credential: x.c.credential, hours: x.c.hours, url: x.c.url }));
+    };
+
+    const rows = [];
+    const seen = new Set();
+    allJobSkills.forEach(({ js, tier }) => {
+      const jsL = js.toLowerCase();
+      if (/clearance/i.test(jsL)) return;
+      const covered = coveredNames.has(jsL) || [...coveredNames].some(c => looseMatch(c,jsL) || wordOverlap(c,jsL));
+      if (covered) return;
+      const courses = _sbCourses(jsL);
+      if (!courses.length) return;
+      // Deduplicate by job skill name
+      if (seen.has(jsL)) return;
+      seen.add(jsL);
+      rows.push({ jobSkill: js, tier, courses });
+    });
+    return rows;
   }
 
   // ── Export helpers ───────────────────────────────────────────────────────
@@ -2378,6 +2474,120 @@
     const a    = document.createElement('a');
     a.href     = URL.createObjectURL(blob);
     a.download = _resumeFilename('docx').replace('.docx', '_interview_prep.docx');
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  // ── Skills Gap export ────────────────────────────────────────────────────
+
+  function exportSkillsGapTxt() {
+    const rows   = _gapCoursesData();
+    const target = STATE.targetRole || 'Resume';
+    const COL1 = 30, COL2 = 12, COL3 = 50;
+    const pad  = (s, w) => s.length >= w ? s.slice(0, w-1) + ' ' : s + ' '.repeat(w - s.length);
+    const divLine = '+' + '-'.repeat(COL1+2) + '+' + '-'.repeat(COL2+2) + '+' + '-'.repeat(COL3+2) + '+';
+    const hdrLine = '| ' + pad('SKILLS GAP', COL1) + ' | ' + pad('TYPE', COL2) + ' | ' + pad('IBM SKILLSBUILD COURSE', COL3) + ' |';
+    const lines = [
+      `SKILLS GAP — IBM SKILLSBUILD COURSES — ${target.toUpperCase()}`,
+      `All courses are free. Complete to earn a digital badge for your résumé.`,
+      `https://skillsbuild.org`,
+      '',
+      divLine, hdrLine, divLine,
+    ];
+    rows.forEach(r => {
+      r.courses.forEach((c, ci) => {
+        const skillCell  = ci === 0 ? r.jobSkill : '';
+        const tierCell   = ci === 0 ? r.tier : '';
+        const courseCell = `${c.title} | ${c.credential} | ${c.hours} hrs`;
+        lines.push('| ' + pad(skillCell, COL1) + ' | ' + pad(tierCell, COL2) + ' | ' + pad(courseCell, COL3) + ' |');
+      });
+      lines.push(divLine);
+    });
+    lines.push('');
+    lines.push('Visit each course at: https://skillsbuild.org');
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+    const a    = document.createElement('a');
+    a.href     = URL.createObjectURL(blob);
+    a.download = _resumeFilename('txt').replace('.txt', '_skills_gap.txt');
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  async function exportSkillsGapDocx() {
+    if (!window.docx) {
+      await new Promise((resolve, reject) => {
+        const s   = document.createElement('script');
+        s.src     = 'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.min.js';
+        s.onload  = resolve;
+        s.onerror = () => reject(new Error('Could not load docx library. Check your internet connection.'));
+        document.head.appendChild(s);
+      }).catch(err => { alert(err.message); throw err; });
+    }
+
+    const { Document, Packer, Paragraph, TextRun, AlignmentType,
+            Table, TableRow, TableCell, WidthType, BorderStyle, ShadingType } = window.docx;
+    const rows   = _gapCoursesData();
+    const target = STATE.targetRole || 'Resume Draft';
+    const TIER_HEX = { Required: 'DC2626', Preferred: 'D97706', Optional: '2563EB' };
+
+    const cellBorder = { style: BorderStyle.SINGLE, size: 4, color: 'c8d0d9' };
+    const borders    = { top: cellBorder, bottom: cellBorder, left: cellBorder, right: cellBorder };
+
+    const makeCell = (paragraphs, widthPct, isHeader = false) => new TableCell({
+      width:    { size: widthPct, type: WidthType.PERCENTAGE },
+      shading:  isHeader ? { type: ShadingType.SOLID, color: '1e3a8a' } : undefined,
+      borders,
+      children: paragraphs,
+    });
+    const cellPara = (runs) => new Paragraph({ children: runs, spacing: { after: 40 } });
+
+    const headerRow = new TableRow({ children: [
+      makeCell([cellPara([new TextRun({ text: 'TYPE',                    bold: true, color: 'FFFFFF', size: 20 })])], 14, true),
+      makeCell([cellPara([new TextRun({ text: 'SKILLS GAP',              bold: true, color: 'FFFFFF', size: 20 })])], 28, true),
+      makeCell([cellPara([new TextRun({ text: 'IBM SKILLSBUILD COURSES', bold: true, color: 'FFFFFF', size: 20 })])], 58, true),
+    ]});
+
+    const dataRows = rows.map((r, i) => {
+      const bg      = i % 2 === 0 ? undefined : { type: ShadingType.SOLID, color: 'f7f8fa' };
+      const tierHex = TIER_HEX[r.tier] || '374151';
+      const courseRuns = r.courses.flatMap((c, ci) => [
+        ...(ci > 0 ? [new TextRun({ text: '\n', size: 20 })] : []),
+        new TextRun({ text: c.title, bold: true, color: '1d4ed8', size: 20 }),
+        new TextRun({ text: `  ${c.credential} · ${c.hours} hrs`, color: '57606a', size: 18 }),
+      ]);
+      const makeDataCell = (paragraphs, widthPct) => new TableCell({
+        width: { size: widthPct, type: WidthType.PERCENTAGE },
+        shading: bg,
+        borders,
+        children: paragraphs,
+      });
+      return new TableRow({ children: [
+        makeDataCell([cellPara([new TextRun({ text: r.tier, bold: true, color: tierHex, size: 20 })])], 14),
+        makeDataCell([cellPara([new TextRun({ text: r.jobSkill, size: 20 })])], 28),
+        makeDataCell([cellPara(courseRuns)], 58),
+      ]});
+    });
+
+    const table = new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: [headerRow, ...dataRows] });
+
+    const doc  = new Document({ sections: [{ properties: {}, children: [
+      new Paragraph({
+        children: [new TextRun({ text: `Skills Gap — IBM SkillsBuild Courses — ${target}`, bold: true, size: 28 })],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 160 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: 'All courses are free. Complete each to earn a digital badge for your résumé.', size: 20, italics: true, color: '57606a' })],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 200 },
+      }),
+      table,
+    ]}]});
+
+    const blob = await Packer.toBlob(doc);
+    const a    = document.createElement('a');
+    a.href     = URL.createObjectURL(blob);
+    a.download = _resumeFilename('docx').replace('.docx', '_skills_gap.docx');
     a.click();
     URL.revokeObjectURL(a.href);
   }
