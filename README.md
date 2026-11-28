@@ -5,12 +5,12 @@
   <table>
     <tr>
       <td align="center">
-        <img src="docs/images/missionveteranvideoqr.png" alt="QR Image" width="150"/><br>
+        <img src="docs/images/missionveteranvideoqr.png" alt="QR Image" width="200"/><br>
         <em>SCAN FOR VIDEO</em>
       </td>
       <td width="100">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
       <td align="center">
-        <img src="docs/images/missionveterantoolqr.png" alt="QR Image" width="150"/><br>
+        <img src="docs/images/missionveterantoolqr.png" alt="QR Image" width="200"/><br>
         <em>SCAN FOR TOOL</em>
       </td>
     </tr>
