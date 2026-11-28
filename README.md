@@ -1,33 +1,13 @@
 # **Mission Veteran AI** *by G3*
 
-<!--
-<div align="center">
-  <table>
-    <tr>
-      <td align="center">
-        <img src="docs/images/missionveteranvideoqr.png" alt="QR Image" width="300"/><br>
-        <em>SCAN FOR VIDEO</em>
-      </td>
-      <td width="100">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-      <td align="center">
-        <img src="docs/images/missionveterantoolqr.png" alt="QR Image" width="300"/><br>
-        <em>SCAN FOR TOOL</em>
-      </td>
-    </tr>
-  </table>
-</div>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
--->
-
 <div align="center">
   <em>SCAN FOR VIDEO</em>
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <em>SCAN FOR TOOL</em>
   <br>
-  <img src="docs/images/missionveteranvideoqr.png" alt="Video QR Code" width="150">
+  <img src="docs/images/missionveteranvideoqr.png" alt="Video QR Code" width="125">
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="docs/images/missionveterantoolqr.png" alt="Tool QR Code" width="150">
+  <img src="docs/images/missionveterantoolqr.png" alt="Tool QR Code" width="125">
 </div>
 
 <p align="center">
