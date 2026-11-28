@@ -21,13 +21,13 @@
 -->
 
 <div align="center">
-  <img src="docs/images/missionveteranvideoqr.png" alt="Video QR Code" width="200">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="docs/images/missionveterantoolqr.png" alt="Tool QR Code" width="200">
-  <br>
   <em>SCAN FOR VIDEO</em>
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <em>SCAN FOR TOOL</em>
+  <img src="docs/images/missionveteranvideoqr.png" alt="Video QR Code" width="100">
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="docs/images/missionveterantoolqr.png" alt="Tool QR Code" width="100">
+  <br>
 </div>
 
 <p align="center">
