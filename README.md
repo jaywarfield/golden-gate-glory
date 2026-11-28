@@ -2,7 +2,7 @@
 
 <div align="center">
   <sub><em>SCAN FOR VIDEO</em></sub>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <sub><em>SCAN FOR TOOL</em></sub>
   <br>
   <img src="docs/images/missionveteranvideoqr.png" alt="Video QR Code" width="125">
